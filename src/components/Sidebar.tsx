@@ -7,20 +7,32 @@ import type { Theme } from '../useTheme';
 import { t, useLang, useUi } from '../i18n';
 
 interface Props {
+  isHome: boolean;
   activeTopicId: string;
   activeSectionId: string;
   onSelect: (topicId: string, sectionId: string) => void;
+  onHome: () => void;
+  onCollapse: () => void;
   theme: Theme;
   onToggleTheme: () => void;
 }
 
-export function Sidebar({ activeTopicId, activeSectionId, onSelect, theme, onToggleTheme }: Props) {
+export function Sidebar({
+  isHome,
+  activeTopicId,
+  activeSectionId,
+  onSelect,
+  onHome,
+  onCollapse,
+  theme,
+  onToggleTheme,
+}: Props) {
   const { lang } = useLang();
   const uiText = useUi();
 
   return (
     <aside className="sidebar">
-      <div className="sidebar__brand">
+      <button className="sidebar__brand" onClick={onHome} aria-label={uiText('home')}>
         <div className="sidebar__logo">
           <Logo size={24} color="#fff" />
         </div>
@@ -28,15 +40,38 @@ export function Sidebar({ activeTopicId, activeSectionId, onSelect, theme, onTog
           <div className="sidebar__title">{uiText('brandTitle')}</div>
           <div className="sidebar__subtitle">{uiText('brandSubtitle')}</div>
         </div>
-      </div>
+      </button>
       <div className="sidebar__controls">
         <LangToggle />
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        <button
+          className="sidebar__collapse"
+          onClick={onCollapse}
+          aria-label="Hide sidebar"
+          title="Hide sidebar"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
       </div>
       <nav className="sidebar__nav">
+        <button
+          className={`nav-home ${isHome ? 'nav-home--active' : ''}`}
+          onClick={onHome}
+        >
+          <span className="nav-home__icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 11l9-8 9 8" />
+              <path d="M5 10v10h14V10" />
+            </svg>
+          </span>
+          {uiText('home')}
+        </button>
+
         {topics.map((topic) => {
-          // Only the active topic is expanded; the rest are collapsed.
-          const isOpen = topic.id === activeTopicId;
+          // Only the active topic is expanded (never on the home view).
+          const isOpen = !isHome && topic.id === activeTopicId;
           return (
             <div key={topic.id} className="nav-group">
               <button
