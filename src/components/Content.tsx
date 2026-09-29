@@ -2,6 +2,8 @@ import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import type { Block, Section, Topic } from '../data/content';
 import { Diagram } from '../diagrams';
+import { SocialLinks } from './SocialLinks';
+import { highlight } from './highlight';
 import { t, useLang, useUi, type Lang } from '../i18n';
 
 // Simple inline formatting: `code` -> <code>, **bold** -> strong
@@ -48,7 +50,7 @@ function BlockView({ block, lang }: { block: Block; lang: Lang }) {
         <div className="code-block">
           {block.label && <div className="code-block__label">{t(block.label, lang)}</div>}
           <pre>
-            <code>{block.code}</code>
+            <code>{highlight(block.code)}</code>
           </pre>
         </div>
       );
@@ -127,6 +129,7 @@ export const Content = forwardRef<
           />
         ))}
         <footer className="content__footer">
+          <SocialLinks />
           <p>{uiText('footer')}</p>
         </footer>
       </div>

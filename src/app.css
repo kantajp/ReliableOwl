@@ -204,6 +204,33 @@
   text-align: center;
 }
 
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: color 0.18s, border-color 0.18s, background 0.18s, transform 0.12s;
+}
+
+.social-links a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+
 .topic-header {
   margin: 0 0 40px;
   padding-bottom: 28px;
@@ -360,7 +387,30 @@ strong {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
-  color: #cdd6e4;
+  color: var(--text);
+}
+
+/* Syntax highlight tokens (theme-aware) */
+.tok-comment {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.tok-string {
+  color: var(--green);
+}
+
+.tok-number {
+  color: var(--amber);
+}
+
+.tok-keyword {
+  color: var(--purple);
+  font-weight: 600;
+}
+
+.tok-func {
+  color: var(--cyan);
 }
 
 /* ===== Diagram frame ===== */
