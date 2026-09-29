@@ -18,8 +18,8 @@ export function RlWhy() {
     >
       <svg viewBox="0 0 660 220" width="100%" style={{ maxHeight: 220 }}>
         <ArrowDefs />
-        <Edge x1={gx + 116} y1={midY} x2={sx} y2={midY} />
-        <NodeBox x={gx} y={y} label="Rate Limiter" icon={icons.gate} tone="amber" active />
+        <Edge x1={gx + 150} y1={midY} x2={sx} y2={midY} />
+        <NodeBox x={gx} y={y} w={150} label="Rate Limiter" icon={icons.gate} tone="amber" active />
         <NodeBox x={sx} y={y} label="Server" icon={icons.server} tone="cyan" />
         {lanes.map((ly, idx) => (
           <Packet
@@ -31,7 +31,7 @@ export function RlWhy() {
             path={
               idx === 2
                 ? [{ x: 20, y: ly }, { x: gx, y: midY }]
-                : [{ x: 20, y: ly }, { x: gx + 58, y: midY }, { x: sx, y: midY }]
+                : [{ x: 20, y: ly }, { x: gx + 75, y: midY }, { x: sx, y: midY }]
             }
           />
         ))}
