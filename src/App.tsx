@@ -10,10 +10,33 @@ import './app.css';
 // The main view is either the landing page ('home') or a specific topic id.
 type View = 'home' | string;
 
+// Derive the initial view from the URL hash (e.g. #url-shortener), so a reload
+// or a shared link lands on the same screen. Unknown/empty hash → home.
+function viewFromHash(): View {
+  const id = window.location.hash.replace(/^#/, '');
+  return topics.some((t) => t.id === id) ? id : 'home';
+}
+
 export default function App() {
-  const [view, setView] = useState<View>('home');
+  const [view, setView] = useState<View>(viewFromHash);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isHome = view === 'home';
+
+  // Keep the URL hash in sync with the current view.
+  useEffect(() => {
+    const desired = view === 'home' ? '' : `#${view}`;
+    if (window.location.hash !== desired) {
+      // Use replaceState so it doesn't spam the history on every section click.
+      window.history.replaceState(null, '', desired || window.location.pathname);
+    }
+  }, [view]);
+
+  // Respond to back/forward navigation and manual hash edits.
+  useEffect(() => {
+    const onHashChange = () => setView(viewFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
   const activeTopic = topics.find((t) => t.id === view) ?? topics[0];
   const [activeId, setActiveId] = useState(activeTopic.sections[0].id);
   const { theme, toggle } = useTheme();

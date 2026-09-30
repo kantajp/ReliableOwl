@@ -5,21 +5,29 @@ import type { LocalizedString } from '../i18n';
 
 export type DiagramId =
   | 'url-basic-flow'
+  | 'url-capacity'
   | 'url-key-generation'
+  | 'url-key-uniqueness'
   | 'url-read-write'
   | 'url-cache-scale'
+  | 'url-cache-eviction'
+  | 'url-architecture'
   | 'rl-why'
   | 'rl-token-bucket'
   | 'rl-allow-deny'
   | 'rl-algorithms'
-  | 'rl-distributed';
+  | 'rl-distributed'
+  | 'rl-placement'
+  | 'rl-race'
+  | 'rl-architecture';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
   | { type: 'list'; items: LocalizedString[] }
   | { type: 'note'; tone: 'info' | 'tip' | 'warn'; text: LocalizedString }
   | { type: 'code'; code: string; label?: LocalizedString }
-  | { type: 'diagram'; id: DiagramId };
+  | { type: 'diagram'; id: DiagramId }
+  | { type: 'details'; summary: LocalizedString; blocks: Block[] };
 
 export interface Section {
   id: string;
@@ -84,6 +92,106 @@ export const topics: Topic[] = [
             text: {
               ja: '読み取りが書き込みの100倍以上になることも珍しくありません。この「Read-heavy」という性質が、後半のキャッシュ設計につながります。',
               en: 'Reads often exceed writes by 100x or more. This read-heavy nature drives the caching design later on.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'capacity',
+        title: { ja: '規模の見積もり', en: 'Capacity estimation' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '設計に入る前に、ざっくりした数字を置きます。細かい正確さより「桁感」が大事です。ここでは新規URLを1日100万件、読み取りは書き込みの約100倍と仮定します。',
+              en: 'Before designing, pin down rough numbers. The order of magnitude matters more than precision. Assume 1M new URLs per day, with reads about 100x writes.',
+            },
+          },
+          { type: 'diagram', id: 'url-capacity' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '書き込み: 100万 / 日 ÷ 86,400秒 ≈ 12 writes/秒',
+                en: 'Writes: 1M / day ÷ 86,400s ≈ 12 writes/sec',
+              },
+              {
+                ja: '読み取り: その約100倍 ≈ 1,160 reads/秒（ここが本当の負荷）',
+                en: 'Reads: ~100x that ≈ 1,160 reads/sec (this is the real load)',
+              },
+              {
+                ja: 'ストレージ: 1件≈500B、5年保持 → 100万×500B×365×5 ≈ 0.9 TB',
+                en: 'Storage: ~500B per record, 5-year retention → 1M×500B×365×5 ≈ 0.9 TB',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'この見積もりが後の判断を決めます。「読み取りが桁違いに多い」→ キャッシュとレプリカが要る。「書き込みは秒10程度」→ 単一DBで余裕だが、採番の衝突対策は依然として要る。',
+              en: 'These numbers drive later choices. "Reads dominate" → you need caching and replicas. "Writes are ~10/s" → a single DB handles it easily, but key generation still needs collision handling.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'api',
+        title: { ja: 'API 設計', en: 'API design' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '外部に見せるインターフェースは2つだけです。短縮する（書き込み）と、解決してリダイレクトする（読み取り）。',
+              en: 'The public interface is just two operations: shorten (write) and resolve-then-redirect (read).',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: '短縮 (Write)', en: 'Shorten (write)' },
+            code: `POST /api/shorten
+{
+  "url": "https://example.com/very/long/path",
+  "alias": "my-link"   // optional custom key
+}
+
+201 Created
+{
+  "key": "aX9k2",
+  "shortUrl": "https://sho.rt/aX9k2"
+}`,
+          },
+          {
+            type: 'code',
+            label: { ja: '解決 (Read / Redirect)', en: 'Resolve (read / redirect)' },
+            code: `GET /aX9k2
+
+301 Moved Permanently
+Location: https://example.com/very/long/path`,
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'リダイレクトは 301（恒久）か 302（一時）。301はブラウザがキャッシュして高速だが、クリック計測はしにくい。計測重視なら302',
+                en: 'Redirect with 301 (permanent) or 302 (temporary). 301 is cached by browsers (fast) but hides click analytics; use 302 if you need to count clicks',
+              },
+              {
+                ja: 'カスタムエイリアスは任意。既に使われていれば 409 Conflict を返す',
+                en: 'Custom alias is optional; return 409 Conflict if it is already taken',
+              },
+              {
+                ja: '存在しないキーは 404。不正なURLは 400',
+                en: 'Unknown key → 404; malformed URL → 400',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '301 vs 302 は面接での定番の掘りどころです。「速度（キャッシュ）を取るか、計測を取るか」というトレードオフを言えると良いです。詳細は MDN の [301 Moved Permanently](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301) と [302 Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302) を参照。',
+              en: 'The 301-vs-302 choice is a classic interview follow-up. Be ready to frame it as a trade-off: caching speed versus click analytics. See MDN on [301 Moved Permanently](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301) and [302 Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302).',
             },
           },
         ],
@@ -165,6 +273,156 @@ function toBase62(n) {
         ],
       },
       {
+        id: 'key-uniqueness',
+        title: { ja: 'キーの一意性をどう担保するか', en: 'Guaranteeing key uniqueness' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'サーバーが1台なら連番で採番すれば自明に一意です。問題は複数台に増えたとき。各サーバーが独立に連番を振ると、同じIDを別のURLに割り当ててしまい衝突します。ここが分散設計の勘所です。',
+              en: 'With a single server, a sequential counter is trivially unique. The problem appears with multiple servers: if each increments its own counter, two servers can assign the same ID to different URLs. This is the crux of the distributed design.',
+            },
+          },
+          { type: 'diagram', id: 'url-key-uniqueness' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '中央採番（チケットサーバー）: ID発行を1箇所に集約。単純で確実だが、単一障害点・スループットのボトルネックになりやすい',
+                en: 'Central counter (ticket server): funnel all ID issuance through one place. Simple and correct, but a single point of failure and a throughput bottleneck',
+              },
+              {
+                ja: '範囲分割 / KGS: Key Generation Service が各サーバーに重ならないID範囲（例: 0-999, 1000-1999）を配る。各サーバーは範囲内で自由に採番でき衝突しない。事前生成しておけば発行も高速',
+                en: 'Range partitioning / KGS: a Key Generation Service hands each server a non-overlapping range (e.g. 0-999, 1000-1999). Each issues freely within its range with no collisions; pre-generating keys makes issuance fast',
+              },
+              {
+                ja: 'ランダム / ハッシュ + 衝突検知: ランダムキーを生成し、DBの一意制約（UNIQUE）で重複を弾いてリトライ。空間が広ければ衝突は稀',
+                en: 'Random / hash + collision check: generate a random key and rely on a DB UNIQUE constraint to reject duplicates and retry. With a large key space, collisions are rare',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'カスタムエイリアスは別枠で扱います。ユーザー指定のキーは自動採番と衝突しうるので、書き込み時に一意制約でチェックし、重複なら 409 を返します。',
+              en: 'Custom aliases are handled separately. A user-chosen key can clash with auto-generated ones, so check the UNIQUE constraint on write and return 409 on a duplicate.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '面接では「単一サーバーなら連番で自明」→「複数台で衝突」→「KGSで範囲を配れば衝突せずスケールもする」という筋道で話すと、問題の本質を理解していることが伝わります。',
+              en: 'In an interview, walk the path: "single server → trivial", "multiple servers → collisions", "a KGS hands out ranges → no collisions and it scales." It shows you grasp the core problem.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: '深掘り: KGS はどうやって範囲を振り分ける?', en: 'Deep dive: how does the KGS hand out ranges?' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: 'KGS は自分自身が1つのカウンター（next）を持ち、それを「1個ずつ」ではなく「ブロック（塊）」で切り出して配ります。頼まれるたびに、現在の next から一定個数ぶんの範囲を返し、next をその先へ進めます。',
+                  en: 'The KGS keeps a single counter (next) and hands it out in blocks, not one at a time. On each request it returns a fixed-size range starting at the current next, then advances next past it.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: 'サーバーA起動 → KGS が [0–999] を返し next=1000 に',
+                    en: 'Server A starts → KGS returns [0–999] and sets next=1000',
+                  },
+                  {
+                    ja: 'サーバーB起動 → [1000–1999] を返し next=2000 に',
+                    en: 'Server B starts → returns [1000–1999], next=2000',
+                  },
+                  {
+                    ja: 'next を1箇所で単調増加させるので、範囲は絶対に重ならない',
+                    en: 'next increases monotonically in one place, so ranges never overlap',
+                  },
+                ],
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: '宝くじの番号を配るイメージ: 本部（KGS）が各店に連番の束を渡す。店は束の中で順に売るので、全国で番号がかぶらない。',
+                  en: 'Like handing out lottery numbers: HQ (the KGS) gives each store a block of consecutive numbers; each store sells within its block, so no number collides nationwide.',
+                },
+              },
+            ],
+          },
+          {
+            type: 'details',
+            summary: { ja: '深掘り: リクエストは毎回 KGS を通る?', en: 'Deep dive: does every request go through the KGS?' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '通りません。ユーザーの短縮リクエストは Client → API → DB で完結し、API は「手元（メモリ）に配られた範囲」から次の番号を使うだけです。KGS への問い合わせは発生しません。',
+                  en: 'No. A shorten request completes as Client → API → DB, and the API just uses the next number from the range it already holds in memory. It does not call the KGS.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'KGS が呼ばれるのは「手元の範囲を使い切りそうになったとき」だけ。範囲が1000個なら、およそ1000リクエストに1回の補充だけです。',
+                  en: 'The KGS is called only when a server is about to exhaust its range. With a range of 1000, that is roughly one refill per 1000 requests.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'info',
+                text: {
+                  ja: 'だから KGS はホットパス（毎回の経路）に居ません。中央採番（毎回1個ずつ中央に聞く方式）と違い、KGS がボトルネックや単一障害点になりにくいのが利点です。',
+                  en: 'So the KGS is off the hot path. Unlike a central counter (asking one place per request), the KGS is far less likely to be a bottleneck or single point of failure.',
+                },
+              },
+            ],
+          },
+          {
+            type: 'details',
+            summary: { ja: '深掘り: オートスケールで増減したら?', en: 'Deep dive: what about auto-scaling up and down?' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '増えるとき: 新サーバーは KGS に範囲を頼むだけ。next は単調増加なので、何台増えても重複しません。',
+                  en: 'Scaling up: a new server just requests a range. Since next only increases, more servers never cause overlap.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '止まるとき: 配られた範囲を使い切らずに消えると、その範囲に「穴」があきます（連番が飛ぶ）。ただし誰もその番号を使わないだけなので、一意性は壊れません。',
+                  en: 'Scaling down: if a server dies before using its whole range, that range becomes a gap (numbers are skipped). But nobody reuses those numbers, so uniqueness is never broken.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: 'キー空間は膨大（Base62 7桁 ≈ 3.5兆）なので、穴が空いても枯渇にはほど遠い → 通常は許容する',
+                    en: 'The key space is huge (Base62 7 chars ≈ 3.5T), so gaps are nowhere near exhausting it → usually acceptable',
+                  },
+                  {
+                    ja: '無駄を減らすなら: ブロックを小さくする（停止時の損失↓）。ただし KGS への補充頻度↑ とのトレードオフ',
+                    en: 'To waste less: use smaller blocks (less lost on shutdown), trading off more frequent KGS refills',
+                  },
+                  {
+                    ja: '正常終了なら未使用範囲を KGS に返却して再利用する手もあるが、クラッシュ時は返せず実装も複雑',
+                    en: 'On graceful shutdown a server can return its unused range for reuse, but crashes cannot return it and it adds complexity',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
         id: 'read-write',
         title: { ja: '書き込みと読み取りの流れ', en: 'Write path and read path' },
         blocks: [
@@ -181,6 +439,124 @@ function toBase62(n) {
             text: {
               ja: '読み取りは「引くだけ」なので速いはずですが、アクセスが集中すると毎回のDB問い合わせが積み重なって遅くなります。次でキャッシュを入れて改善します。',
               en: 'Reads are just lookups, so they should be fast, but under heavy traffic the repeated DB queries add up. Next we add a cache to improve it.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'database',
+        title: { ja: 'データベースの選択（SQL / NoSQL）', en: 'Choosing the database (SQL / NoSQL)' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'このサービスのデータアクセスは驚くほど単純です。「キーで1件引く」「1件書く」だけ。テーブル間の結合も複雑なトランザクションもありません。この形は Key-Value ストアや NoSQL と非常に相性が良いです。',
+              en: 'The data access here is remarkably simple: look up one record by key, and write one record. No joins across tables, no complex transactions. That shape fits key-value stores and NoSQL very well.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: 'データモデル（1テーブル / 1コレクション）', en: 'Data model (one table / collection)' },
+            code: `key        VARCHAR  PRIMARY KEY   // "aX9k2"
+long_url   TEXT
+created_at TIMESTAMP
+expires_at TIMESTAMP  NULL         // optional TTL
+owner_id   VARCHAR    NULL         // optional`,
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'NoSQL / KVS (DynamoDB, Cassandra, Redis 永続化): キー引きが O(1) で速い、水平スケールが容易。read-heavy に強い',
+                en: 'NoSQL / KV (DynamoDB, Cassandra, persisted Redis): O(1) key lookups, easy horizontal scaling — great for read-heavy loads',
+              },
+              {
+                ja: 'SQL (PostgreSQL, MySQL): トランザクションや二次インデックス（owner別一覧など）が要るなら有利。単一テーブルなら十分捌ける',
+                en: 'SQL (PostgreSQL, MySQL): better if you need transactions or secondary indexes (e.g. list by owner); a single table scales fine here',
+              },
+              {
+                ja: '結局は「アクセスパターン」で選ぶ。キー引き中心なら NoSQL、リレーションや集計が増えるなら SQL',
+                en: 'Choose by access pattern: key lookups favor NoSQL; relations and aggregations favor SQL',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'もう一つの判断軸が「一貫性の強さ」、つまり ACID をどこまで求めるかです。ここが SQL と NoSQL の思想の違いに直結します。',
+              en: 'Another axis is how strong you need consistency to be — that is, how much ACID you require. This maps directly onto the philosophical split between SQL and NoSQL.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: '深掘り: ACID と BASE（SQL / NoSQL の一貫性）', en: 'Deep dive: ACID vs BASE (SQL / NoSQL consistency)' },
+            blocks: [
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: 'Atomicity（原子性）: トランザクション内の操作は全部成功か全部失敗か',
+                    en: 'Atomicity: all operations in a transaction succeed, or none do',
+                  },
+                  {
+                    ja: 'Consistency（一貫性）: 制約を破る状態には遷移しない',
+                    en: 'Consistency: the DB never moves into a state that violates its constraints',
+                  },
+                  {
+                    ja: 'Isolation（分離性）: 並行トランザクションが互いに干渉しない',
+                    en: 'Isolation: concurrent transactions do not interfere with each other',
+                  },
+                  {
+                    ja: 'Durability（永続性）: コミットしたら電源が落ちても残る',
+                    en: 'Durability: once committed, data survives crashes',
+                  },
+                ],
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'SQL（RDB）は伝統的に ACID を強く保証します。トランザクションや一意制約が堅いので、「絶対に重複させたくない」「複数行を一括で正しく更新したい」ケースに向きます。',
+                  en: 'SQL (RDBMS) traditionally offers strong ACID guarantees. Transactions and unique constraints are solid, which suits cases where you must never allow duplicates or must update multiple rows correctly together.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '多くの NoSQL は可用性・スケールを優先し、ACID を緩めた BASE（Basically Available, Soft state, Eventual consistency）に寄ります。書き込み直後に全レプリカへ反映されず、少し遅れて揃う「結果整合」が典型です。近年は DynamoDB のように条件付き書き込みや項目単位トランザクションを持つものも増えています。',
+                  en: 'Many NoSQL stores prioritize availability and scale, leaning toward BASE (Basically Available, Soft state, Eventual consistency) with relaxed ACID. Writes are typically eventually consistent — replicas converge shortly after, not instantly. That said, modern stores like DynamoDB add conditional writes and per-item transactions.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'URL短縮での判断: 保存はほぼ「1件書いて1件読む」だけなので、強い ACID は必須ではありません。読み取りが結果整合でも、作成直後のごく短時間に古い値を返しうる程度で実害は小さい。ただし「キー（特にカスタムエイリアス）の一意性」だけは強く守りたいので、そこは一意制約や条件付き書き込みで保証します。',
+                  en: 'For a URL shortener: storage is basically "write one, read one," so strong ACID is not required. Eventual consistency on reads only risks a stale value for a brief moment right after creation — low impact. The one thing you do want to guarantee is key uniqueness (especially custom aliases), enforced with a unique constraint or conditional write.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '「NoSQL は一意性が弱いのでは?」という疑問はよくありますが、正確には「主キーの一意性は保証される。主キー以外の一意性は自動では効かない」です。NoSQL でも短縮キーを主キー（パーティションキー）にすれば一意性は守れ、[条件付き書き込み](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html)（存在しなければ書く = attribute_not_exists）で上書き事故も防げます。',
+                  en: 'A common worry is "isn\'t uniqueness weak in NoSQL?" More precisely: the primary key is guaranteed unique, but uniqueness on non-key fields is not automatic. In NoSQL you still get uniqueness by making the short key the primary (partition) key, and a [conditional write](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html) (write if not exists, via attribute_not_exists) prevents accidental overwrites.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'URL短縮で一意にしたいのは実質「短縮キー」だけで、それは主キーで守れます。だから基本要件なら NoSQL で問題ありません。SQL が欲しくなるのは「long_url を一意にしたい（主キー以外の一意性）」「ユーザー別に集計・検索したい」など要件が増えたときです。',
+                  en: 'The only thing a URL shortener really needs unique is the short key, which the primary key covers. So for the base requirements, NoSQL is fine. You reach for SQL when requirements grow — e.g. making long_url unique (a non-key uniqueness) or rich per-user aggregation and search.',
+                },
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '面接では「単純なキー引きなので NoSQL が自然。ただしカスタムエイリアスの一意性保証やユーザー別集計が要件に入るなら SQL も検討」と、要件と結びつけて答えると強いです。',
+              en: 'In an interview, tie it to requirements: "Simple key lookups make NoSQL a natural fit, but if unique custom aliases or per-user analytics are required, SQL is worth considering."',
             },
           },
         ],
@@ -224,6 +600,96 @@ function toBase62(n) {
           },
         ],
       },
+      {
+        id: 'cache-eviction',
+        title: { ja: 'キャッシュの追い出し戦略', en: 'Cache eviction strategies' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'キャッシュの容量は有限です。埋まったら、新しいデータを入れるために何かを追い出す（eviction）必要があります。「何を捨てるか」を決めるのが追い出しアルゴリズムです。下の図は最も一般的な LRU の動きです。',
+              en: 'Cache capacity is finite. When it fills up, something must be evicted to make room. The eviction algorithm decides what to drop. The diagram below shows the most common one, LRU.',
+            },
+          },
+          { type: 'diagram', id: 'url-cache-eviction' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'LRU (Least Recently Used): 最も長く使われていない項目を捨てる。時間的局所性に強く、最も広く使われる',
+                en: 'LRU (Least Recently Used): drop the item unused for the longest time. Strong for temporal locality and the most widely used',
+              },
+              {
+                ja: 'LFU (Least Frequently Used): アクセス回数が最も少ない項目を捨てる。人気の偏りが強いデータに向く',
+                en: 'LFU (Least Frequently Used): drop the least-accessed item. Good when popularity is heavily skewed',
+              },
+              {
+                ja: 'FIFO: 入れた順に捨てる。実装は簡単だが「よく使われている」を考慮しない',
+                en: 'FIFO: evict in insertion order. Simple, but ignores how often an item is used',
+              },
+              {
+                ja: 'TTL (Time To Live): 一定時間で自動失効。URL短縮の「期限付きリンク」と相性が良い',
+                en: 'TTL (Time To Live): auto-expire after a set time. Pairs well with expiring short links',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'Redis は [maxmemory-policy](https://redis.io/docs/latest/develop/reference/eviction/) でこれらを選べます（allkeys-lru, allkeys-lfu, volatile-ttl など）。URL短縮では「人気リンクを残したい」ので LRU か LFU が基本、期限付きなら TTL を併用します。',
+              en: 'Redis lets you pick via [maxmemory-policy](https://redis.io/docs/latest/develop/reference/eviction/) (allkeys-lru, allkeys-lfu, volatile-ttl, etc.). For a URL shortener you want to keep popular links, so LRU or LFU is the default, combined with TTL for expiring links.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'architecture',
+        title: { ja: '全体アーキテクチャ', en: 'Putting it all together' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ここまでの部品を1枚にまとめると、URL短縮サービスの全体像はこうなります。読み取りが圧倒的に多いので、キャッシュ優先で読み、DB はミス時だけ。キーの一意性は KGS の範囲配布で担保します。',
+              en: 'Combining everything so far, here is the full picture of the URL shortener. Reads dominate, so we read cache-first and hit the DB only on a miss. Key uniqueness comes from the KGS handing out ranges.',
+            },
+          },
+          { type: 'diagram', id: 'url-architecture' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'API Gateway / LB: リクエストの入口。負荷分散と、必要ならレート制限もここで',
+                en: 'API Gateway / LB: the entry point for load balancing (and rate limiting if needed)',
+              },
+              {
+                ja: 'App Server: キー発行（KGSの範囲を消費）とリダイレクト処理。ステートレスで水平スケール',
+                en: 'App Server: issues keys (consuming the KGS range) and handles redirects; stateless and horizontally scalable',
+              },
+              {
+                ja: 'Cache (Redis): Read path の主役。人気URLを載せて DB 負荷を大きく下げる',
+                en: 'Cache (Redis): the star of the read path; keeps popular URLs to slash DB load',
+              },
+              {
+                ja: 'Database: 真実の保管場所。key → url を単純に保存。NoSQL が自然だが要件次第で SQL も',
+                en: 'Database: the source of truth, storing key → url; NoSQL is natural, SQL if requirements demand',
+              },
+              {
+                ja: 'KGS: 各 App Server に重ならないキー範囲を配り、分散でも衝突しないようにする',
+                en: 'KGS: hands each App Server a non-overlapping key range so distributed issuance never collides',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '面接では、この全体図を描きながら「読み取りが多いのでキャッシュとレプリカ、キー衝突を KGS で回避、DB はキー引きに最適な選択」と各判断の理由を要件に結びつけて説明できると強いです。',
+              en: 'In an interview, sketch this diagram and tie each choice to requirements: "reads dominate → cache and replicas, KGS avoids key collisions, DB chosen to fit key lookups." Explaining the why is what stands out.',
+            },
+          },
+        ],
+      },
     ],
   },
   {
@@ -262,6 +728,91 @@ function toBase62(n) {
                 en: 'Fairness: keep a few users from hogging resources',
               },
             ],
+          },
+        ],
+      },
+      {
+        id: 'placement',
+        title: { ja: 'どこに置くか（配置）', en: 'Where to place it' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'レートリミッターは複数の層に置けます。原則は「なるべく上流（エッジ）で弾く」こと。早い段階で不要なリクエストを落とせば、その先のサービスは無駄な処理をせずに済みます。',
+              en: 'A rate limiter can live at several layers. The principle: reject as early (as close to the edge) as possible. Dropping unwanted requests early means downstream services never waste work on them.',
+            },
+          },
+          { type: 'diagram', id: 'rl-placement' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'クライアント側: リクエスト自体を抑制できるが、改ざん可能なので信頼できない。補助的な位置づけ',
+                en: 'Client-side: can throttle requests before they leave, but is tamperable and untrusted — only a supplement',
+              },
+              {
+                ja: 'API Gateway / ロードバランサ: 最も一般的。全サービス共通の制限をエッジで一括適用でき、下流を守れる',
+                en: 'API gateway / load balancer: the most common spot. Applies shared limits at the edge and shields everything downstream',
+              },
+              {
+                ja: '専用のミドルウェア / サービス: 細かい制御や独自ロジックが必要なときに、専用の層として切り出す',
+                en: 'Dedicated middleware / service: split out as its own layer when you need fine-grained control or custom logic',
+              },
+              {
+                ja: '各サービス内: サービス固有の制限に向くが、全サービスに実装が要り重複しがち',
+                en: 'Inside each service: good for service-specific limits, but must be implemented everywhere and tends to duplicate',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '多くの実システムは「API Gateway に共通の制限」＋「必要なサービスだけ内部で追加制限」の二段構えにします。',
+              en: 'Many real systems use two tiers: shared limits at the API gateway, plus extra per-service limits inside the services that need them.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'identifier',
+        title: { ja: '何をキーに制限するか', en: 'What to key the limit on' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '「1分間に100回まで」の"誰の"回数か、を決めるのが識別子（キー）です。何を基準にカウントするかで、公平性と副作用が変わります。',
+              en: 'The identifier (key) decides whose count "100 per minute" applies to. What you count by changes both fairness and side effects.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'IPアドレス: 認証前でも使える手軽さ。ただし NAT や社内ネットワーク配下の多数ユーザーを1つのIPで巻き込む（誤爆）',
+                en: 'IP address: works even before auth. But NAT/corporate networks put many users behind one IP, causing collateral blocking',
+              },
+              {
+                ja: 'ユーザーID: 認証後なら最も公平。ログインユーザー単位で正確に制限できる',
+                en: 'User ID: the fairest once authenticated — limits precisely per logged-in user',
+              },
+              {
+                ja: 'APIキー / クライアントID: 外部API向け。プラン（無料/有料）ごとに上限を変える課金モデルと相性が良い',
+                en: 'API key / client ID: for public APIs; pairs well with per-plan (free/paid) quotas',
+              },
+              {
+                ja: 'エンドポイント単位: 高価な操作（検索・エクスポート等）だけ厳しくする、といった組み合わせも有効',
+                en: 'Per-endpoint: combine with the above to throttle only expensive operations (search, export, etc.)',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'IPだけに頼ると「共有IPの巻き込み」と「IPを変えれば回避できる」という両方の弱点があります。認証があるならユーザーID/APIキーを主に、IPは補助にするのが定石です。',
+              en: 'Relying on IP alone has two weaknesses: it collaterally blocks shared IPs, and attackers can rotate IPs to evade it. When you have auth, key on user ID / API key primarily and use IP as a supplement.',
+            },
           },
         ],
       },
@@ -326,6 +877,49 @@ function toBase62(n) {
         ],
       },
       {
+        id: 'response',
+        title: { ja: '制限を超えたときのレスポンス', en: 'What to return when the limit is hit' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '制限に達したリクエストには [HTTP 429 (Too Many Requests)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429) を返すのが標準です。さらに「いつ再試行できるか」「残り何回か」をヘッダで伝えると、クライアントが賢く振る舞えます。',
+              en: 'When a request hits the limit, the standard response is [HTTP 429 (Too Many Requests)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429). Adding headers for "when to retry" and "how many remain" lets clients behave intelligently.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: '429 レスポンス例', en: 'Example 429 response' },
+            code: `HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1712345678`,
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'Retry-After: 何秒後に再試行してよいか。クライアントの無駄な連打を防ぐ',
+                en: 'Retry-After: how many seconds until a retry is allowed — stops clients from hammering',
+              },
+              {
+                ja: 'X-RateLimit-Limit / Remaining / Reset: 上限・残り回数・リセット時刻。クライアントが自分で流量を調整できる',
+                en: 'X-RateLimit-Limit / Remaining / Reset: the cap, remaining calls, and reset time — clients can self-pace',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '超過分の扱いには2通りあります。「即エラーで落とす（shed）」か「キューで待たせて後で処理する（throttle）」。APIは前者、バッチ的な処理は後者が向くことが多いです。',
+              en: 'There are two ways to handle excess: reject immediately (shed) or queue and process later (throttle). APIs usually prefer shedding; batch-like workloads often prefer throttling.',
+            },
+          },
+        ],
+      },
+      {
         id: 'algorithms',
         title: { ja: '他のアルゴリズムとの比較', en: 'Comparing algorithms' },
         blocks: [
@@ -351,6 +945,68 @@ function toBase62(n) {
               {
                 ja: 'Token Bucket: バーストを許容しつつ平均レートを抑える。柔軟で人気',
                 en: 'Token Bucket: allow bursts while bounding the average rate. Flexible and popular',
+              },
+            ],
+          },
+          {
+            type: 'details',
+            summary: { ja: '深掘り: Fixed Window の「境界問題」', en: 'Deep dive: the Fixed Window "boundary problem"' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: 'Fixed Window（例: 毎分100回まで）は実装が簡単ですが、窓の「境目」で上限の2倍が通ってしまう弱点があります。',
+                  en: 'Fixed Window (e.g. 100/min) is simple to implement, but it can let through twice the limit right at the window boundary.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '例: 「12:00:59 に100回」＋「12:01:00 に100回」。それぞれ別の窓なので両方とも許可されますが、実質1秒間に200回通っています。上限は100/分のはずなのに、境界をまたぐと守れていません。',
+                  en: 'Example: 100 calls at 12:00:59 and 100 more at 12:01:00. Each falls in a different window, so both are allowed — yet 200 calls went through in ~1 second. The 100/min cap is violated across the boundary.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'Sliding Window（直近N秒を滑らせて数える）はこの境界問題を緩和します。Sliding Window Log は全リクエスト時刻を保持して厳密、Sliding Window Counter は前後の窓を加重平均して近似し、メモリを節約します。',
+                  en: 'Sliding Window (counting over a moving last-N-seconds range) mitigates this. A Sliding Window Log keeps every request timestamp for exactness; a Sliding Window Counter approximates by weighting the current and previous windows, saving memory.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'では「直近」をどう数えるのか。Log 方式はシンプルで、リクエストのたびに時刻を記録し、N秒より古いものを捨てて残った件数を数えます（Redis なら Sorted Set + ZREMRANGEBYSCORE + ZCARD）。正確ですが全時刻を持つのでメモリを食います。',
+                  en: 'So how do you count "recent"? The Log approach is straightforward: record each request time, drop anything older than N seconds, and count what remains (in Redis: a Sorted Set with ZREMRANGEBYSCORE + ZCARD). Accurate, but it holds every timestamp, so it uses more memory.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'Counter 方式は、時刻を全部持つ代わりに「固定窓のカウンタ2つ（現在の窓＋1つ前の窓）」だけを保持し、現在窓が前窓にどれだけ重なっているかの割合で前窓を加重して足します。',
+                  en: 'The Counter approach keeps just two fixed-window counters (the current window and the previous one) instead of all timestamps, then weights the previous window by how much the current window still overlaps it.',
+                },
+              },
+              {
+                type: 'code',
+                label: { ja: 'Sliding Window Counter の計算例（窓=1分, 上限=100）', en: 'Sliding Window Counter example (window = 1 min, limit = 100)' },
+                code: `previous window (12:00–12:01): 80 requests
+current  window (12:01–12:02): 15 requests so far
+now = 12:01:15  ->  15s into the current window
+  = 25% elapsed, so 75% of the previous window still overlaps
+
+estimate = current + previous * overlap
+         = 15 + 80 * 0.75
+         = 75      // < 100  -> allow`,
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'Counter は「トラフィックが窓内で均等」と仮定した近似ですが、実用上は十分正確で、メモリはカウンタ2つだけ。だから実務では Counter 方式が最もよく使われます。',
+                  en: 'The Counter assumes traffic is spread evenly within a window — an approximation — but it is accurate enough in practice and costs only two counters. That is why it is the most commonly used approach in production.',
+                },
               },
             ],
           },
@@ -381,6 +1037,151 @@ function toBase62(n) {
             text: {
               ja: '共有ストアへの往復はレイテンシを生みます。厳密さと速度はトレードオフ。用途によっては各サーバーで概算し、緩めに制限する設計も選ばれます。',
               en: 'A round trip to the shared store adds latency. Accuracy versus speed is a trade-off; some designs approximate per server and limit more loosely.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: '深掘り: カウンタを安全に更新する（原子性）', en: 'Deep dive: updating the counter safely (atomicity)' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '複数サーバーが同じカウンタを触るので、「読み取って+1して書き戻す」を素朴にやるとレースコンディションが起きます。2台が同時に「99」を読み、両方「100」に書くと、実際は101回目なのに通してしまう、といった取りこぼしです。',
+                  en: 'Since many servers touch the same counter, a naive "read, add 1, write back" causes race conditions. Two servers read "99" at once and both write "100" — the 101st call slips through when it should have been blocked.',
+                },
+              },
+              { type: 'diagram', id: 'rl-race' },
+              {
+                type: 'p',
+                text: {
+                  ja: '解決は「読み取りと更新を分けない = 原子的（atomic）に行う」こと。Redis の [INCR](https://redis.io/docs/latest/commands/incr/) は1コマンドで加算するので原子的です。ウィンドウの初回だけ EXPIRE で有効期限を付けます。',
+                  en: 'The fix is to make read-and-update atomic — not two steps. Redis [INCR](https://redis.io/docs/latest/commands/incr/) increments in a single atomic command; set an EXPIRE on the first hit of the window.',
+                },
+              },
+              {
+                type: 'code',
+                label: { ja: 'Redis での原子的カウント', en: 'Atomic counting in Redis' },
+                code: `// per key like "rl:user:123:MINUTE"
+count = INCR(key)
+if count == 1:
+    EXPIRE(key, 60)   // start the window
+if count > LIMIT:
+    reject (429)`,
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'INCR + EXPIRE の間に落ちる隙間や、より複雑なロジック（Token Bucket の補充計算など）を厳密に原子化したいときは、[Lua スクリプト](https://redis.io/docs/latest/develop/programmability/eval-intro/)で複数コマンドを1つの原子的な単位として実行します。',
+                  en: 'To close the tiny gap between INCR and EXPIRE, or to make more complex logic (like Token Bucket refill math) strictly atomic, run the commands as one atomic unit via a [Lua script](https://redis.io/docs/latest/develop/programmability/eval-intro/).',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'storage',
+        title: { ja: 'カウンタをどこに保存するか', en: 'Where to store the counters' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'レートリミッターが保存するデータは、主に「カウンタ（＝いま何回来たか）」という状態です。このデータには2つの強い特性があります: リクエストのたびに読み書きされる超高頻度なこと、そして一定時間で消える一時的なものであること。',
+              en: 'The data a rate limiter stores is mostly state: the counters (how many hits so far). This data has two strong traits — it is read and written on every request (very high frequency), and it is transient (it expires after a time window).',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'インメモリ KVS（Redis / Memcached）が最適: メモリ上なので μs 級に速く、毎リクエストの判定に耐える',
+                en: 'In-memory KV (Redis / Memcached) is the best fit: memory-speed (microseconds), fast enough for a per-request check',
+              },
+              {
+                ja: 'TTL で自動失効: 窓が終わればカウンタを自動削除でき、掃除が不要',
+                en: 'TTL auto-expiry: counters vanish when the window ends, so no manual cleanup',
+              },
+              {
+                ja: '原子的操作: INCR や Lua で、複数ノードからの同時更新を安全に扱える',
+                en: 'Atomic ops: INCR and Lua safely handle concurrent updates from multiple nodes',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'SQL などの永続DBはカウンタ保存には不向きです。毎リクエストでディスクI/Oが発生し、レート制限の判定自体がボトルネックになります。レート制限は「速く判定する」ことが目的なので、そこが遅いと本末転倒です。',
+              en: 'A persistent SQL database is a poor fit for the counters: disk I/O on every request makes the rate-limit check itself a bottleneck. The whole point of a limiter is a fast decision, so a slow store defeats the purpose.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: '深掘り: 設定（ルール）データと、消失の許容', en: 'Deep dive: config (rules) data, and tolerating loss' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: 'カウンタ（状態）とは別に、「誰が・どのエンドポイントで・何回まで」というルール設定も保存します。これは変更頻度が低く、消えては困る永続データなので、通常のDBや設定ストアに置き、起動時に読み込んでメモリにキャッシュするのが定石です。状態は Redis、設定は永続DB、と役割を分けます。',
+                  en: 'Separate from the counters (state), you also store the rules: who, on which endpoint, up to how many. Rules change rarely and must not be lost, so they live in a regular database or config store, loaded at startup and cached in memory. Split the roles: state in Redis, rules in a persistent DB.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'カウンタが消えても実害は小さい: Redis が再起動してカウンタを失っても、一時的に制限が緩むだけで、致命的なデータ損失にはなりません。だから永続性より速度を優先できます。厳密さが要るなら AOF/レプリカで補強します。',
+                  en: 'Losing counters is low-impact: if Redis restarts and loses them, limits just loosen briefly — not a critical data loss. So you can favor speed over durability, and add AOF/replicas if you need more strictness.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'rl-architecture',
+        title: { ja: '全体アーキテクチャ', en: 'Putting it all together' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'これまでの要素をまとめると、レートリミッターの全体像はこうなります。リクエストは API Gateway で受け、共有カウンタ（Redis）を原子的に更新して判定。許可なら Service へ通し、超過なら 429 で即座に弾きます。',
+              en: 'Combining everything, here is the full picture of the rate limiter. Requests arrive at the API Gateway, which atomically updates a shared counter (Redis) to decide: allow through to the Service, or reject immediately with 429.',
+            },
+          },
+          { type: 'diagram', id: 'rl-architecture' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '配置: エッジ（API Gateway）で判定し、下流の Service を無駄な負荷から守る',
+                en: 'Placement: decide at the edge (API Gateway) to shield downstream services from wasted load',
+              },
+              {
+                ja: '識別子: 認証済みなら user ID / API キー単位、未認証なら IP を補助的に',
+                en: 'Identifier: key on user ID / API key when authenticated, with IP as a fallback',
+              },
+              {
+                ja: 'アルゴリズム: バーストを許容しつつ平均を抑える Token Bucket が定番。境界問題を避けたいなら Sliding Window',
+                en: 'Algorithm: Token Bucket is the default (allows bursts, bounds average); Sliding Window if you want to avoid the boundary problem',
+              },
+              {
+                ja: '共有ストア: 複数 Gateway で1つの上限を守るため Redis を共有。INCR / Lua で原子的に更新',
+                en: 'Shared store: Redis shared across gateways to enforce one global limit; updated atomically with INCR / Lua',
+              },
+              {
+                ja: 'レスポンス: 超過は 429 + Retry-After / X-RateLimit-* ヘッダでクライアントに伝える',
+                en: 'Response: signal excess with 429 plus Retry-After / X-RateLimit-* headers',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '面接では「どこで・何を基準に・どのアルゴリズムで・分散でどう一貫性を保ち・超過時に何を返すか」の5点を全体図の上で一貫して説明できると、設計を俯瞰できていることが伝わります。',
+              en: 'In an interview, walk this diagram covering five points coherently — where, keyed on what, which algorithm, how consistency holds across nodes, and what you return on excess — to show you can see the whole design.',
             },
           },
         ],

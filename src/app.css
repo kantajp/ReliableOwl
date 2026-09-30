@@ -444,6 +444,27 @@ strong {
   font-weight: 600;
 }
 
+/* Inline external links in prose */
+.prose-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.prose-link:hover {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+}
+
+/* Little outbound arrow to mark external links */
+.prose-link::after {
+  content: '↗';
+  font-size: 0.8em;
+  margin-left: 2px;
+  opacity: 0.7;
+}
+
 /* Notes / callouts */
 .note {
   display: flex;
@@ -475,6 +496,58 @@ strong {
 .note--warn {
   border-color: rgba(251, 191, 36, 0.3);
   background: var(--amber-soft);
+}
+
+/* Collapsible details */
+.details {
+  margin: 0 0 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  overflow: hidden;
+}
+
+.details__summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 16px;
+  cursor: pointer;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text);
+  list-style: none;
+  transition: background 0.15s;
+}
+
+.details__summary::-webkit-details-marker {
+  display: none;
+}
+
+.details__summary:hover {
+  background: var(--surface-hover);
+}
+
+.details__chevron {
+  color: var(--accent);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.details[open] .details__chevron {
+  transform: rotate(90deg);
+}
+
+.details[open] .details__summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.details__body {
+  padding: 16px 16px 2px;
+}
+
+.details__body>*:last-child {
+  margin-bottom: 14px;
 }
 
 /* Code block */
@@ -794,6 +867,33 @@ strong {
   }
 
   .topic-header__title {
-    font-size: 27px;
+    font-size: 28px;
+  }
+
+  .topic-header__tagline {
+    font-size: 15px;
+  }
+
+  /* Bump reading sizes on phones */
+  .section__title {
+    font-size: 21px;
+  }
+
+  .prose-p,
+  .prose-list {
+    font-size: 16.5px;
+    line-height: 1.85;
+  }
+
+  .prose-list li {
+    margin-bottom: 11px;
+  }
+
+  .note {
+    font-size: 15px;
+  }
+
+  .code-block code {
+    font-size: 12.5px;
   }
 }

@@ -6,9 +6,11 @@ import { SocialLinks } from './SocialLinks';
 import { highlight } from './highlight';
 import { t, useLang, useUi, type Lang } from '../i18n';
 
-// Simple inline formatting: `code` -> <code>, **bold** -> strong
+// Simple inline formatting: `code` -> <code>, **bold** -> strong,
+// [label](https://url) -> external link (http/https only, opens in a new tab)
+const LINK_RE = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/;
 function renderInline(text: string) {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g);
   return parts.map((part, i) => {
     if (part.startsWith('`') && part.endsWith('`')) {
       return (
@@ -19,6 +21,14 @@ function renderInline(text: string) {
     }
     if (part.startsWith('**') && part.endsWith('**')) {
       return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    const link = part.match(LINK_RE);
+    if (link && link[0] === part) {
+      return (
+        <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer" className="prose-link">
+          {link[1]}
+        </a>
+      );
     }
     return <span key={i}>{part}</span>;
   });
@@ -56,6 +66,20 @@ function BlockView({ block, lang }: { block: Block; lang: Lang }) {
       );
     case 'diagram':
       return <Diagram id={block.id} />;
+    case 'details':
+      return (
+        <details className="details">
+          <summary className="details__summary">
+            <span className="details__chevron" aria-hidden="true">▸</span>
+            {t(block.summary, lang)}
+          </summary>
+          <div className="details__body">
+            {block.blocks.map((b, i) => (
+              <BlockView key={i} block={b} lang={lang} />
+            ))}
+          </div>
+        </details>
+      );
     default:
       return null;
   }

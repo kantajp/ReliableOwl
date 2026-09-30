@@ -467,3 +467,206 @@ export function RlDistributed() {
     </DiagramFrame>
   );
 }
+
+// ---- RL: where to place the limiter ----
+export function RlPlacement() {
+  const { lang } = useLang();
+  const [play, setPlay] = useState(1);
+  const cx = 30, gx = 250, sx = 500, y = 90;
+  const midY = y + 32;
+  return (
+    <DiagramFrame
+      onReplay={() => setPlay((p) => p + 1)}
+      height={220}
+      caption={
+        lang === 'ja'
+          ? '上流（ゲートウェイ）で弾くほど、下流のサービスは無駄な処理をせずに済む'
+          : 'The earlier (at the gateway) you reject, the less wasted work downstream'
+      }
+    >
+      <svg viewBox="0 0 660 220" width="100%" style={{ maxHeight: 220 }}>
+        <ArrowDefs />
+        <Edge x1={cx + 116} y1={midY} x2={gx} y2={midY} />
+        <Edge x1={gx + 150} y1={midY} x2={sx} y2={midY} />
+        <NodeBox x={cx} y={y} label="Client" icon={icons.client} tone="accent" />
+        <NodeBox x={gx} y={y} w={150} label="API Gateway" sub="rate limit" icon={icons.gate} tone="amber" active />
+        <NodeBox x={sx} y={y} label="Service" icon={icons.server} tone="cyan" />
+        {/* allowed request passes through */}
+        <Packet playKey={play * 10 + 1} color="var(--accent)" duration={2.2} label="ok"
+          path={[{ x: cx + 116, y: midY }, { x: gx, y: midY }, { x: gx + 150, y: midY }, { x: sx, y: midY }]} />
+        {/* rejected request stopped at the gateway */}
+        <Packet playKey={play * 10 + 2} color="var(--red)" duration={1.4} delay={2.4} label="429"
+          path={[{ x: cx + 116, y: midY + 4 }, { x: gx, y: midY + 4 }]} />
+      </svg>
+    </DiagramFrame>
+  );
+}
+
+// ---- RL: race condition on a shared counter (naive vs atomic) ----
+export function RlRace() {
+  const { lang } = useLang();
+  const [mode, setMode] = useState<'naive' | 'atomic'>('naive');
+  const [play, setPlay] = useState(0);
+  const [step, setStep] = useState(0);
+
+  // Drive the sequence: 0(idle) -> 1 -> 2 -> 3(result)
+  useEffect(() => {
+    setStep(0);
+    if (play === 0) return;
+    const timers = [
+      setTimeout(() => setStep(1), 500),
+      setTimeout(() => setStep(2), 1600),
+      setTimeout(() => setStep(3), 2700),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [play, mode]);
+
+  // Counter value shown at each step
+  const counter =
+    step === 0
+      ? 99
+      : mode === 'naive'
+        ? step >= 2
+          ? 100 // both wrote 100 (one overwrote the other)
+          : 99
+        : step >= 3
+          ? 101
+          : step >= 2
+            ? 101
+            : step >= 1
+              ? 100
+              : 99;
+
+  const bubble = (server: 'A' | 'B'): string => {
+    if (step === 0) return '';
+    if (mode === 'naive') {
+      if (step === 1) return 'read: 99';
+      return 'write: 100';
+    }
+    // atomic
+    if (server === 'A') return step >= 1 ? 'INCR → 100' : '';
+    return step >= 2 ? 'INCR → 101' : 'wait…';
+  };
+
+  const bad = mode === 'naive' && step >= 3;
+  const good = mode === 'atomic' && step >= 3;
+  const caption = bad
+    ? lang === 'ja'
+      ? '取りこぼし! 2回来たのにカウンタは100（本当は101）'
+      : 'Lost update! Two requests, but the counter is 100 (should be 101)'
+    : good
+      ? lang === 'ja'
+        ? 'INCR は原子的: 順に処理され 101 で正しい'
+        : 'INCR is atomic: processed in order, correctly reaching 101'
+      : lang === 'ja'
+        ? '同じカウンタに2台が同時アクセス'
+        : 'Two servers hit the same counter at once';
+
+  return (
+    <DiagramFrame
+      onReplay={() => setPlay((p) => p + 1)}
+      height={240}
+      caption={caption}
+      controls={
+        <div className="toggle">
+          <button className={mode === 'naive' ? 'toggle__on' : ''} onClick={() => { setMode('naive'); setPlay((p) => p + 1); }}>
+            {lang === 'ja' ? '素朴 (read+write)' : 'Naive (read+write)'}
+          </button>
+          <button className={mode === 'atomic' ? 'toggle__on' : ''} onClick={() => { setMode('atomic'); setPlay((p) => p + 1); }}>
+            {lang === 'ja' ? '原子的 (INCR)' : 'Atomic (INCR)'}
+          </button>
+        </div>
+      }
+    >
+      <svg viewBox="0 0 660 240" width="100%" style={{ maxHeight: 240 }}>
+        <ArrowDefs />
+        {/* Redis counter */}
+        <rect x={250} y={20} width={160} height={64} rx={12} fill="var(--amber-soft)" stroke={bad ? 'var(--red)' : good ? 'var(--green)' : 'var(--amber)'} strokeWidth={2} />
+        <text x={330} y={44} textAnchor="middle" fill="var(--text-muted)" fontSize={12} fontFamily="var(--font-mono)">
+          Redis counter
+        </text>
+        <text x={330} y={72} textAnchor="middle" fill={bad ? 'var(--red)' : good ? 'var(--green)' : 'var(--amber)'} fontSize={24} fontWeight={700} fontFamily="var(--font-mono)">
+          {counter}
+        </text>
+
+        {/* edges from servers to counter */}
+        <Edge x1={110} y1={170} x2={270} y2={84} />
+        <Edge x1={550} y1={170} x2={390} y2={84} />
+
+        {/* servers */}
+        <NodeBox x={40} y={170} label="Server A" icon={icons.server} tone="cyan" />
+        <NodeBox x={484} y={170} label="Server B" icon={icons.server} tone="purple" />
+
+        {/* action bubbles */}
+        {bubble('A') && (
+          <text x={98} y={158} textAnchor="middle" fill="var(--cyan)" fontSize={12} fontWeight={600} fontFamily="var(--font-mono)">
+            {bubble('A')}
+          </text>
+        )}
+        {bubble('B') && (
+          <text x={542} y={158} textAnchor="middle" fill="var(--purple)" fontSize={12} fontWeight={600} fontFamily="var(--font-mono)">
+            {bubble('B')}
+          </text>
+        )}
+      </svg>
+    </DiagramFrame>
+  );
+}
+
+// ---- RL: final overall architecture ----
+export function RlArchitecture() {
+  const { lang } = useLang();
+  const [play, setPlay] = useState(1);
+  const clX = 20, gwX = 210, svX = 540;
+  const rowY = 120;
+  const rowMid = rowY + 32;
+  const redisX = 360, redisY = 30;
+
+  return (
+    <DiagramFrame
+      onReplay={() => setPlay((p) => p + 1)}
+      height={300}
+      caption={
+        lang === 'ja'
+          ? '全体像: Gateway が共有カウンタ(Redis)で判定し、許可は Service へ・超過は 429'
+          : 'Full picture: the gateway checks a shared counter (Redis); allowed → Service, over limit → 429'
+      }
+    >
+      <svg viewBox="0 0 700 300" width="100%" style={{ maxHeight: 300 }}>
+        <ArrowDefs />
+        {/* edges */}
+        <Edge x1={clX + 116} y1={rowMid} x2={gwX} y2={rowMid} />
+        <Edge x1={gwX + 150} y1={rowMid} x2={svX} y2={rowMid} />
+        {/* gateway <-> redis (atomic counter check) */}
+        <Edge x1={gwX + 75} y1={rowY} x2={redisX + 70} y2={redisY + 64} dashed />
+
+        {/* nodes */}
+        <NodeBox x={clX} y={rowY} label="Clients" icon={icons.client} tone="accent" />
+        <NodeBox x={gwX} y={rowY} w={150} label="API Gateway" sub="rate limiter" icon={icons.gate} tone="amber" active />
+        <NodeBox x={svX} y={rowY} label="Service" icon={icons.server} tone="cyan" />
+        {/* redis shared counter */}
+        <g>
+          <rect x={redisX} y={redisY} width={140} height={64} rx={12} fill="var(--amber-soft)" stroke="var(--amber)" strokeWidth={1.5} />
+          <text x={redisX + 70} y={redisY + 28} textAnchor="middle" fill="var(--amber)" fontSize={13} fontWeight={700}>
+            Redis
+          </text>
+          <text x={redisX + 70} y={redisY + 46} textAnchor="middle" fill="var(--text-muted)" fontSize={10.5} fontFamily="var(--font-mono)">
+            shared counter
+          </text>
+        </g>
+
+        {/* allowed request flows through to the service */}
+        <Packet playKey={play * 10 + 1} color="var(--green)" duration={2.6} label="allow"
+          path={[
+            { x: clX + 116, y: rowMid },
+            { x: gwX, y: rowMid },
+            { x: gwX + 150, y: rowMid },
+            { x: svX, y: rowMid },
+          ]} />
+        {/* rejected request bounced at the gateway */}
+        <Packet playKey={play * 10 + 2} color="var(--red)" duration={1.4} delay={2.8} label="429"
+          path={[{ x: clX + 116, y: rowMid + 6 }, { x: gwX, y: rowMid + 6 }]} />
+      </svg>
+    </DiagramFrame>
+  );
+}

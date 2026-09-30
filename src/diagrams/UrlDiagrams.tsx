@@ -231,7 +231,7 @@ export function UrlCacheScale() {
           </>
         ) : (
           <>
-            <Edge x1={ax + 116} y1={midY} x2={dx} y2={dbY + 32 - 32} />
+            <Edge x1={ax + 116} y1={midY} x2={dx} y2={midY} />
             <NodeBox x={dx} y={rowY} label="Database" icon={icons.db} tone="purple" active />
           </>
         )}
@@ -266,6 +266,300 @@ export function UrlCacheScale() {
               path={[{ x: dx, y: rowY + 32 }, { x: ax + 116, y: midY }, { x: ax, y: midY }, { x: cx + 116, y: midY }]} />
           </>
         )}
+      </svg>
+    </DiagramFrame>
+  );
+}
+
+// ---- URL: capacity estimation (read-heavy) ----
+export function UrlCapacity() {
+  const { lang } = useLang();
+  // Assumptions: 1M new URLs/day, read:write = 100:1
+  const writePerS = 12; // 1M / 86400 ≈ 11.6
+  const readPerS = 1160; // 100x
+  const barX = 210;
+  const barMax = 400;
+  return (
+    <DiagramFrame
+      caption={lang === 'ja' ? '読み取りが書き込みを圧倒する（約100:1）' : 'Reads dominate writes (~100:1)'}
+      height={230}
+    >
+      <svg viewBox="0 0 660 230" width="100%" style={{ maxHeight: 230 }}>
+        {/* Write bar */}
+        <text x={20} y={54} fill="var(--text)" fontSize={13} fontWeight={600}>
+          {lang === 'ja' ? '書き込み' : 'Writes'}
+        </text>
+        <text x={20} y={70} fill="var(--text-dim)" fontSize={11} fontFamily="var(--font-mono)">
+          ~{writePerS.toLocaleString()}/s
+        </text>
+        <rect x={barX} y={40} width={barMax} height={26} rx={7} fill="var(--bg-elevated)" stroke="var(--border)" />
+        <motion.rect
+          x={barX}
+          y={40}
+          height={26}
+          rx={7}
+          fill="var(--cyan)"
+          initial={{ width: 0 }}
+          whileInView={{ width: 6 }}
+          viewport={{ once: false }}
+          transition={{ duration: 0.8 }}
+        />
+
+        {/* Read bar */}
+        <text x={20} y={124} fill="var(--text)" fontSize={13} fontWeight={600}>
+          {lang === 'ja' ? '読み取り' : 'Reads'}
+        </text>
+        <text x={20} y={140} fill="var(--text-dim)" fontSize={11} fontFamily="var(--font-mono)">
+          ~{readPerS.toLocaleString()}/s
+        </text>
+        <rect x={barX} y={110} width={barMax} height={26} rx={7} fill="var(--bg-elevated)" stroke="var(--border)" />
+        <motion.rect
+          x={barX}
+          y={110}
+          height={26}
+          rx={7}
+          fill="var(--green)"
+          initial={{ width: 0 }}
+          whileInView={{ width: barMax }}
+          viewport={{ once: false }}
+          transition={{ duration: 1, delay: 0.2 }}
+        />
+
+        {/* Storage callout */}
+        <g>
+          <rect x={barX} y={168} width={barMax} height={44} rx={10} fill="var(--purple)" opacity={0.12} stroke="var(--purple)" strokeWidth={1} />
+          <text x={barX + 16} y={188} fill="var(--purple)" fontSize={12} fontWeight={700}>
+            {lang === 'ja' ? 'ストレージ (5年)' : 'Storage (5 yrs)'}
+          </text>
+          <text x={barX + 16} y={204} fill="var(--text-muted)" fontSize={11} fontFamily="var(--font-mono)">
+            1M/day × 500B × 365 × 5 ≈ 0.9 TB
+          </text>
+        </g>
+        <text x={20} y={192} fill="var(--text-dim)" fontSize={11}>
+          {lang === 'ja' ? 'データ量' : 'Data'}
+        </text>
+      </svg>
+    </DiagramFrame>
+  );
+}
+
+// ---- URL: cache eviction (LRU) ----
+export function UrlCacheEviction() {
+  const { lang } = useLang();
+  const CAP = 4;
+  // items[0] = most recently used, items[last] = least recently used
+  const [items, setItems] = useState<string[]>(['aX9', 'bK2', 'cQ7', 'dM4']);
+  const [flash, setFlash] = useState<{ key: string; type: 'hit' | 'evict' | 'add' } | null>(null);
+  const pool = ['eR5', 'fT8', 'gW1', 'hY6', 'aX9', 'cQ7'];
+  const [n, setN] = useState(0);
+
+  const access = () => {
+    const key = pool[n % pool.length];
+    setN((v) => v + 1);
+    setItems((prev) => {
+      if (prev.includes(key)) {
+        // hit: move to front
+        setFlash({ key, type: 'hit' });
+        return [key, ...prev.filter((k) => k !== key)];
+      }
+      // miss: insert at front, evict least-recently-used if full
+      let next = [key, ...prev];
+      if (next.length > CAP) {
+        next = next.slice(0, CAP);
+        setFlash({ key, type: 'evict' });
+      } else {
+        setFlash({ key, type: 'add' });
+      }
+      return next;
+    });
+    setTimeout(() => setFlash(null), 900);
+  };
+
+  const nextKey = pool[n % pool.length];
+  const caption =
+    flash?.type === 'hit'
+      ? lang === 'ja'
+        ? `ヒット: ${flash.key} を先頭へ`
+        : `Hit: move ${flash.key} to front`
+      : flash?.type === 'evict'
+        ? lang === 'ja'
+          ? '満杯: 最も使われていない項目を追い出す'
+          : 'Full: evict the least-recently-used item'
+        : lang === 'ja'
+          ? '左が最新・右が最古（LRU）'
+          : 'Left = most recent, right = least recent (LRU)';
+
+  return (
+    <DiagramFrame
+      caption={caption}
+      height={200}
+      controls={
+        <button className="btn" onClick={access}>
+          {lang === 'ja' ? `アクセス: ${nextKey}` : `Access: ${nextKey}`}
+        </button>
+      }
+    >
+      <div style={{ width: '100%', padding: '8px 4px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', maxWidth: 520, margin: '0 auto 10px', fontSize: 11, color: 'var(--text-dim)' }}>
+          <span>{lang === 'ja' ? '← 最近使った' : '← most recent'}</span>
+          <span>{lang === 'ja' ? '最も使ってない →' : 'least recent →'}</span>
+        </div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', maxWidth: 520, margin: '0 auto', minHeight: 84 }}>
+          <AnimatePresence mode="popLayout">
+            {items.map((key) => {
+              const isFlash = flash?.key === key;
+              const color =
+                isFlash && flash?.type === 'hit'
+                  ? 'var(--green)'
+                  : isFlash && flash?.type === 'add'
+                    ? 'var(--accent)'
+                    : 'var(--border-strong)';
+              return (
+                <motion.div
+                  key={key}
+                  layout
+                  initial={{ opacity: 0, scale: 0.7, y: -16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.6, y: 20 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  style={{
+                    width: 92,
+                    height: 72,
+                    display: 'grid',
+                    placeItems: 'center',
+                    borderRadius: 12,
+                    border: `1.5px solid ${color}`,
+                    background: 'var(--surface)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: 'var(--text)',
+                    boxShadow: isFlash ? `0 0 12px ${color}` : 'none',
+                  }}
+                >
+                  {key}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      </div>
+    </DiagramFrame>
+  );
+}
+
+// ---- URL: key uniqueness in a distributed setup (range partitioning) ----
+export function UrlKeyUniqueness() {
+  const { lang } = useLang();
+  const [play, setPlay] = useState(1);
+  const kx = 40, ky = 96; // KGS node
+  const sx = 400; // servers column
+  const rows = [40, 130, 220];
+  const ranges = ['[0 – 999]', '[1000 – 1999]', '[2000 – 2999]'];
+  const kgsMidY = ky + 32;
+
+  return (
+    <DiagramFrame
+      onReplay={() => setPlay((p) => p + 1)}
+      height={290}
+      caption={
+        lang === 'ja'
+          ? 'KGS が重ならないキー範囲を各サーバーへ配る → 採番が衝突しない'
+          : 'A KGS hands each server a non-overlapping key range → no collisions'
+      }
+    >
+      <svg viewBox="0 0 660 290" width="100%" style={{ maxHeight: 290 }}>
+        <ArrowDefs />
+        {rows.map((ry, i) => (
+          <Edge key={i} x1={kx + 172} y1={kgsMidY} x2={sx} y2={ry + 22} />
+        ))}
+        <NodeBox x={kx} y={ky} w={172} label="Key Gen Service" sub="ranges" icon={icons.gate} tone="amber" active />
+        {rows.map((ry, i) => (
+          <g key={i}>
+            <rect x={sx} y={ry} width={120} height={44} rx={10} fill="var(--surface)" stroke="var(--cyan)" strokeWidth={1.25} strokeOpacity={0.6} />
+            <text x={sx + 60} y={ry + 20} textAnchor="middle" fill="var(--text)" fontSize={12} fontWeight={600}>
+              Server {i + 1}
+            </text>
+            <text x={sx + 60} y={ry + 36} textAnchor="middle" fill="var(--cyan)" fontSize={10.5} fontFamily="var(--font-mono)">
+              {ranges[i]}
+            </text>
+          </g>
+        ))}
+        {rows.map((ry, i) => (
+          <Packet
+            key={i}
+            playKey={play * 100 + i}
+            color="var(--amber)"
+            duration={1.8}
+            delay={i * 0.25}
+            label={ranges[i]}
+            path={[{ x: kx + 172, y: kgsMidY }, { x: sx, y: ry + 22 }]}
+          />
+        ))}
+      </svg>
+    </DiagramFrame>
+  );
+}
+
+// ---- URL: final overall architecture ----
+export function UrlArchitecture() {
+  const { lang } = useLang();
+  const [play, setPlay] = useState(1);
+  // columns & node widths
+  const GW_W = 150, AP_W = 132, KGS_W = 172;
+  const clX = 20, gwX = 180, apX = 350, rightX = 540;
+  const rowY = 110; // main row
+  const rowMid = rowY + 32;
+  const cacheY = 40, dbY = 180, kgsY = 240;
+  const apMid = apX + AP_W / 2; // App Server horizontal center
+  const kgsX = apMid - KGS_W / 2; // center KGS under App Server
+
+  return (
+    <DiagramFrame
+      onReplay={() => setPlay((p) => p + 1)}
+      height={320}
+      caption={
+        lang === 'ja'
+          ? '全体像: Gateway → App → キャッシュ優先で読み、ミス時のみ DB。KGS が範囲を配る'
+          : 'Full picture: Gateway → App → read from cache first, DB only on miss. KGS hands out ranges'
+      }
+    >
+      <svg viewBox="0 0 720 320" width="100%" style={{ maxHeight: 320 }}>
+        <ArrowDefs />
+        {/* edges */}
+        <Edge x1={clX + 116} y1={rowMid} x2={gwX} y2={rowMid} />
+        <Edge x1={gwX + GW_W} y1={rowMid} x2={apX} y2={rowMid} />
+        <Edge x1={apX + AP_W} y1={rowMid} x2={rightX} y2={cacheY + 32} />
+        <Edge x1={apMid} y1={rowY + 64} x2={rightX} y2={dbY} dashed />
+        {/* KGS dashed range distribution */}
+        <Edge x1={apMid} y1={rowY + 64} x2={apMid} y2={kgsY} dashed />
+
+        {/* nodes */}
+        <NodeBox x={clX} y={rowY} label="Client" icon={icons.client} tone="accent" />
+        <NodeBox x={gwX} y={rowY} w={GW_W} label="API Gateway" sub="LB" icon={icons.gate} tone="amber" />
+        <NodeBox x={apX} y={rowY} w={AP_W} label="App Server" icon={icons.server} tone="cyan" />
+        <NodeBox x={rightX} y={cacheY} label="Cache" sub="Redis" icon={icons.cache} tone="green" active />
+        <NodeBox x={rightX} y={dbY} label="Database" sub="key → url" icon={icons.db} tone="purple" />
+        <NodeBox x={kgsX} y={kgsY} w={KGS_W} label="Key Gen Service" icon={icons.gate} tone="amber" />
+
+        {/* flowing request: client -> gateway -> app -> cache */}
+        <Packet playKey={play * 10 + 1} color="var(--accent)" duration={3.2}
+          path={[
+            { x: clX + 116, y: rowMid },
+            { x: gwX, y: rowMid },
+            { x: gwX + GW_W, y: rowMid },
+            { x: apX, y: rowMid },
+            { x: apX + AP_W, y: rowMid },
+            { x: rightX, y: cacheY + 32 },
+          ]} />
+        <Packet playKey={play * 10 + 2} color="var(--green)" duration={2.4} delay={3.2} label="hit"
+          path={[
+            { x: rightX, y: cacheY + 32 },
+            { x: apX + AP_W, y: rowMid },
+            { x: apX, y: rowMid },
+            { x: gwX, y: rowMid },
+            { x: clX + 116, y: rowMid },
+          ]} />
       </svg>
     </DiagramFrame>
   );
