@@ -670,3 +670,73 @@ export function RlArchitecture() {
     </DiagramFrame>
   );
 }
+
+// ---- RL: capacity estimation ----
+export function RlCapacity() {
+  const { lang } = useLang();
+  const barX = 250;
+  const barMax = 380;
+  // Peak decision QPS equals total traffic; a single Redis handles ~100k ops/s.
+  return (
+    <DiagramFrame
+      caption={lang === 'ja' ? '判定は全リクエストに走る。単一 Redis の余力に十分収まる' : 'A check runs on every request — well within a single Redis'}
+      height={230}
+    >
+      <svg viewBox="0 0 660 230" width="100%" style={{ maxHeight: 230 }}>
+        {/* Decision QPS bar */}
+        <text x={20} y={54} fill="var(--text)" fontSize={13} fontWeight={600}>
+          {lang === 'ja' ? '判定 QPS' : 'Decision QPS'}
+        </text>
+        <text x={20} y={70} fill="var(--text-dim)" fontSize={11} fontFamily="var(--font-mono)">
+          ~10k/s (= all traffic)
+        </text>
+        <rect x={barX} y={40} width={barMax} height={26} rx={7} fill="var(--bg-elevated)" stroke="var(--border)" />
+        <motion.rect
+          x={barX}
+          y={40}
+          height={26}
+          rx={7}
+          fill="var(--amber)"
+          initial={{ width: 0 }}
+          whileInView={{ width: barMax * 0.1 }}
+          viewport={{ once: false }}
+          transition={{ duration: 0.9 }}
+        />
+
+        {/* Redis capacity bar */}
+        <text x={20} y={124} fill="var(--text)" fontSize={13} fontWeight={600}>
+          {lang === 'ja' ? 'Redis 処理能力' : 'Redis capacity'}
+        </text>
+        <text x={20} y={140} fill="var(--text-dim)" fontSize={11} fontFamily="var(--font-mono)">
+          ~100k ops/s
+        </text>
+        <rect x={barX} y={110} width={barMax} height={26} rx={7} fill="var(--bg-elevated)" stroke="var(--border)" />
+        <motion.rect
+          x={barX}
+          y={110}
+          height={26}
+          rx={7}
+          fill="var(--green)"
+          initial={{ width: 0 }}
+          whileInView={{ width: barMax }}
+          viewport={{ once: false }}
+          transition={{ duration: 1, delay: 0.2 }}
+        />
+
+        {/* Memory callout */}
+        <g>
+          <rect x={barX} y={168} width={barMax} height={44} rx={10} fill="var(--purple)" opacity={0.12} stroke="var(--purple)" strokeWidth={1} />
+          <text x={barX + 16} y={188} fill="var(--purple)" fontSize={12} fontWeight={700}>
+            {lang === 'ja' ? 'メモリ' : 'Memory'}
+          </text>
+          <text x={barX + 16} y={204} fill="var(--text-muted)" fontSize={11} fontFamily="var(--font-mono)">
+            1M keys × ~100B ≈ 100 MB
+          </text>
+        </g>
+        <text x={20} y={192} fill="var(--text-dim)" fontSize={11}>
+          {lang === 'ja' ? '状態量' : 'State'}
+        </text>
+      </svg>
+    </DiagramFrame>
+  );
+}

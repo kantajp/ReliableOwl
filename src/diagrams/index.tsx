@@ -1,8 +1,11 @@
 import type { DiagramId } from '../data/content';
+import { FundLatency, FundMemory } from './FundamentalsDiagrams';
 import { UrlArchitecture, UrlBasicFlow, UrlCacheEviction, UrlCacheScale, UrlCapacity, UrlKeyGeneration, UrlKeyUniqueness, UrlReadWrite } from './UrlDiagrams';
-import { RlAlgorithms, RlAllowDeny, RlArchitecture, RlDistributed, RlPlacement, RlRace, RlTokenBucket, RlWhy } from './RateLimiterDiagrams';
+import { RlAlgorithms, RlAllowDeny, RlArchitecture, RlCapacity, RlDistributed, RlPlacement, RlRace, RlTokenBucket, RlWhy } from './RateLimiterDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
+  'fund-latency': FundLatency,
+  'fund-memory': FundMemory,
   'url-basic-flow': UrlBasicFlow,
   'url-capacity': UrlCapacity,
   'url-key-generation': UrlKeyGeneration,
@@ -12,6 +15,7 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'url-cache-eviction': UrlCacheEviction,
   'url-architecture': UrlArchitecture,
   'rl-why': RlWhy,
+  'rl-capacity': RlCapacity,
   'rl-token-bucket': RlTokenBucket,
   'rl-allow-deny': RlAllowDeny,
   'rl-algorithms': RlAlgorithms,

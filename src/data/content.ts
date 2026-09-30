@@ -4,6 +4,8 @@
 import type { LocalizedString } from '../i18n';
 
 export type DiagramId =
+  | 'fund-latency'
+  | 'fund-memory'
   | 'url-basic-flow'
   | 'url-capacity'
   | 'url-key-generation'
@@ -13,6 +15,7 @@ export type DiagramId =
   | 'url-cache-eviction'
   | 'url-architecture'
   | 'rl-why'
+  | 'rl-capacity'
   | 'rl-token-bucket'
   | 'rl-allow-deny'
   | 'rl-algorithms'
@@ -43,6 +46,114 @@ export interface Topic {
 }
 
 export const topics: Topic[] = [
+  {
+    id: 'fundamentals',
+    title: { ja: '基礎: 時間とメモリの単位', en: 'Basics: units of time & memory' },
+    tagline: {
+      ja: '設計の見積もりに欠かせない、時間とデータ量の「桁の感覚」。',
+      en: 'The sense of scale for time and data that every estimation relies on.',
+    },
+    sections: [
+      {
+        id: 'units-time',
+        title: { ja: '時間の単位と考え方', en: 'Units of time' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'システム設計では「この操作は速いのか遅いのか」を桁で捉えることが重要です。時間の単位は、1つ小さくなるごとに1000分の1になります。',
+              en: 'In system design, what matters is grasping whether an operation is fast or slow by order of magnitude. Each smaller unit of time is 1/1000 of the previous.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '1 s（秒） = 1,000 ms（ミリ秒）', en: '1 s (second) = 1,000 ms (milliseconds)' },
+              { ja: '1 ms = 1,000 μs（マイクロ秒）', en: '1 ms = 1,000 μs (microseconds)' },
+              { ja: '1 μs = 1,000 ns（ナノ秒）', en: '1 μs = 1,000 ns (nanoseconds)' },
+            ],
+          },
+          { type: 'diagram', id: 'fund-latency' },
+          {
+            type: 'p',
+            text: {
+              ja: 'ポイントは「メモリは ns、ディスクや SSD は μs、ネットワーク往復は ms」というように、装置ごとに桁が違うこと。同じ処理でも、メモリで済むかネットワークを越えるかで100万倍近く変わります。',
+              en: 'The key insight: different layers live at different orders of magnitude — memory in ns, SSD/disk in μs, network round trips in ms. The same logical step can vary by nearly a million times depending on whether it stays in memory or crosses the network.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'だから設計では「メモリ(キャッシュ)で返せるか、ネットワークやディスクを越えるか」を意識します。レイテンシ予算（例: p99 < 100ms）は、これらの積み重ねで決まります。代表的な数字は [Latency Numbers Every Programmer Should Know](https://gist.github.com/jboner/2841832) や [インタラクティブ版](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html) が定番です。',
+              en: 'This is why design focuses on whether you can serve from memory (cache) versus crossing the network or disk. A latency budget (e.g. p99 < 100ms) is the sum of these costs. The classic references are [Latency Numbers Every Programmer Should Know](https://gist.github.com/jboner/2841832) and its [interactive version](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'units-memory',
+        title: { ja: 'メモリ / データ量の単位と考え方', en: 'Units of memory & data' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'データ量も時間と同じく桁で捉えます。こちらは1段上がるごとに約1000倍です。「1文字 ≈ 1バイト(B)」を出発点にすると見積もりが楽になります。',
+              en: 'Data size is also about orders of magnitude — here each step up is about 1000×. Starting from "1 character ≈ 1 byte (B)" makes estimation easy.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '1 KB ≈ 1,000 B（短いテキスト）', en: '1 KB ≈ 1,000 B (a short text)' },
+              { ja: '1 MB ≈ 1,000 KB（写真1枚くらい）', en: '1 MB ≈ 1,000 KB (about one photo)' },
+              { ja: '1 GB ≈ 1,000 MB（映画1本くらい）', en: '1 GB ≈ 1,000 MB (about one movie)' },
+              { ja: '1 TB ≈ 1,000 GB（大規模DB）', en: '1 TB ≈ 1,000 GB (a large database)' },
+            ],
+          },
+          { type: 'diagram', id: 'fund-memory' },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '正確には「2進(1024)」と「10進(1000)」の2系統があります。KiB/MiB は1024倍(2進)、KB/MB は1000倍(10進)。設計の"概算"では1000倍で計算して十分です（桁が合えばよい）。詳しくは [Binary prefix (Wikipedia)](https://en.wikipedia.org/wiki/Binary_prefix) を参照。',
+              en: 'Strictly, there are two systems: binary (1024) and decimal (1000). KiB/MiB are 1024× (binary); KB/MB are 1000× (decimal). For back-of-the-envelope estimates, using 1000× is fine — you only need the right order of magnitude. See [Binary prefix (Wikipedia)](https://en.wikipedia.org/wiki/Binary_prefix) for details.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: '見積もりでの使い方（掛け算のコツ）', en: 'Using it in estimates (the multiplication trick)' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '見積もりは「1件のサイズ × 件数」「QPS × 1件のサイズ」「日次 × 保持年数」という掛け算に分解します。1件のサイズをざっくり置くのがコツです。',
+                  en: 'Estimates break down into multiplications: size-per-item × count, QPS × size-per-item, daily × retention-years. The trick is to roughly fix the size of one item.',
+                },
+              },
+              {
+                type: 'code',
+                label: { ja: '例: URL短縮の5年ストレージ', en: 'Example: 5-year storage for a URL shortener' },
+                code: `1 record  ≈ 500 B         // key + url + metadata
+per day   = 1,000,000 records
+per year  = 1M × 365 ≈ 365M records
+5 years   = 365M × 5 ≈ 1.8B records
+storage   = 1.8B × 500B ≈ 0.9 TB`,
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: '秒に直すときは「1日 ≈ 86,400秒 ≈ 約10万秒」と覚えると暗算が速いです。1日100万件なら 100万 ÷ 10万 = 約12/秒、とすぐ出せます。',
+                  en: 'To convert to per-second, remember "1 day ≈ 86,400 s ≈ ~100k s." So 1M/day ÷ 100k ≈ ~12/s, computed in your head instantly.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
   {
     id: 'url-shortener',
     title: { ja: 'URL短縮サービス', en: 'URL Shortener' },
@@ -728,6 +839,45 @@ owner_id   VARCHAR    NULL         // optional`,
                 en: 'Fairness: keep a few users from hogging resources',
               },
             ],
+          },
+        ],
+      },
+      {
+        id: 'rl-capacity',
+        title: { ja: '規模の見積もり', en: 'Capacity estimation' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'レートリミッターの特徴は「全リクエストに対して判定が走る」こと。つまり判定のスループットは、そのサービスの総トラフィックとほぼ同じになります。ここではピーク 10,000 req/s を仮定します。',
+              en: 'The defining trait of a rate limiter is that a check runs on every request. So its decision throughput is essentially the total traffic of the service. Here we assume a peak of 10,000 req/s.',
+            },
+          },
+          { type: 'diagram', id: 'rl-capacity' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '判定 QPS: 全リクエスト分 ≈ 10,000/s。各判定は Redis への 1〜2 操作（INCR など）',
+                en: 'Decision QPS: equals all traffic ≈ 10,000/s; each check is 1–2 Redis ops (INCR, etc.)',
+              },
+              {
+                ja: '処理能力: 単一 Redis は約 100,000 ops/s を捌ける → 10k/s なら余力十分（可用性のための冗長化は別途）',
+                en: 'Capacity: a single Redis handles ~100,000 ops/s → 10k/s leaves plenty of headroom (redundancy for availability is separate)',
+              },
+              {
+                ja: 'メモリ: アクティブなキー数 × 1エントリ。100万ユーザー × 約100B ≈ 100MB。TTL で古い窓は自動で消える',
+                en: 'Memory: active keys × entry size. 1M users × ~100B ≈ 100MB; TTL auto-drops old windows',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '判定はホットパス上にあるので、レイテンシ予算は 1ms 未満が目安。だから永続DBではなくインメモリの Redis を使い、原子的な1コマンドで済ませます。「全トラフィックが通るが、インメモリなら軽く捌ける」と言えると良いです。',
+              en: 'The check sits on the hot path, so budget well under 1ms per decision. That is why you use in-memory Redis (not a persistent DB) and a single atomic command. Frame it as: "all traffic flows through it, but in-memory handling makes it cheap."',
+            },
           },
         ],
       },
