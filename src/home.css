@@ -531,18 +531,20 @@
 }
 
 .carousel__btn {
-  width: 34px;
-  height: 34px;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 50%;
   background: var(--surface);
   color: var(--text-muted);
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
+  box-shadow: var(--shadow-soft);
   transition: color 0.15s, border-color 0.15s, background 0.15s, opacity 0.15s;
 }
 
@@ -557,36 +559,31 @@
   cursor: default;
 }
 
-/* Horizontal scroll-snap carousel: ~3 cards visible */
-.topic-carousel {
+/* Carousel: prev button | scrolling track | next button */
+.carousel {
   display: flex;
-  gap: 18px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  padding-bottom: 4px;
-  scrollbar-width: none;
+  align-items: center;
+  gap: 12px;
 }
 
-.topic-carousel::-webkit-scrollbar {
-  display: none;
+/* Infinite-loop track: transform-driven, viewport clips the overflow */
+.carousel__viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 4px 0;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
 }
 
-.topic-carousel .topic-card {
-  flex: 0 0 calc((100% - 36px) / 3);
-  scroll-snap-align: start;
+.carousel__viewport:active {
+  cursor: grabbing;
 }
 
-@media (max-width: 900px) {
-  .topic-carousel .topic-card {
-    flex-basis: calc((100% - 18px) / 2);
-  }
-}
-
-@media (max-width: 620px) {
-  .topic-carousel .topic-card {
-    flex-basis: 82%;
-  }
+.carousel__track {
+  display: flex;
+  will-change: transform;
 }
 
 .topic-card {

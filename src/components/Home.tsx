@@ -72,35 +72,101 @@ export function Home({ onOpenTopic }: Props) {
     { t: uiText('feat3Title'), b: uiText('feat3Body') },
   ];
 
-  // Topic carousel: show ~3 cards, page through the rest with arrows.
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
+  // Topic carousel: seamless infinite loop. The list is tripled and we keep the
+  // viewport centered on the middle copy, jumping silently when we drift off it.
+  const LEN = topics.length;
+  const GAP = 18;
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [vw, setVw] = useState(0);
+  const [index, setIndex] = useState(LEN); // start on the middle copy
+  const [animate, setAnimate] = useState(true);
+  const [drag, setDrag] = useState(0); // live pointer-drag offset in px
 
-  const updateArrows = () => {
-    const el = trackRef.current;
-    if (!el) return;
-    setCanPrev(el.scrollLeft > 4);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  };
   useEffect(() => {
-    updateArrows();
-    const el = trackRef.current;
+    const el = viewportRef.current;
     if (!el) return;
-    el.addEventListener('scroll', updateArrows, { passive: true });
-    window.addEventListener('resize', updateArrows);
-    return () => {
-      el.removeEventListener('scroll', updateArrows);
-      window.removeEventListener('resize', updateArrows);
-    };
+    const ro = new ResizeObserver(() => setVw(el.clientWidth));
+    ro.observe(el);
+    setVw(el.clientWidth);
+    return () => ro.disconnect();
   }, []);
 
-  const scrollByCards = (dir: 1 | -1) => {
-    const el = trackRef.current;
+  // After a silent (non-animated) jump, re-enable the transition next frame.
+  useEffect(() => {
+    if (animate) return;
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setAnimate(true)));
+    return () => cancelAnimationFrame(id);
+  }, [animate]);
+
+  // Horizontal wheel / trackpad swipe pages the carousel (no need to grab a card).
+  useEffect(() => {
+    const el = viewportRef.current;
     if (!el) return;
-    const card = el.querySelector('.topic-card') as HTMLElement | null;
-    const step = card ? card.offsetWidth + 18 : el.clientWidth * 0.85;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+    let accum = 0;
+    let lock = false;
+    const onWheel = (e: WheelEvent) => {
+      // Only react to horizontal intent; leave vertical page scrolling alone.
+      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : 0;
+      if (dx === 0) return;
+      e.preventDefault();
+      if (lock) return;
+      accum += dx;
+      if (Math.abs(accum) > 40) {
+        setAnimate(true);
+        setIndex((i) => i + (accum > 0 ? 1 : -1));
+        accum = 0;
+        lock = true;
+        setTimeout(() => {
+          lock = false;
+        }, 450);
+      }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
+  const VISIBLE = vw < 560 ? 1 : vw < 720 ? 2 : 3;
+  const cardW = vw > 0 ? (vw - GAP * (VISIBLE - 1)) / VISIBLE : 0;
+  const step = cardW + GAP;
+  const display = [...topics, ...topics, ...topics];
+
+  const go = (dir: 1 | -1) => {
+    setAnimate(true);
+    setIndex((i) => i + dir);
+  };
+
+  // Pointer/touch drag to swipe the carousel.
+  const onPointerDown = (e: { clientX: number }) => {
+    const startX = e.clientX;
+    setAnimate(false);
+    let last = 0;
+    const move = (ev: PointerEvent) => {
+      last = ev.clientX - startX;
+      setDrag(last);
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      setDrag(0);
+      setAnimate(true);
+      if (step > 0 && Math.abs(last) > step / 4) {
+        setIndex((i) => i + (last < 0 ? 1 : -1));
+      }
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  // When the animated move ends, if we've drifted past the middle copy, snap
+  // back by one list length with no animation — invisible to the eye.
+  const onTrackTransitionEnd = () => {
+    if (index >= LEN * 2) {
+      setAnimate(false);
+      setIndex((i) => i - LEN);
+    } else if (index < LEN) {
+      setAnimate(false);
+      setIndex((i) => i + LEN);
+    }
   };
 
   return (
@@ -164,51 +230,62 @@ export function Home({ onOpenTopic }: Props) {
       <div className="home__inner">
         {/* ===== Topic cards (carousel) ===== */}
         <section className="home-section">
-          <div className="home-section__head">
-            <h2 className="home-section__heading home-section__heading--plain">{uiText('topicsHeading')}</h2>
-            <div className="carousel__nav">
-              <button
-                className="carousel__btn"
-                onClick={() => scrollByCards(-1)}
-                disabled={!canPrev}
-                aria-label="Previous topics"
+          <h2 className="home-section__heading">{uiText('topicsHeading')}</h2>
+          <div className="carousel">
+            <button
+              className="carousel__btn carousel__btn--prev"
+              onClick={() => go(-1)}
+              aria-label="Previous topics"
+            >
+              ‹
+            </button>
+            <div
+              className="carousel__viewport"
+              ref={viewportRef}
+              onPointerDown={onPointerDown}
+            >
+              <div
+                className="carousel__track"
+                style={{
+                  gap: GAP,
+                  transform: `translateX(${-index * step + drag}px)`,
+                  transition: animate ? 'transform 0.45s ease' : 'none',
+                }}
+                onTransitionEnd={onTrackTransitionEnd}
               >
-                ‹
-              </button>
-              <button
-                className="carousel__btn"
-                onClick={() => scrollByCards(1)}
-                disabled={!canNext}
-                aria-label="More topics"
-              >
-                ›
-              </button>
+                {display.map((topic, i) => (
+                  <button
+                    key={i}
+                    className="topic-card"
+                    style={{ flex: `0 0 ${cardW}px`, width: cardW }}
+                    onClick={() => onOpenTopic(topic.id)}
+                    onMouseMove={trackPointer}
+                  >
+                    <span className="topic-card__glow" aria-hidden="true" />
+                    <span className="topic-card__top">
+                      <span className="topic-card__glyph">
+                        <TopicGlyph index={i % LEN} />
+                      </span>
+                      <span className="topic-card__meta">
+                        {topic.sections.length} {uiText('sectionsUnit')}
+                      </span>
+                    </span>
+                    <span className="topic-card__title">{t(topic.title, lang)}</span>
+                    <span className="topic-card__desc">{t(topic.tagline, lang)}</span>
+                    <span className="topic-card__cta">
+                      {uiText('cardCta')} <span className="topic-card__arrow">→</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="topic-carousel" ref={trackRef}>
-            {topics.map((topic, i) => (
-              <button
-                key={topic.id}
-                className="topic-card"
-                onClick={() => onOpenTopic(topic.id)}
-                onMouseMove={trackPointer}
-              >
-                <span className="topic-card__glow" aria-hidden="true" />
-                <span className="topic-card__top">
-                  <span className="topic-card__glyph">
-                    <TopicGlyph index={i} />
-                  </span>
-                  <span className="topic-card__meta">
-                    {topic.sections.length} {uiText('sectionsUnit')}
-                  </span>
-                </span>
-                <span className="topic-card__title">{t(topic.title, lang)}</span>
-                <span className="topic-card__desc">{t(topic.tagline, lang)}</span>
-                <span className="topic-card__cta">
-                  {uiText('cardCta')} <span className="topic-card__arrow">→</span>
-                </span>
-              </button>
-            ))}
+            <button
+              className="carousel__btn carousel__btn--next"
+              onClick={() => go(1)}
+              aria-label="More topics"
+            >
+              ›
+            </button>
           </div>
         </section>
 

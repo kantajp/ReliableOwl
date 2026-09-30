@@ -34,7 +34,7 @@
   --font-sans: 'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
 
-  --nav-width: 280px;
+  --nav-width: 248px;
   --toc-width: 220px;
   --content-max: 760px;
 }

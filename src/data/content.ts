@@ -1037,7 +1037,7 @@ owner_id   VARCHAR    NULL         // optional`,
   },
   {
     id: 'rate-limiter',
-    title: { ja: 'Rate Limiter', en: 'Rate Limiter' },
+    title: { ja: 'レートリミッター', en: 'Rate Limiter' },
     tagline: {
       ja: '過剰なリクエストを制限して、システムを守る仕組み。',
       en: 'Throttle excess requests to protect your system.',
