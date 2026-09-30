@@ -34,6 +34,17 @@
   pointer-events: none;
 }
 
+/* Fixed language + theme controls, top-right on every view */
+.topbar {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Floating toggle button (always visible) */
 .sidebar-toggle {
   position: fixed;
@@ -75,7 +86,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 6px 8px 22px;
+  padding: 6px 40px 22px 8px;
   margin-bottom: 14px;
   border: none;
   border-bottom: 1px solid var(--border);
@@ -94,33 +105,28 @@
   min-width: 0;
 }
 
-.sidebar__controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 8px 18px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
+/* Collapse button: small and subtle, tucked in the sidebar's top-right corner */
 .sidebar__collapse {
-  margin-left: auto;
+  position: absolute;
+  top: 20px;
+  right: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
   color: var(--text-dim);
   cursor: pointer;
-  transition: color 0.18s, border-color 0.18s, background 0.18s;
+  opacity: 0.5;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
 }
 
 .sidebar__collapse:hover {
+  opacity: 1;
   color: var(--accent);
-  border-color: var(--accent);
   background: var(--surface-hover);
 }
 
@@ -173,45 +179,13 @@
   color: var(--text-dim);
 }
 
-.nav-home {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 8px 10px;
-  margin-bottom: 14px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: color 0.18s, background 0.18s;
-}
-
-.nav-home:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.nav-home--active {
-  color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.nav-home__icon {
-  display: inline-flex;
-}
-
 .nav-group {
   margin-bottom: 14px;
 }
 
 .nav-group__toggle {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   width: 100%;
   padding: 6px 10px;
@@ -246,6 +220,8 @@
   line-height: 1;
   color: var(--text-dim);
   transform-origin: center;
+  flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .nav-group__label {
@@ -254,6 +230,13 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-dim);
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+  /* Wrap Japanese at natural phrase boundaries instead of anywhere */
+  line-break: strict;
+  word-break: auto-phrase;
+  overflow-wrap: anywhere;
 }
 
 .nav-group ul {
@@ -265,7 +248,7 @@
 .nav-link {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   width: 100%;
   text-align: left;
@@ -275,12 +258,18 @@
   color: var(--text-muted);
   font-family: inherit;
   font-size: 13.5px;
+  line-height: 1.5;
   border-radius: 8px;
   cursor: pointer;
   transition: color 0.18s, background 0.18s;
+  line-break: strict;
+  word-break: auto-phrase;
+  overflow-wrap: anywhere;
 }
 
 .nav-link__bar {
+  flex-shrink: 0;
+  margin-top: 3px;
   width: 2px;
   height: 15px;
   border-radius: 2px;
@@ -463,6 +452,11 @@ strong {
   font-size: 0.8em;
   margin-left: 2px;
   opacity: 0.7;
+}
+
+/* Internal (#topic) links are in-app navigation, not outbound — no arrow */
+.prose-link[href^='#']::after {
+  content: none;
 }
 
 /* Notes / callouts */
@@ -832,7 +826,7 @@ strong {
 
 /* ===== Home / landing ===== */
 .layout--home {
-  grid-template-columns: var(--nav-width) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* ===== Responsive ===== */

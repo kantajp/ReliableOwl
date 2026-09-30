@@ -1,9 +1,7 @@
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { topics } from '../data/content';
-import { ThemeToggle } from './ThemeToggle';
-import { LangToggle } from './LangToggle';
 import { Logo } from './Logo';
-import type { Theme } from '../useTheme';
 import { t, useLang, useUi } from '../i18n';
 
 interface Props {
@@ -13,8 +11,6 @@ interface Props {
   onSelect: (topicId: string, sectionId: string) => void;
   onHome: () => void;
   onCollapse: () => void;
-  theme: Theme;
-  onToggleTheme: () => void;
 }
 
 export function Sidebar({
@@ -24,11 +20,43 @@ export function Sidebar({
   onSelect,
   onHome,
   onCollapse,
-  theme,
-  onToggleTheme,
 }: Props) {
   const { lang } = useLang();
   const uiText = useUi();
+
+  // Topics the user has manually collapsed even though they are active.
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  // When the active topic changes (e.g. via a card or hash link), expand it.
+  useEffect(() => {
+    setCollapsed((prev) => {
+      if (!prev.has(activeTopicId)) return prev;
+      const next = new Set(prev);
+      next.delete(activeTopicId);
+      return next;
+    });
+  }, [activeTopicId]);
+
+  const handleToggle = (topicId: string, firstSectionId: string) => {
+    if (!isHome && topicId === activeTopicId) {
+      // Active topic: toggle its expanded/collapsed state (content stays put).
+      setCollapsed((prev) => {
+        const next = new Set(prev);
+        if (next.has(topicId)) next.delete(topicId);
+        else next.add(topicId);
+        return next;
+      });
+    } else {
+      // Different topic: switch to it and make sure it is expanded.
+      onSelect(topicId, firstSectionId);
+      setCollapsed((prev) => {
+        if (!prev.has(topicId)) return prev;
+        const next = new Set(prev);
+        next.delete(topicId);
+        return next;
+      });
+    }
+  };
 
   return (
     <aside className="sidebar">
@@ -41,42 +69,26 @@ export function Sidebar({
           <div className="sidebar__subtitle">{uiText('brandSubtitle')}</div>
         </div>
       </button>
-      <div className="sidebar__controls">
-        <LangToggle />
-        <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-        <button
-          className="sidebar__collapse"
-          onClick={onCollapse}
-          aria-label="Hide sidebar"
-          title="Hide sidebar"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 6l-6 6 6 6" />
-          </svg>
-        </button>
-      </div>
+      <button
+        className="sidebar__collapse"
+        onClick={onCollapse}
+        aria-label="Hide sidebar"
+        title="Hide sidebar"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+      </button>
       <nav className="sidebar__nav">
-        <button
-          className={`nav-home ${isHome ? 'nav-home--active' : ''}`}
-          onClick={onHome}
-        >
-          <span className="nav-home__icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 11l9-8 9 8" />
-              <path d="M5 10v10h14V10" />
-            </svg>
-          </span>
-          {uiText('home')}
-        </button>
-
         {topics.map((topic) => {
-          // Only the active topic is expanded (never on the home view).
-          const isOpen = !isHome && topic.id === activeTopicId;
+          // The active topic is expanded unless the user manually collapsed it.
+          const isActive = !isHome && topic.id === activeTopicId;
+          const isOpen = isActive && !collapsed.has(topic.id);
           return (
             <div key={topic.id} className="nav-group">
               <button
-                className={`nav-group__toggle ${isOpen ? 'nav-group__toggle--active' : ''}`}
-                onClick={() => onSelect(topic.id, topic.sections[0].id)}
+                className={`nav-group__toggle ${isActive ? 'nav-group__toggle--active' : ''}`}
+                onClick={() => handleToggle(topic.id, topic.sections[0].id)}
                 aria-expanded={isOpen}
               >
                 <motion.span

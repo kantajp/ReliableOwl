@@ -5,17 +5,26 @@ import { Sidebar } from './components/Sidebar';
 import { OnThisPage } from './components/OnThisPage';
 import { Content } from './components/Content';
 import { Home } from './components/Home';
+import { TopBar } from './components/TopBar';
 import { useTheme } from './useTheme';
 import './app.css';
 
 // The main view is either the landing page ('home') or a specific topic id.
 type View = 'home' | string;
 
-// Derive the initial view from the URL hash (e.g. #url-shortener), so a reload
-// or a shared link lands on the same screen. Unknown/empty hash → home.
+// Parse the URL hash into a topic and optional section, e.g.
+// "#url-shortener" or "#url-shortener/capacity".
+function parseHash(): { topic: string; section: string | null } {
+  const raw = window.location.hash.replace(/^#/, '');
+  const [topic, section] = raw.split('/');
+  return { topic, section: section ?? null };
+}
+
+// Derive the initial view from the URL hash, so a reload or a shared link lands
+// on the same screen. Unknown/empty hash → home.
 function viewFromHash(): View {
-  const id = window.location.hash.replace(/^#/, '');
-  return topics.some((t) => t.id === id) ? id : 'home';
+  const { topic } = parseHash();
+  return topics.some((t) => t.id === topic) ? topic : 'home';
 }
 
 export default function App() {
@@ -23,18 +32,34 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isHome = view === 'home';
 
-  // Keep the URL hash in sync with the current view.
+  // Keep the URL hash in sync with the current view. If the hash already points
+  // at the current topic (possibly with a #topic/section suffix), leave it be so
+  // section anchors survive.
   useEffect(() => {
-    const desired = view === 'home' ? '' : `#${view}`;
-    if (window.location.hash !== desired) {
-      // Use replaceState so it doesn't spam the history on every section click.
-      window.history.replaceState(null, '', desired || window.location.pathname);
+    const currentTopic = parseHash().topic;
+    if (view === 'home') {
+      if (window.location.hash) window.history.replaceState(null, '', window.location.pathname);
+    } else if (currentTopic !== view) {
+      window.history.replaceState(null, '', `#${view}`);
     }
   }, [view]);
 
-  // Respond to back/forward navigation and manual hash edits.
+  // Respond to back/forward navigation, manual hash edits and in-app anchor
+  // links. Switch to the target topic and, if a section was given, scroll to it.
   useEffect(() => {
-    const onHashChange = () => setView(viewFromHash());
+    const onHashChange = () => {
+      const { topic, section } = parseHash();
+      setView(topics.some((t) => t.id === topic) ? topic : 'home');
+      if (section) {
+        // Wait for the new topic to render, then scroll to the section.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            const el = sectionEls.current.get(section);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }),
+        );
+      }
+    };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
@@ -52,6 +77,7 @@ export default function App() {
         : 'SysDesign Visual — Learn system design by diagrams';
     document.title = isHome ? base : `${t(activeTopic.title, lang)} · SysDesign Visual`;
   }, [isHome, activeTopic, lang]);
+
   const sectionEls = useRef<Map<string, HTMLElement>>(new Map());
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -129,34 +155,35 @@ export default function App() {
 
   return (
     <div
-      className={`layout ${isHome ? 'layout--home' : ''} ${sidebarOpen ? '' : 'layout--collapsed'
+      className={`layout ${isHome ? 'layout--home' : ''} ${!isHome && !sidebarOpen ? 'layout--collapsed' : ''
         }`}
     >
-      <button
-        className="sidebar-toggle"
-        onClick={() => setSidebarOpen((o) => !o)}
-        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-        title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <line x1="9" y1="4" x2="9" y2="20" />
-        </svg>
-      </button>
-      <Sidebar
-        isHome={isHome}
-        activeTopicId={view}
-        activeSectionId={activeId}
-        onSelect={handleSelect}
-        onHome={goHome}
-        onCollapse={() => setSidebarOpen(false)}
-        theme={theme}
-        onToggleTheme={toggle}
-      />
+      {/* Language + theme controls, fixed top-right on every view */}
+      <TopBar theme={theme} onToggleTheme={toggle} />
+
       {isHome ? (
         <Home onOpenTopic={openTopic} />
       ) : (
         <>
+          <button
+            className="sidebar-toggle"
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+            title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <line x1="9" y1="4" x2="9" y2="20" />
+            </svg>
+          </button>
+          <Sidebar
+            isHome={isHome}
+            activeTopicId={view}
+            activeSectionId={activeId}
+            onSelect={handleSelect}
+            onHome={goHome}
+            onCollapse={() => setSidebarOpen(false)}
+          />
           <Content topic={activeTopic} registerRef={registerRef} />
           <OnThisPage topic={activeTopic} activeSectionId={activeId} onSelect={scrollTo} />
         </>

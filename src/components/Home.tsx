@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { topics } from '../data/content';
 import { Logo } from './Logo';
@@ -72,6 +72,37 @@ export function Home({ onOpenTopic }: Props) {
     { t: uiText('feat3Title'), b: uiText('feat3Body') },
   ];
 
+  // Topic carousel: show ~3 cards, page through the rest with arrows.
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const updateArrows = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanPrev(el.scrollLeft > 4);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
+  useEffect(() => {
+    updateArrows();
+    const el = trackRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateArrows, { passive: true });
+    window.addEventListener('resize', updateArrows);
+    return () => {
+      el.removeEventListener('scroll', updateArrows);
+      window.removeEventListener('resize', updateArrows);
+    };
+  }, []);
+
+  const scrollByCards = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.querySelector('.topic-card') as HTMLElement | null;
+    const step = card ? card.offsetWidth + 18 : el.clientWidth * 0.85;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
   return (
     <main className="home">
       {/* ===== Hero ===== */}
@@ -131,20 +162,36 @@ export function Home({ onOpenTopic }: Props) {
       </section>
 
       <div className="home__inner">
-        {/* ===== Topic cards ===== */}
+        {/* ===== Topic cards (carousel) ===== */}
         <section className="home-section">
-          <h2 className="home-section__heading">{uiText('topicsHeading')}</h2>
-          <div className="topic-cards">
+          <div className="home-section__head">
+            <h2 className="home-section__heading home-section__heading--plain">{uiText('topicsHeading')}</h2>
+            <div className="carousel__nav">
+              <button
+                className="carousel__btn"
+                onClick={() => scrollByCards(-1)}
+                disabled={!canPrev}
+                aria-label="Previous topics"
+              >
+                ‹
+              </button>
+              <button
+                className="carousel__btn"
+                onClick={() => scrollByCards(1)}
+                disabled={!canNext}
+                aria-label="More topics"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+          <div className="topic-carousel" ref={trackRef}>
             {topics.map((topic, i) => (
-              <motion.button
+              <button
                 key={topic.id}
                 className="topic-card"
                 onClick={() => onOpenTopic(topic.id)}
                 onMouseMove={trackPointer}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.45, delay: i * 0.08 }}
               >
                 <span className="topic-card__glow" aria-hidden="true" />
                 <span className="topic-card__top">
@@ -160,7 +207,7 @@ export function Home({ onOpenTopic }: Props) {
                 <span className="topic-card__cta">
                   {uiText('cardCta')} <span className="topic-card__arrow">→</span>
                 </span>
-              </motion.button>
+              </button>
             ))}
           </div>
         </section>

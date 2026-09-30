@@ -7,10 +7,10 @@ import { highlight } from './highlight';
 import { t, useLang, useUi, type Lang } from '../i18n';
 
 // Simple inline formatting: `code` -> <code>, **bold** -> strong,
-// [label](https://url) -> external link (http/https only, opens in a new tab)
-const LINK_RE = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/;
+// [label](https://url) -> external link (new tab), [label](#topic) -> internal link.
+const LINK_RE = /\[([^\]]+)\]\((https?:\/\/[^)\s]+|#[\w/-]+)\)/;
 function renderInline(text: string) {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g);
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\((?:https?:\/\/[^)\s]+|#[\w/-]+)\))/g);
   return parts.map((part, i) => {
     if (part.startsWith('`') && part.endsWith('`')) {
       return (
@@ -24,8 +24,17 @@ function renderInline(text: string) {
     }
     const link = part.match(LINK_RE);
     if (link && link[0] === part) {
+      const href = link[2];
+      // Internal links (#topic) navigate within the app via the hash router;
+      // external links open in a new tab.
+      const internal = href.startsWith('#');
       return (
-        <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer" className="prose-link">
+        <a
+          key={i}
+          href={href}
+          className="prose-link"
+          {...(internal ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
+        >
           {link[1]}
         </a>
       );

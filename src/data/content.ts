@@ -6,6 +6,7 @@ import type { LocalizedString } from '../i18n';
 export type DiagramId =
   | 'fund-latency'
   | 'fund-memory'
+  | 'iv-timeline'
   | 'url-basic-flow'
   | 'url-capacity'
   | 'url-key-generation'
@@ -146,6 +147,237 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
                 text: {
                   ja: '秒に直すときは「1日 ≈ 86,400秒 ≈ 約10万秒」と覚えると暗算が速いです。1日100万件なら 100万 ÷ 10万 = 約12/秒、とすぐ出せます。',
                   en: 'To convert to per-second, remember "1 day ≈ 86,400 s ≈ ~100k s." So 1M/day ÷ 100k ≈ ~12/s, computed in your head instantly.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'interview',
+    title: { ja: 'システムデザイン面接のフレームワーク', en: 'System design interview framework' },
+    tagline: {
+      ja: '45分の面接を、迷わず進めるための型。',
+      en: 'A repeatable structure for navigating the 45-minute interview.',
+    },
+    sections: [
+      {
+        id: 'iv-overview',
+        title: { ja: '面接の全体像', en: 'The big picture' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'システムデザイン面接は、正解を1つ当てるテストではありません。曖昧な課題を、要件確認 → 見積もり → 設計 → 深掘り、という順で構造的に進め、判断とトレードオフを声に出して説明する力を見られます。',
+              en: 'A system design interview is not a test with one right answer. You are assessed on how you take a vague problem and work through it structurally — clarify, estimate, design, deep dive — while narrating your decisions and trade-offs out loud.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '最大の失敗は「いきなり設計図を描き始める」こと。まず型（ステップ）に沿って進めると、抜け漏れなく、面接官にも考えが伝わります。下は45分の時間配分の目安です。',
+              en: 'The biggest mistake is jumping straight into drawing boxes. Following the steps keeps you thorough and makes your thinking legible to the interviewer. Below is a rough 45-minute budget.',
+            },
+          },
+          { type: 'diagram', id: 'iv-timeline' },
+          {
+            type: 'list',
+            items: [
+              { ja: '1. 要件確認 — 何を作るか、スコープを絞る', en: '1. Clarify — decide what to build and narrow the scope' },
+              { ja: '2. 見積もり — 規模感（QPS・容量）を数字で置く', en: '2. Estimate — put numbers on scale (QPS, storage)' },
+              { ja: '3. API / データモデル — インターフェースを定義', en: '3. API / data model — define the interface' },
+              { ja: '4. 高レベル設計 — 主要コンポーネントを配置', en: '4. High-level design — lay out the main components' },
+              { ja: '5. 深掘り — ボトルネックとトレードオフを議論', en: '5. Deep dive — discuss bottlenecks and trade-offs' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'iv-clarify',
+        title: { ja: 'Step 1: 要件を明確にする', en: 'Step 1: Clarify requirements' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '課題はわざと曖昧に出されます。いきなり作らず、質問でスコープを絞ります。「何を作らないか」を決めるのも同じくらい重要です。',
+              en: 'The prompt is intentionally vague. Do not start building — narrow the scope with questions. Deciding what NOT to build matters just as much.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '機能要件: 誰が何をできるか（例: URLを短縮する、リダイレクトする）', en: 'Functional: who can do what (e.g. shorten a URL, redirect)' },
+              { ja: '非機能要件: 規模・可用性・レイテンシ・一貫性の要求', en: 'Non-functional: scale, availability, latency, consistency needs' },
+              { ja: 'スコープ外: 今回作らない機能を明言して合意する', en: 'Out of scope: state and agree on what you will not build' },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '例（URL短縮）: 「カスタムエイリアスは必要?」「分析機能は要る?」「リンクに期限は?」と確認し、まずは “短縮とリダイレクト” にスコープを絞る。読み取りが書き込みより圧倒的に多い、という前提もここで握ります。',
+              en: 'Example (URL shortener): ask "Do we need custom aliases?", "Any analytics?", "Do links expire?" and scope down to just shorten + redirect. This is also where you establish that reads far outnumber writes.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '「読み取りと書き込みの比率は?」「想定ユーザー数は?」など、後の見積もりに効く質問を優先しましょう。',
+              en: 'Prioritize questions that feed later estimates: "What is the read/write ratio?", "How many users?"',
+            },
+          },
+        ],
+      },
+      {
+        id: 'iv-estimate',
+        title: { ja: 'Step 2: 規模を見積もる', en: 'Step 2: Estimate the scale' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '見積もりは「桁感」を掴むため。正確さより、設計判断の根拠になる数字を素早く出します。QPS・ストレージ・帯域が定番です。',
+              en: 'Estimation is about order of magnitude. Speed over precision — produce numbers that justify design choices. QPS, storage and bandwidth are the usual ones.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '単位の桁感は [基礎: 時間とメモリの単位](#fundamentals) を、具体的な見積もりの例は [URL短縮の規模見積もり](#url-shortener/capacity) を参照。',
+              en: 'For unit intuition see [Basics: units of time & memory](#fundamentals); for a worked example see [the URL shortener capacity section](#url-shortener/capacity).',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '例（URL短縮）: 1日100万件の書き込みと仮定すると、次のように桁を出せます。',
+              en: 'Example (URL shortener): assuming 1M writes per day, you can produce the orders of magnitude like this.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: 'ざっくり見積もり', en: 'Back-of-the-envelope' },
+            code: `writes = 1M / day ÷ 86,400s ≈ 12 /s
+reads  = ~100x writes    ≈ 1,160 /s   // read-heavy
+storage(5y) = 1M × 500B × 365 × 5 ≈ 0.9 TB`,
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'この「読み取りが桁違いに多い」という結果が、後の “キャッシュとレプリカ” という設計判断に直結します。',
+              en: 'The takeaway "reads dominate" directly drives the later design choice of caching and replicas.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'iv-api',
+        title: { ja: 'Step 3: API とデータモデル', en: 'Step 3: API & data model' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '主要な操作を API として定義すると、システムの境界がはっきりします。あわせて、保存するデータの形（スキーマ）を簡単に示します。',
+              en: 'Defining the key operations as an API makes the system boundary concrete. Sketch the shape of the stored data (schema) alongside it.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: 'エンドポイント: メソッド・パス・入出力（例: POST /shorten）', en: 'Endpoints: method, path, request/response (e.g. POST /shorten)' },
+              { ja: 'データモデル: 主要なテーブル/コレクションと主キー', en: 'Data model: the main tables/collections and their primary keys' },
+            ],
+          },
+          {
+            type: 'code',
+            label: { ja: '例（URL短縮）: API とデータモデル', en: 'Example (URL shortener): API & data model' },
+            code: `POST /api/shorten { url, alias? }  ->  201 { key, shortUrl }
+GET  /{key}                       ->  301 Location: <long url>
+
+table urls (key PK, long_url, created_at, expires_at?)`,
+          },
+        ],
+      },
+      {
+        id: 'iv-hld',
+        title: { ja: 'Step 4: 高レベル設計', en: 'Step 4: High-level design' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'まず「正しく動く最小構成」を、主要コンポーネント（クライアント・LB・サービス・DB・キャッシュ等）を箱と線で描きます。ここで完璧を目指さず、動く土台を作るのが目的です。',
+              en: 'Start with a minimal design that works: draw the main components (client, LB, service, DB, cache) as boxes and lines. Aim for a working baseline, not perfection.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '例（URL短縮）: Client → API Gateway → App Server → Database、という最小構成をまず描く。読み取りは「キーで引いてリダイレクト」、書き込みは「キーを発行して保存」。この時点ではキャッシュも入れず、まず正しく動く形を示します。',
+              en: 'Example (URL shortener): first draw the minimal path Client → API Gateway → App Server → Database. Read = look up by key and redirect; write = issue a key and store. No cache yet — just show a correct baseline.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'リクエストが端から端までどう流れるかを1本、口で追って説明すると、設計の妥当性が伝わります。',
+              en: 'Trace one request end to end out loud — it demonstrates that the design actually holds together.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'iv-deepdive',
+        title: { ja: 'Step 5: 深掘りとスケール', en: 'Step 5: Deep dive & scale' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '最小構成のボトルネックを見つけ、順に潰します。ここが差のつく本番。各改善は必ずトレードオフとセットで語ります。',
+              en: 'Find the bottlenecks in the baseline and address them one by one. This is where you stand out — always pair each improvement with its trade-off.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: 'キャッシュ: 読み取りを高速化（一貫性とのトレードオフ）', en: 'Caching: speed up reads (trade-off with consistency)' },
+              { ja: 'レプリケーション / シャーディング: 負荷とデータを分散', en: 'Replication / sharding: spread load and data' },
+              { ja: '単一障害点の解消: 冗長化で可用性を上げる', en: 'Remove single points of failure: add redundancy for availability' },
+              { ja: 'ボトルネック: DB・帯域・ホットキーなどを特定して対処', en: 'Bottlenecks: identify and address DB, bandwidth, hot keys' },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '例（URL短縮）: 「読み取りが多い」→ API と DB の間に Redis キャッシュを挟む（トレードオフ: 一貫性）。次に「キー採番が複数サーバーで衝突する」→ KGS で範囲を配る。このように、見つけたボトルネックを1つずつトレードオフ付きで潰します。',
+              en: 'Example (URL shortener): "reads dominate" → add a Redis cache between API and DB (trade-off: consistency). Then "key issuance collides across servers" → hand out ranges via a KGS. Address each bottleneck one at a time, with its trade-off.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: 'よくある失敗集', en: 'Common mistakes' },
+            blocks: [
+              {
+                type: 'list',
+                items: [
+                  { ja: '要件を確認せず、いきなり設計を描き始める', en: 'Jumping into design without clarifying requirements' },
+                  { ja: '黙って考え込む。考えを声に出さないと評価されない', en: 'Going quiet — if you do not think out loud, it cannot be assessed' },
+                  { ja: 'トレードオフを言わず「これが正解」と断言する', en: 'Asserting "this is the answer" without stating trade-offs' },
+                  { ja: '1つの論点に時間を使いすぎ、全体を描き切れない', en: 'Spending too long on one point and never covering the whole design' },
+                  { ja: '過剰設計。要件にない機能まで作り込む', en: 'Over-engineering — building features the requirements never asked for' },
+                ],
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: '迷ったら「要件に立ち返る」。すべての判断は要件（規模・一貫性・レイテンシ）から導けます。',
+                  en: 'When in doubt, return to the requirements. Every decision should trace back to them (scale, consistency, latency).',
                 },
               },
             ],

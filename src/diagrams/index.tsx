@@ -1,11 +1,13 @@
 import type { DiagramId } from '../data/content';
 import { FundLatency, FundMemory } from './FundamentalsDiagrams';
+import { IvTimeline } from './InterviewDiagrams';
 import { UrlArchitecture, UrlBasicFlow, UrlCacheEviction, UrlCacheScale, UrlCapacity, UrlKeyGeneration, UrlKeyUniqueness, UrlReadWrite } from './UrlDiagrams';
 import { RlAlgorithms, RlAllowDeny, RlArchitecture, RlCapacity, RlDistributed, RlPlacement, RlRace, RlTokenBucket, RlWhy } from './RateLimiterDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
   'fund-memory': FundMemory,
+  'iv-timeline': IvTimeline,
   'url-basic-flow': UrlBasicFlow,
   'url-capacity': UrlCapacity,
   'url-key-generation': UrlKeyGeneration,
