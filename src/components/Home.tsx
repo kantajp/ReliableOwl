@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { topics } from '../data/content';
 import { Logo } from './Logo';
 import { SocialLinks } from './SocialLinks';
-import { HeroNetwork } from './HeroNetwork';
 import { HeroFluid } from './HeroFluid';
+import { HeroTopology } from './HeroTopology';
 import { t, useLang, useUi } from '../i18n';
 import '../home.css';
 
@@ -123,7 +123,7 @@ export function Home({ onOpenTopic }: Props) {
               </span>
             </div>
             <div className="hero-window__body">
-              <HeroNetwork />
+              <HeroTopology />
             </div>
           </motion.div>
 

@@ -430,6 +430,19 @@
   filter: drop-shadow(0 0 6px currentColor);
 }
 
+/* Blueprint candidate: strokes draw themselves in (elements use pathLength=1) */
+.bp-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: bp-draw 1.6s ease forwards;
+}
+
+@keyframes bp-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* ---------- Stats ---------- */
 .hero-stats {
   display: flex;
