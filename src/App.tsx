@@ -73,8 +73,8 @@ export default function App() {
   useEffect(() => {
     const base =
       lang === 'ja'
-        ? 'SysDesign Visual — 図で学ぶシステム設計'
-        : 'SysDesign Visual — Learn system design by diagrams';
+        ? 'SysDesign Visual — 図を動かして学ぶシステム設計入門'
+        : 'SysDesign Visual — Learn system design by interactive diagrams';
     document.title = isHome ? base : `${t(activeTopic.title, lang)} · SysDesign Visual`;
   }, [isHome, activeTopic, lang]);
 
