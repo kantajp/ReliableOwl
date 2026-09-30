@@ -3,6 +3,7 @@ import { FundLatency, FundMemory } from './FundamentalsDiagrams';
 import { IvTimeline } from './InterviewDiagrams';
 import { UrlArchitecture, UrlBasicFlow, UrlCacheEviction, UrlCacheScale, UrlCapacity, UrlKeyGeneration, UrlKeyUniqueness, UrlReadWrite } from './UrlDiagrams';
 import { RlAlgorithms, RlAllowDeny, RlArchitecture, RlCapacity, RlDistributed, RlPlacement, RlRace, RlTokenBucket, RlWhy } from './RateLimiterDiagrams';
+import { CbStateMachine } from './CircuitBreakerDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -25,6 +26,7 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'rl-placement': RlPlacement,
   'rl-race': RlRace,
   'rl-architecture': RlArchitecture,
+  'cb-state-machine': CbStateMachine,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {

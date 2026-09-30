@@ -27,22 +27,18 @@
     <line x1="900" y1="0" x2="900" y2="630"/>
   </g>
 
-  <!-- logo tile -->
+  <!-- logo tile: the Reliable Owl mark (V brow, big eyes, beak) -->
   <rect x="90" y="150" width="120" height="120" rx="30" fill="url(#brand)"/>
-  <g transform="translate(115 175) scale(2.2)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M23 8.5C18 5 10 6.5 10 11.5S22 17 22 22 12 27 8 23"/>
-    <circle cx="23" cy="8.5" r="2.6" fill="#fff" stroke="none"/>
-    <circle cx="16" cy="16" r="3" fill="#fff" stroke="none"/>
-    <circle cx="8" cy="23" r="2.6" fill="#fff" stroke="none"/>
+  <g transform="translate(90 150) scale(3.75)">
+    <path d="M4.5 8.5L16 13.2L27.5 8.5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="10.6" cy="18" r="5.6" fill="#fff"/>
+    <circle cx="21.4" cy="18" r="5.6" fill="#fff"/>
+    <circle cx="11.4" cy="18.2" r="2.5" fill="#3b4bc4"/>
+    <circle cx="22.2" cy="18.2" r="2.5" fill="#3b4bc4"/>
+    <path d="M14.6 24.2H17.4L16 26.4Z" fill="#fff"/>
   </g>
 
   <!-- title -->
-  <text x="90" y="360" fill="#e6e9ef" font-size="82" font-weight="800" letter-spacing="-2">SysDesign Visual</text>
-  <text x="92" y="418" fill="#9aa4b8" font-size="34" font-weight="500">図で学ぶシステム設計 · Learn system design by diagrams</text>
-
-  <!-- call to action -->
-  <g>
-    <rect x="90" y="456" width="560" height="62" rx="31" fill="#5b7cff" fill-opacity="0.16" stroke="#5b7cff" stroke-width="1.5"/>
-    <text x="120" y="496" fill="#a9bcff" font-size="28" font-weight="700">▶ 触って動かして学ぶ · 無料で今すぐ →</text>
-  </g>
+  <text x="90" y="360" fill="#e6e9ef" font-size="82" font-weight="800" letter-spacing="-2">Reliable Owl</text>
+  <text x="92" y="418" fill="#9aa4b8" font-size="34" font-weight="500">図で学ぶ システム設計 &amp; SRE · Learn system design &amp; SRE</text>
 </svg>

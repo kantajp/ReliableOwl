@@ -1,9 +1,9 @@
-# SysDesign Visual
+# Reliable Owl
 
-An interactive, AWS-docs-style learning app for system design. Scroll through
-written explanations while animated SVG diagrams bring each concept to life.
-Ships with two topics — **URL Shortener** and **Rate Limiter** — and supports
-light/dark themes and Japanese/English.
+An interactive, AWS-docs-style learning app for **system design and SRE**.
+Scroll through written explanations while animated SVG diagrams bring each
+concept to life. Topics are grouped into categories (System Design and SRE) and
+the app supports light/dark themes and Japanese/English.
 
 ## Features
 

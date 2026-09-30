@@ -23,7 +23,8 @@ export type DiagramId =
   | 'rl-distributed'
   | 'rl-placement'
   | 'rl-race'
-  | 'rl-architecture';
+  | 'rl-architecture'
+  | 'cb-state-machine';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -39,8 +40,22 @@ export interface Section {
   blocks: Block[];
 }
 
+export type CategoryId = 'system-design' | 'sre';
+
+export interface Category {
+  id: CategoryId;
+  label: LocalizedString;
+}
+
+// Display order of categories in the sidebar and on the home page.
+export const categories: Category[] = [
+  { id: 'system-design', label: { ja: 'システム設計', en: 'System Design' } },
+  { id: 'sre', label: { ja: 'SRE（サイト信頼性）', en: 'SRE' } },
+];
+
 export interface Topic {
   id: string;
+  category: CategoryId;
   title: LocalizedString;
   tagline: LocalizedString;
   sections: Section[];
@@ -49,6 +64,7 @@ export interface Topic {
 export const topics: Topic[] = [
   {
     id: 'fundamentals',
+    category: 'system-design',
     title: { ja: '基礎: 時間とメモリの単位', en: 'Basics: units of time & memory' },
     tagline: {
       ja: '設計の見積もりに欠かせない、時間とデータ量の「桁の感覚」。',
@@ -157,6 +173,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
   },
   {
     id: 'interview',
+    category: 'system-design',
     title: { ja: 'システムデザイン面接のフレームワーク', en: 'System design interview framework' },
     tagline: {
       ja: '45分の面接を、迷わず進めるための型。',
@@ -388,6 +405,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
   },
   {
     id: 'url-shortener',
+    category: 'system-design',
     title: { ja: 'URL短縮サービス', en: 'URL Shortener' },
     tagline: {
       ja: '長いURLを短いキーに変換してリダイレクトする、定番の設計課題。',
@@ -416,16 +434,16 @@ table urls (key PK, long_url, created_at, expires_at?)`,
             type: 'list',
             items: [
               {
-                ja: '書き込み（Write）: 長いURLを受け取り、短いキーを発行して保存する',
-                en: 'Write: accept a long URL, issue a short key, and store it',
+                ja: '**書き込み（Write）**: 長いURLを受け取り、短いキーを発行して保存する',
+                en: '**Write**: accept a long URL, issue a short key, and store it',
               },
               {
-                ja: '読み取り（Read）: 短いキーを受け取り、元のURLを引いてリダイレクトする',
-                en: 'Read: take a short key, look up the original URL, and redirect',
+                ja: '**読み取り（Read）**: 短いキーを受け取り、元のURLを引いてリダイレクトする',
+                en: '**Read**: take a short key, look up the original URL, and redirect',
               },
               {
-                ja: '特性: 読み取りが書き込みより圧倒的に多い（Read-heavy）',
-                en: 'Trait: reads vastly outnumber writes (read-heavy)',
+                ja: '**特性**: 読み取りが書き込みより圧倒的に多い（Read-heavy）',
+                en: '**Trait**: reads vastly outnumber writes (read-heavy)',
               },
             ],
           },
@@ -455,16 +473,16 @@ table urls (key PK, long_url, created_at, expires_at?)`,
             type: 'list',
             items: [
               {
-                ja: '書き込み: 100万 / 日 ÷ 86,400秒 ≈ 12 writes/秒',
-                en: 'Writes: 1M / day ÷ 86,400s ≈ 12 writes/sec',
+                ja: '**書き込み**: 100万 / 日 ÷ 86,400秒 ≈ 12 writes/秒',
+                en: '**Writes**: 1M / day ÷ 86,400s ≈ 12 writes/sec',
               },
               {
-                ja: '読み取り: その約100倍 ≈ 1,160 reads/秒（ここが本当の負荷）',
-                en: 'Reads: ~100x that ≈ 1,160 reads/sec (this is the real load)',
+                ja: '**読み取り**: その約100倍 ≈ 1,160 reads/秒（ここが本当の負荷）',
+                en: '**Reads**: ~100x that ≈ 1,160 reads/sec (this is the real load)',
               },
               {
-                ja: 'ストレージ: 1件≈500B、5年保持 → 100万×500B×365×5 ≈ 0.9 TB',
-                en: 'Storage: ~500B per record, 5-year retention → 1M×500B×365×5 ≈ 0.9 TB',
+                ja: '**ストレージ**: 1件≈500B、5年保持 → 100万×500B×365×5 ≈ 0.9 TB',
+                en: '**Storage**: ~500B per record, 5-year retention → 1M×500B×365×5 ≈ 0.9 TB',
               },
             ],
           },
@@ -592,16 +610,16 @@ function toBase62(n) {
             type: 'list',
             items: [
               {
-                ja: '連番+Base62: 短く衝突しない。ただしIDが連番だと推測されやすい',
-                en: 'Sequential + Base62: short and collision-free, but sequential IDs are easy to guess',
+                ja: '**連番+Base62**: 短く衝突しない。ただしIDが連番だと推測されやすい',
+                en: '**Sequential + Base62**: short and collision-free, but sequential IDs are easy to guess',
               },
               {
-                ja: 'ランダム生成: 推測されにくいが、衝突チェックが必要',
-                en: 'Random generation: hard to guess, but needs collision checks',
+                ja: '**ランダム生成**: 推測されにくいが、衝突チェックが必要',
+                en: '**Random generation**: hard to guess, but needs collision checks',
               },
               {
-                ja: 'ハッシュ(MD5など)の先頭数文字: 手軽だが衝突対策が要る',
-                en: 'First few chars of a hash (e.g. MD5): easy, but still needs collision handling',
+                ja: '**ハッシュ(MD5など)の先頭数文字**: 手軽だが衝突対策が要る',
+                en: '**First few chars of a hash (e.g. MD5)**: easy, but still needs collision handling',
               },
             ],
           },
@@ -631,16 +649,16 @@ function toBase62(n) {
             type: 'list',
             items: [
               {
-                ja: '中央採番（チケットサーバー）: ID発行を1箇所に集約。単純で確実だが、単一障害点・スループットのボトルネックになりやすい',
-                en: 'Central counter (ticket server): funnel all ID issuance through one place. Simple and correct, but a single point of failure and a throughput bottleneck',
+                ja: '**中央採番（チケットサーバー）**: ID発行を1箇所に集約。単純で確実だが、単一障害点・スループットのボトルネックになりやすい',
+                en: '**Central counter (ticket server)**: funnel all ID issuance through one place. Simple and correct, but a single point of failure and a throughput bottleneck',
               },
               {
-                ja: '範囲分割 / KGS: Key Generation Service が各サーバーに重ならないID範囲（例: 0-999, 1000-1999）を配る。各サーバーは範囲内で自由に採番でき衝突しない。事前生成しておけば発行も高速',
-                en: 'Range partitioning / KGS: a Key Generation Service hands each server a non-overlapping range (e.g. 0-999, 1000-1999). Each issues freely within its range with no collisions; pre-generating keys makes issuance fast',
+                ja: '**範囲分割 / KGS**: Key Generation Service が各サーバーに重ならないID範囲（例: 0-999, 1000-1999）を配る。各サーバーは範囲内で自由に採番でき衝突しない。事前生成しておけば発行も高速',
+                en: '**Range partitioning / KGS**: a Key Generation Service hands each server a non-overlapping range (e.g. 0-999, 1000-1999). Each issues freely within its range with no collisions; pre-generating keys makes issuance fast',
               },
               {
-                ja: 'ランダム / ハッシュ + 衝突検知: ランダムキーを生成し、DBの一意制約（UNIQUE）で重複を弾いてリトライ。空間が広ければ衝突は稀',
-                en: 'Random / hash + collision check: generate a random key and rely on a DB UNIQUE constraint to reject duplicates and retry. With a large key space, collisions are rare',
+                ja: '**ランダム / ハッシュ + 衝突検知**: ランダムキーを生成し、DBの一意制約（UNIQUE）で重複を弾いてリトライ。空間が広ければ衝突は稀',
+                en: '**Random / hash + collision check**: generate a random key and rely on a DB UNIQUE constraint to reject duplicates and retry. With a large key space, collisions are rare',
               },
             ],
           },
@@ -752,8 +770,8 @@ function toBase62(n) {
                     en: 'The key space is huge (Base62 7 chars ≈ 3.5T), so gaps are nowhere near exhausting it → usually acceptable',
                   },
                   {
-                    ja: '無駄を減らすなら: ブロックを小さくする（停止時の損失↓）。ただし KGS への補充頻度↑ とのトレードオフ',
-                    en: 'To waste less: use smaller blocks (less lost on shutdown), trading off more frequent KGS refills',
+                    ja: '**無駄を減らすなら**: ブロックを小さくする（停止時の損失↓）。ただし KGS への補充頻度↑ とのトレードオフ',
+                    en: '**To waste less**: use smaller blocks (less lost on shutdown), trading off more frequent KGS refills',
                   },
                   {
                     ja: '正常終了なら未使用範囲を KGS に返却して再利用する手もあるが、クラッシュ時は返せず実装も複雑',
@@ -810,16 +828,16 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: 'NoSQL / KVS (DynamoDB, Cassandra, Redis 永続化): キー引きが O(1) で速い、水平スケールが容易。read-heavy に強い',
-                en: 'NoSQL / KV (DynamoDB, Cassandra, persisted Redis): O(1) key lookups, easy horizontal scaling — great for read-heavy loads',
+                ja: '**NoSQL / KVS (DynamoDB, Cassandra, Redis 永続化)**: キー引きが O(1) で速い、水平スケールが容易。read-heavy に強い',
+                en: '**NoSQL / KV (DynamoDB, Cassandra, persisted Redis)**: O(1) key lookups, easy horizontal scaling — great for read-heavy loads',
               },
               {
-                ja: 'SQL (PostgreSQL, MySQL): トランザクションや二次インデックス（owner別一覧など）が要るなら有利。単一テーブルなら十分捌ける',
-                en: 'SQL (PostgreSQL, MySQL): better if you need transactions or secondary indexes (e.g. list by owner); a single table scales fine here',
+                ja: '**SQL (PostgreSQL, MySQL)**: トランザクションや二次インデックス（owner別一覧など）が要るなら有利。単一テーブルなら十分捌ける',
+                en: '**SQL (PostgreSQL, MySQL)**: better if you need transactions or secondary indexes (e.g. list by owner); a single table scales fine here',
               },
               {
                 ja: '結局は「アクセスパターン」で選ぶ。キー引き中心なら NoSQL、リレーションや集計が増えるなら SQL',
-                en: 'Choose by access pattern: key lookups favor NoSQL; relations and aggregations favor SQL',
+                en: '**Choose by access pattern**: key lookups favor NoSQL; relations and aggregations favor SQL',
               },
             ],
           },
@@ -838,20 +856,20 @@ owner_id   VARCHAR    NULL         // optional`,
                 type: 'list',
                 items: [
                   {
-                    ja: 'Atomicity（原子性）: トランザクション内の操作は全部成功か全部失敗か',
-                    en: 'Atomicity: all operations in a transaction succeed, or none do',
+                    ja: '**Atomicity（原子性）**: トランザクション内の操作は全部成功か全部失敗か',
+                    en: '**Atomicity**: all operations in a transaction succeed, or none do',
                   },
                   {
-                    ja: 'Consistency（一貫性）: 制約を破る状態には遷移しない',
-                    en: 'Consistency: the DB never moves into a state that violates its constraints',
+                    ja: '**Consistency（一貫性）**: 制約を破る状態には遷移しない',
+                    en: '**Consistency**: the DB never moves into a state that violates its constraints',
                   },
                   {
-                    ja: 'Isolation（分離性）: 並行トランザクションが互いに干渉しない',
-                    en: 'Isolation: concurrent transactions do not interfere with each other',
+                    ja: '**Isolation（分離性）**: 並行トランザクションが互いに干渉しない',
+                    en: '**Isolation**: concurrent transactions do not interfere with each other',
                   },
                   {
-                    ja: 'Durability（永続性）: コミットしたら電源が落ちても残る',
-                    en: 'Durability: once committed, data survives crashes',
+                    ja: '**Durability（永続性）**: コミットしたら電源が落ちても残る',
+                    en: '**Durability**: once committed, data survives crashes',
                   },
                 ],
               },
@@ -920,12 +938,12 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: 'キャッシュヒット: DBに行かずキャッシュから即返す（速い）',
-                en: 'Cache hit: return straight from cache without touching the DB (fast)',
+                ja: '**キャッシュヒット**: DBに行かずキャッシュから即返す（速い）',
+                en: '**Cache hit**: return straight from cache without touching the DB (fast)',
               },
               {
-                ja: 'キャッシュミス: DBから引いてキャッシュに載せ、次回に備える',
-                en: 'Cache miss: read from the DB, then populate the cache for next time',
+                ja: '**キャッシュミス**: DBから引いてキャッシュに載せ、次回に備える',
+                en: '**Cache miss**: read from the DB, then populate the cache for next time',
               },
               {
                 ja: '人気URLほどキャッシュに残りやすく、DB負荷が大きく下がる',
@@ -959,20 +977,20 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: 'LRU (Least Recently Used): 最も長く使われていない項目を捨てる。時間的局所性に強く、最も広く使われる',
-                en: 'LRU (Least Recently Used): drop the item unused for the longest time. Strong for temporal locality and the most widely used',
+                ja: '**LRU (Least Recently Used)**: 最も長く使われていない項目を捨てる。時間的局所性に強く、最も広く使われる',
+                en: '**LRU (Least Recently Used)**: drop the item unused for the longest time. Strong for temporal locality and the most widely used',
               },
               {
-                ja: 'LFU (Least Frequently Used): アクセス回数が最も少ない項目を捨てる。人気の偏りが強いデータに向く',
-                en: 'LFU (Least Frequently Used): drop the least-accessed item. Good when popularity is heavily skewed',
+                ja: '**LFU (Least Frequently Used)**: アクセス回数が最も少ない項目を捨てる。人気の偏りが強いデータに向く',
+                en: '**LFU (Least Frequently Used)**: drop the least-accessed item. Good when popularity is heavily skewed',
               },
               {
-                ja: 'FIFO: 入れた順に捨てる。実装は簡単だが「よく使われている」を考慮しない',
-                en: 'FIFO: evict in insertion order. Simple, but ignores how often an item is used',
+                ja: '**FIFO**: 入れた順に捨てる。実装は簡単だが「よく使われている」を考慮しない',
+                en: '**FIFO**: evict in insertion order. Simple, but ignores how often an item is used',
               },
               {
-                ja: 'TTL (Time To Live): 一定時間で自動失効。URL短縮の「期限付きリンク」と相性が良い',
-                en: 'TTL (Time To Live): auto-expire after a set time. Pairs well with expiring short links',
+                ja: '**TTL (Time To Live)**: 一定時間で自動失効。URL短縮の「期限付きリンク」と相性が良い',
+                en: '**TTL (Time To Live)**: auto-expire after a set time. Pairs well with expiring short links',
               },
             ],
           },
@@ -1002,24 +1020,24 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: 'API Gateway / LB: リクエストの入口。負荷分散と、必要ならレート制限もここで',
-                en: 'API Gateway / LB: the entry point for load balancing (and rate limiting if needed)',
+                ja: '**API Gateway / LB**: リクエストの入口。負荷分散と、必要ならレート制限もここで',
+                en: '**API Gateway / LB**: the entry point for load balancing (and rate limiting if needed)',
               },
               {
-                ja: 'App Server: キー発行（KGSの範囲を消費）とリダイレクト処理。ステートレスで水平スケール',
-                en: 'App Server: issues keys (consuming the KGS range) and handles redirects; stateless and horizontally scalable',
+                ja: '**App Server**: キー発行（KGSの範囲を消費）とリダイレクト処理。ステートレスで水平スケール',
+                en: '**App Server**: issues keys (consuming the KGS range) and handles redirects; stateless and horizontally scalable',
               },
               {
-                ja: 'Cache (Redis): Read path の主役。人気URLを載せて DB 負荷を大きく下げる',
-                en: 'Cache (Redis): the star of the read path; keeps popular URLs to slash DB load',
+                ja: '**Cache (Redis)**: Read path の主役。人気URLを載せて DB 負荷を大きく下げる',
+                en: '**Cache (Redis)**: the star of the read path; keeps popular URLs to slash DB load',
               },
               {
-                ja: 'Database: 真実の保管場所。key → url を単純に保存。NoSQL が自然だが要件次第で SQL も',
-                en: 'Database: the source of truth, storing key → url; NoSQL is natural, SQL if requirements demand',
+                ja: '**Database**: 真実の保管場所。key → url を単純に保存。NoSQL が自然だが要件次第で SQL も',
+                en: '**Database**: the source of truth, storing key → url; NoSQL is natural, SQL if requirements demand',
               },
               {
-                ja: 'KGS: 各 App Server に重ならないキー範囲を配り、分散でも衝突しないようにする',
-                en: 'KGS: hands each App Server a non-overlapping key range so distributed issuance never collides',
+                ja: '**KGS**: 各 App Server に重ならないキー範囲を配り、分散でも衝突しないようにする',
+                en: '**KGS**: hands each App Server a non-overlapping key range so distributed issuance never collides',
               },
             ],
           },
@@ -1037,6 +1055,7 @@ owner_id   VARCHAR    NULL         // optional`,
   },
   {
     id: 'rate-limiter',
+    category: 'system-design',
     title: { ja: 'レートリミッター', en: 'Rate Limiter' },
     tagline: {
       ja: '過剰なリクエストを制限して、システムを守る仕組み。',
@@ -1059,16 +1078,16 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: 'DoS/乱用の防止: 悪意ある大量アクセスを弾く',
-                en: 'Prevent DoS/abuse: block malicious floods of traffic',
+                ja: '**DoS/乱用の防止**: 悪意ある大量アクセスを弾く',
+                en: '**Prevent DoS/abuse**: block malicious floods of traffic',
               },
               {
-                ja: 'コスト保護: 過剰な処理による費用増を防ぐ',
-                en: 'Protect cost: avoid runaway spend from excess processing',
+                ja: '**コスト保護**: 過剰な処理による費用増を防ぐ',
+                en: '**Protect cost**: avoid runaway spend from excess processing',
               },
               {
-                ja: '公平性: 一部のユーザーがリソースを独占しないようにする',
-                en: 'Fairness: keep a few users from hogging resources',
+                ja: '**公平性**: 一部のユーザーがリソースを独占しないようにする',
+                en: '**Fairness**: keep a few users from hogging resources',
               },
             ],
           },
@@ -1090,16 +1109,16 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: '判定 QPS: 全リクエスト分 ≈ 10,000/s。各判定は Redis への 1〜2 操作（INCR など）',
-                en: 'Decision QPS: equals all traffic ≈ 10,000/s; each check is 1–2 Redis ops (INCR, etc.)',
+                ja: '**判定 QPS**: 全リクエスト分 ≈ 10,000/s。各判定は Redis への 1〜2 操作（INCR など）',
+                en: '**Decision QPS**: equals all traffic ≈ 10,000/s; each check is 1–2 Redis ops (INCR, etc.)',
               },
               {
-                ja: '処理能力: 単一 Redis は約 100,000 ops/s を捌ける → 10k/s なら余力十分（可用性のための冗長化は別途）',
-                en: 'Capacity: a single Redis handles ~100,000 ops/s → 10k/s leaves plenty of headroom (redundancy for availability is separate)',
+                ja: '**処理能力**: 単一 Redis は約 100,000 ops/s を捌ける → 10k/s なら余力十分（可用性のための冗長化は別途）',
+                en: '**Capacity**: a single Redis handles ~100,000 ops/s → 10k/s leaves plenty of headroom (redundancy for availability is separate)',
               },
               {
-                ja: 'メモリ: アクティブなキー数 × 1エントリ。100万ユーザー × 約100B ≈ 100MB。TTL で古い窓は自動で消える',
-                en: 'Memory: active keys × entry size. 1M users × ~100B ≈ 100MB; TTL auto-drops old windows',
+                ja: '**メモリ**: アクティブなキー数 × 1エントリ。100万ユーザー × 約100B ≈ 100MB。TTL で古い窓は自動で消える',
+                en: '**Memory**: active keys × entry size. 1M users × ~100B ≈ 100MB; TTL auto-drops old windows',
               },
             ],
           },
@@ -1129,20 +1148,20 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: 'クライアント側: リクエスト自体を抑制できるが、改ざん可能なので信頼できない。補助的な位置づけ',
-                en: 'Client-side: can throttle requests before they leave, but is tamperable and untrusted — only a supplement',
+                ja: '**クライアント側**: リクエスト自体を抑制できるが、改ざん可能なので信頼できない。補助的な位置づけ',
+                en: '**Client-side**: can throttle requests before they leave, but is tamperable and untrusted — only a supplement',
               },
               {
-                ja: 'API Gateway / ロードバランサ: 最も一般的。全サービス共通の制限をエッジで一括適用でき、下流を守れる',
-                en: 'API gateway / load balancer: the most common spot. Applies shared limits at the edge and shields everything downstream',
+                ja: '**API Gateway / ロードバランサ**: 最も一般的。全サービス共通の制限をエッジで一括適用でき、下流を守れる',
+                en: '**API gateway / load balancer**: the most common spot. Applies shared limits at the edge and shields everything downstream',
               },
               {
-                ja: '専用のミドルウェア / サービス: 細かい制御や独自ロジックが必要なときに、専用の層として切り出す',
-                en: 'Dedicated middleware / service: split out as its own layer when you need fine-grained control or custom logic',
+                ja: '**専用のミドルウェア / サービス**: 細かい制御や独自ロジックが必要なときに、専用の層として切り出す',
+                en: '**Dedicated middleware / service**: split out as its own layer when you need fine-grained control or custom logic',
               },
               {
-                ja: '各サービス内: サービス固有の制限に向くが、全サービスに実装が要り重複しがち',
-                en: 'Inside each service: good for service-specific limits, but must be implemented everywhere and tends to duplicate',
+                ja: '**各サービス内**: サービス固有の制限に向くが、全サービスに実装が要り重複しがち',
+                en: '**Inside each service**: good for service-specific limits, but must be implemented everywhere and tends to duplicate',
               },
             ],
           },
@@ -1171,20 +1190,20 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: 'IPアドレス: 認証前でも使える手軽さ。ただし NAT や社内ネットワーク配下の多数ユーザーを1つのIPで巻き込む（誤爆）',
-                en: 'IP address: works even before auth. But NAT/corporate networks put many users behind one IP, causing collateral blocking',
+                ja: '**IPアドレス**: 認証前でも使える手軽さ。ただし NAT や社内ネットワーク配下の多数ユーザーを1つのIPで巻き込む（誤爆）',
+                en: '**IP address**: works even before auth. But NAT/corporate networks put many users behind one IP, causing collateral blocking',
               },
               {
-                ja: 'ユーザーID: 認証後なら最も公平。ログインユーザー単位で正確に制限できる',
-                en: 'User ID: the fairest once authenticated — limits precisely per logged-in user',
+                ja: '**ユーザーID**: 認証後なら最も公平。ログインユーザー単位で正確に制限できる',
+                en: '**User ID**: the fairest once authenticated — limits precisely per logged-in user',
               },
               {
-                ja: 'APIキー / クライアントID: 外部API向け。プラン（無料/有料）ごとに上限を変える課金モデルと相性が良い',
-                en: 'API key / client ID: for public APIs; pairs well with per-plan (free/paid) quotas',
+                ja: '**APIキー / クライアントID**: 外部API向け。プラン（無料/有料）ごとに上限を変える課金モデルと相性が良い',
+                en: '**API key / client ID**: for public APIs; pairs well with per-plan (free/paid) quotas',
               },
               {
-                ja: 'エンドポイント単位: 高価な操作（検索・エクスポート等）だけ厳しくする、といった組み合わせも有効',
-                en: 'Per-endpoint: combine with the above to throttle only expensive operations (search, export, etc.)',
+                ja: '**エンドポイント単位**: 高価な操作（検索・エクスポート等）だけ厳しくする、といった組み合わせも有効',
+                en: '**Per-endpoint**: combine with the above to throttle only expensive operations (search, export, etc.)',
               },
             ],
           },
@@ -1214,12 +1233,12 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'list',
             items: [
               {
-                ja: '補充レート: 1秒あたり何個トークンを足すか（平常時の許容ペース）',
-                en: 'Refill rate: tokens added per second (the steady-state allowed pace)',
+                ja: '**補充レート**: 1秒あたり何個トークンを足すか（平常時の許容ペース）',
+                en: '**Refill rate**: tokens added per second (the steady-state allowed pace)',
               },
               {
-                ja: 'バケツ容量: 最大何個までトークンを貯められるか（バースト許容量）',
-                en: 'Bucket capacity: max tokens that can accumulate (burst allowance)',
+                ja: '**バケツ容量**: 最大何個までトークンを貯められるか（バースト許容量）',
+                en: '**Bucket capacity**: max tokens that can accumulate (burst allowance)',
               },
               {
                 ja: 'トークンがある = 許可 / トークンが無い = 拒否',
@@ -1282,12 +1301,12 @@ X-RateLimit-Reset: 1712345678`,
             type: 'list',
             items: [
               {
-                ja: 'Retry-After: 何秒後に再試行してよいか。クライアントの無駄な連打を防ぐ',
-                en: 'Retry-After: how many seconds until a retry is allowed — stops clients from hammering',
+                ja: '**Retry-After**: 何秒後に再試行してよいか。クライアントの無駄な連打を防ぐ',
+                en: '**Retry-After**: how many seconds until a retry is allowed — stops clients from hammering',
               },
               {
-                ja: 'X-RateLimit-Limit / Remaining / Reset: 上限・残り回数・リセット時刻。クライアントが自分で流量を調整できる',
-                en: 'X-RateLimit-Limit / Remaining / Reset: the cap, remaining calls, and reset time — clients can self-pace',
+                ja: '**X-RateLimit-Limit / Remaining / Reset**: 上限・残り回数・リセット時刻。クライアントが自分で流量を調整できる',
+                en: '**X-RateLimit-Limit / Remaining / Reset**: the cap, remaining calls, and reset time — clients can self-pace',
               },
             ],
           },
@@ -1317,16 +1336,16 @@ X-RateLimit-Reset: 1712345678`,
             type: 'list',
             items: [
               {
-                ja: 'Fixed Window: 固定の時間枠ごとにカウント。シンプルだが枠の境界で急増を許してしまう',
-                en: 'Fixed Window: count per fixed time slot. Simple, but allows spikes at slot boundaries',
+                ja: '**Fixed Window**: 固定の時間枠ごとにカウント。シンプルだが枠の境界で急増を許してしまう',
+                en: '**Fixed Window**: count per fixed time slot. Simple, but allows spikes at slot boundaries',
               },
               {
-                ja: 'Sliding Window: 直近N秒を滑らせて数える。境界問題を緩和できる',
-                en: 'Sliding Window: count over a moving last-N-seconds window, easing the boundary problem',
+                ja: '**Sliding Window**: 直近N秒を滑らせて数える。境界問題を緩和できる',
+                en: '**Sliding Window**: count over a moving last-N-seconds window, easing the boundary problem',
               },
               {
-                ja: 'Token Bucket: バーストを許容しつつ平均レートを抑える。柔軟で人気',
-                en: 'Token Bucket: allow bursts while bounding the average rate. Flexible and popular',
+                ja: '**Token Bucket**: バーストを許容しつつ平均レートを抑える。柔軟で人気',
+                en: '**Token Bucket**: allow bursts while bounding the average rate. Flexible and popular',
               },
             ],
           },
@@ -1477,16 +1496,16 @@ if count > LIMIT:
             type: 'list',
             items: [
               {
-                ja: 'インメモリ KVS（Redis / Memcached）が最適: メモリ上なので μs 級に速く、毎リクエストの判定に耐える',
-                en: 'In-memory KV (Redis / Memcached) is the best fit: memory-speed (microseconds), fast enough for a per-request check',
+                ja: '**インメモリ KVS（Redis / Memcached）が最適**: メモリ上なので μs 級に速く、毎リクエストの判定に耐える',
+                en: '**In-memory KV (Redis / Memcached) is the best fit**: memory-speed (microseconds), fast enough for a per-request check',
               },
               {
-                ja: 'TTL で自動失効: 窓が終わればカウンタを自動削除でき、掃除が不要',
-                en: 'TTL auto-expiry: counters vanish when the window ends, so no manual cleanup',
+                ja: '**TTL で自動失効**: 窓が終わればカウンタを自動削除でき、掃除が不要',
+                en: '**TTL auto-expiry**: counters vanish when the window ends, so no manual cleanup',
               },
               {
-                ja: '原子的操作: INCR や Lua で、複数ノードからの同時更新を安全に扱える',
-                en: 'Atomic ops: INCR and Lua safely handle concurrent updates from multiple nodes',
+                ja: '**原子的操作**: INCR や Lua で、複数ノードからの同時更新を安全に扱える',
+                en: '**Atomic ops**: INCR and Lua safely handle concurrent updates from multiple nodes',
               },
             ],
           },
@@ -1537,24 +1556,24 @@ if count > LIMIT:
             type: 'list',
             items: [
               {
-                ja: '配置: エッジ（API Gateway）で判定し、下流の Service を無駄な負荷から守る',
-                en: 'Placement: decide at the edge (API Gateway) to shield downstream services from wasted load',
+                ja: '**配置**: エッジ（API Gateway）で判定し、下流の Service を無駄な負荷から守る',
+                en: '**Placement**: decide at the edge (API Gateway) to shield downstream services from wasted load',
               },
               {
-                ja: '識別子: 認証済みなら user ID / API キー単位、未認証なら IP を補助的に',
-                en: 'Identifier: key on user ID / API key when authenticated, with IP as a fallback',
+                ja: '**識別子**: 認証済みなら user ID / API キー単位、未認証なら IP を補助的に',
+                en: '**Identifier**: key on user ID / API key when authenticated, with IP as a fallback',
               },
               {
-                ja: 'アルゴリズム: バーストを許容しつつ平均を抑える Token Bucket が定番。境界問題を避けたいなら Sliding Window',
-                en: 'Algorithm: Token Bucket is the default (allows bursts, bounds average); Sliding Window if you want to avoid the boundary problem',
+                ja: '**アルゴリズム**: バーストを許容しつつ平均を抑える Token Bucket が定番。境界問題を避けたいなら Sliding Window',
+                en: '**Algorithm**: Token Bucket is the default (allows bursts, bounds average); Sliding Window if you want to avoid the boundary problem',
               },
               {
-                ja: '共有ストア: 複数 Gateway で1つの上限を守るため Redis を共有。INCR / Lua で原子的に更新',
-                en: 'Shared store: Redis shared across gateways to enforce one global limit; updated atomically with INCR / Lua',
+                ja: '**共有ストア**: 複数 Gateway で1つの上限を守るため Redis を共有。INCR / Lua で原子的に更新',
+                en: '**Shared store**: Redis shared across gateways to enforce one global limit; updated atomically with INCR / Lua',
               },
               {
-                ja: 'レスポンス: 超過は 429 + Retry-After / X-RateLimit-* ヘッダでクライアントに伝える',
-                en: 'Response: signal excess with 429 plus Retry-After / X-RateLimit-* headers',
+                ja: '**レスポンス**: 超過は 429 + Retry-After / X-RateLimit-* ヘッダでクライアントに伝える',
+                en: '**Response**: signal excess with 429 plus Retry-After / X-RateLimit-* headers',
               },
             ],
           },
@@ -1565,6 +1584,490 @@ if count > LIMIT:
               ja: '面接では「どこで・何を基準に・どのアルゴリズムで・分散でどう一貫性を保ち・超過時に何を返すか」の5点を全体図の上で一貫して説明できると、設計を俯瞰できていることが伝わります。',
               en: 'In an interview, walk this diagram covering five points coherently — where, keyed on what, which algorithm, how consistency holds across nodes, and what you return on excess — to show you can see the whole design.',
             },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'circuit-breaker',
+    category: 'sre',
+    title: { ja: 'サーキットブレーカー', en: 'Circuit Breaker' },
+    tagline: {
+      ja: '障害の連鎖を止める、回復性パターンの定番。',
+      en: 'A classic resilience pattern that stops failures from cascading.',
+    },
+    sections: [
+      {
+        id: 'cb-intro',
+        title: { ja: 'なぜ必要か', en: 'Why it matters' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'マイクロサービスでは、1つのリクエストの裏で決済・在庫・推薦など複数のサービスを呼び出します。そのうち1つが遅くなったり落ちたりしたとき、何も対策がないと呼び出し側まで巻き込まれて止まってしまいます。',
+              en: 'In a microservice system, one request fans out to several services behind the scenes: payments, inventory, recommendations. When one of them slows down or fails, a caller with no protection gets dragged down with it.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'サーキットブレーカーは、家の分電盤のブレーカーと同じ発想です。失敗が一定以上続いたら「回路を開いて」呼び出しを止め、しばらく待ってから少しだけ試して、直っていれば元に戻します。壊れている相手を叩き続けないことで、**自分を守り、相手が回復する時間も作ります**。',
+              en: 'A circuit breaker works like the breaker in your home\'s electrical panel. When failures keep piling up, it "opens the circuit" and stops calling; after a while it tries a little, and if things are fixed it closes again. By not hammering a broken dependency, it **protects the caller and gives the dependency room to recover**.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'このパターンは Michael Nygard の『Release It!』で広まりました。短い解説として [Martin Fowler の CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html) が定番です。',
+              en: 'The pattern was popularized by Michael Nygard\'s book "Release It!". For a short introduction, [Martin Fowler\'s CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html) is the classic read.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-cascade',
+        title: { ja: '障害はどう連鎖するか', en: 'How failures cascade' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '実は、依存先が**完全に落ちる**より**遅くなる**方が危険です。すぐエラーが返れば呼び出し側はすぐ次へ進めますが、応答が返ってこないとタイムアウトまでスレッドや接続を握ったまま待ち続けるからです。',
+              en: 'A dependency that is **slow** is actually more dangerous than one that is **down**. A fast error lets the caller move on immediately, but a missing response keeps a thread or connection tied up until the timeout fires.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '例: checkout-svc が毎秒 100 件のリクエストを受け、それぞれが payments-api を呼ぶとします。payments-api が応答しなくなりタイムアウトが 5 秒だと、同時に待っているリクエストは `100 件/秒 × 5 秒 = 500 件` に膨らみます。スレッドプールが 200 なら 2 秒で埋まり、**決済と関係ない商品ページまで返せなくなります**。',
+              en: 'Example: checkout-svc handles 100 requests per second and each one calls payments-api. If payments-api stops responding and the timeout is 5 seconds, the number of requests waiting at once grows to `100 req/s × 5 s = 500`. With a thread pool of 200, it fills up in 2 seconds, and **even product pages that never touch payments stop responding**.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '待ち時間が伸びる → 処理中のリクエストが溜まる → スレッド・メモリ・接続が枯渇する',
+                en: 'Latency grows → in-flight requests pile up → threads, memory and connections run out',
+              },
+              {
+                ja: 'リトライが負荷を増やす: 失敗した呼び出しを全員がやり直すと、弱った依存先へのトラフィックが何倍にもなる',
+                en: 'Retries add load: when every caller retries failed calls, traffic to the struggling dependency multiplies',
+              },
+              {
+                ja: '呼び出し側も遅くなり、さらにその上流も巻き込まれる。こうして障害がドミノ倒しのように広がる',
+                en: 'The caller slows down too and drags its own upstream callers with it; the failure spreads like dominoes',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '連鎖障害の原因と対策は [Google SRE 本の Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) に詳しくまとまっています。',
+              en: 'The causes and remedies of cascading failures are covered in depth in [Addressing Cascading Failures from the Google SRE book](https://sre.google/sre-book/addressing-cascading-failures/).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-states',
+        title: { ja: '3つの状態', en: 'The three states' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'サーキットブレーカーは、依存先への呼び出しを包む小さな状態機械です。下の図では、payments-api が遅くなってから回復するまでの流れがループします。',
+              en: 'A circuit breaker is a small state machine wrapped around calls to a dependency. The diagram below loops through what happens as payments-api slows down and then recovers.',
+            },
+          },
+          { type: 'diagram', id: 'cb-state-machine' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**CLOSED（閉）**: 通常の状態。呼び出しはそのまま通し、成功と失敗を数え続ける。失敗が閾値を超えたら OPEN へ',
+                en: '**CLOSED**: the normal state. Calls pass through while successes and failures are counted. When failures cross the threshold, it moves to OPEN',
+              },
+              {
+                ja: '**OPEN（開）**: 依存先を呼ばずに、すぐ失敗かフォールバックを返す（fail fast）。一定の待機時間が過ぎたら HALF-OPEN へ',
+                en: '**OPEN**: the dependency is not called at all; the breaker immediately returns an error or a fallback (fail fast). After a wait duration, it moves to HALF-OPEN',
+              },
+              {
+                ja: '**HALF-OPEN（半開）**: 少数の試しの呼び出しだけを通す。成功すれば CLOSED に戻り、失敗すれば OPEN に戻って待機をやり直す',
+                en: '**HALF-OPEN**: only a small number of trial calls get through. If they succeed it goes back to CLOSED; if they fail it returns to OPEN and the wait starts over',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'ブレーカーは**依存先ごと**に持ちます。payments-api が壊れても、inventory-api への呼び出しまで止める必要はありません。',
+              en: 'Keep one breaker **per dependency**. When payments-api breaks, there is no reason to stop calling inventory-api.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-thresholds',
+        title: { ja: 'いつ開くか（閾値の決め方）', en: 'When to open (choosing thresholds)' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '「どれくらい失敗したら開くか」の決め方は大きく2つです。',
+              en: 'There are two main ways to decide how much failure should open the breaker.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**連続失敗数**: 「5 回続けて失敗したら開く」。一番シンプルで、上の図もこの方式。ただしトラフィックが多いと、たまたまの失敗で開きやすい',
+                en: '**Consecutive failures**: "open after 5 failures in a row". The simplest option, and the one the diagram uses. With heavy traffic, though, a streak of unlucky failures can open it too easily',
+              },
+              {
+                ja: '**失敗率（スライディングウィンドウ）**: 「直近 20 回（または直近 10 秒）のうち 50% 以上が失敗したら開く」。流量に左右されにくく、実運用ではこちらが主流',
+                en: '**Failure rate over a sliding window**: "open when 50% or more of the last 20 calls (or the last 10 seconds) failed". Less sensitive to traffic volume, and the usual choice in production',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '失敗率を使うときは、あわせて次の2つも決めます。',
+              en: 'When you use a failure rate, you also set two more things.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**最小呼び出し数**: 呼び出しが 2 回で 1 回失敗しただけで「50%」にならないよう、たとえば 10 回に満たないうちは判定しない',
+                en: '**Minimum number of calls**: so that 1 failure out of 2 calls does not count as "50%", skip the check until, say, 10 calls have been recorded',
+              },
+              {
+                ja: '**遅い呼び出しの扱い**: エラーにならなくても「2 秒以上かかった呼び出し」を失敗と同じように数える。完全に落ちる前の「遅くなった」段階で開けるので、連鎖を早めに止められる',
+                en: '**Slow calls**: count calls that took longer than, say, 2 seconds as failures even if they succeeded. This lets the breaker open at the "getting slow" stage, before a full outage, and stop the cascade earlier',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '**何を失敗として数えるか**が重要です。タイムアウト・接続エラー・5xx は依存先の不調なので数えます。400 や 404 のようなクライアント側の誤り（4xx）は依存先が正常に答えているだけなので、数えてはいけません。',
+              en: '**What counts as a failure** matters. Timeouts, connection errors and 5xx responses mean the dependency is unhealthy, so count them. Client errors like 400 or 404 (4xx) mean the dependency answered correctly, so do not count them.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: '設定の例を見る', en: 'See an example configuration' },
+            blocks: [
+              {
+                type: 'code',
+                label: { ja: 'payments-api 用ブレーカーの設定例', en: 'Example breaker settings for payments-api' },
+                code: `payments-api:
+  slidingWindowType: COUNT      # judge on the last N calls
+  slidingWindowSize: 20
+  minimumNumberOfCalls: 10      # no decision before 10 calls
+  failureRateThreshold: 50      # open at >= 50% failures
+  slowCallDurationThreshold: 2s # calls slower than 2s ...
+  slowCallRateThreshold: 50     # ... also open it at >= 50%
+  waitDurationInOpenState: 10s  # stay OPEN for 10s
+  permittedCallsInHalfOpen: 3   # then allow 3 trial calls
+  recordFailures: [Timeout, ConnectError, Http5xx]
+  ignoreFailures: [Http4xx]`,
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '項目名は Java の定番ライブラリ [Resilience4j の CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker) を参考にしています。ほかのライブラリでも、ほぼ同じ項目を設定します。',
+                  en: 'The setting names follow [Resilience4j\'s CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker), a popular Java library. Other libraries expose nearly the same knobs.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'cb-fallback',
+        title: { ja: '開いている間どう返すか', en: 'What to return while it is open' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'OPEN の間は依存先を呼ばないので、5 秒待つはずだった失敗が数ミリ秒で返ります。これだけでもスレッドが解放され、呼び出し側は生き残れます。そのうえで「エラーの代わりに何を返すか（フォールバック）」を決めておくと、ユーザーへの影響をさらに小さくできます。',
+              en: 'While OPEN, the dependency is not called, so a failure that would have taken 5 seconds comes back in milliseconds. That alone frees up threads and keeps the caller alive. On top of that, deciding what to return instead of an error (a fallback) shrinks the impact on users even further.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**キャッシュや古いデータを返す**: 商品の在庫数など、少し古くても表示できれば十分なもの',
+                en: '**Serve cached or stale data**: things like stock counts, where a slightly old value is good enough to show',
+              },
+              {
+                ja: '**既定値を返す**: 推薦が取れなければ「人気ランキング」を出す',
+                en: '**Return a default**: if recommendations are unavailable, show the "most popular" list instead',
+              },
+              {
+                ja: '**機能を一時的に隠す**: レビュー欄が取れなければ、その欄だけ表示しない。ページ全体は出せる',
+                en: '**Hide the feature for now**: if reviews cannot be fetched, drop just that section and still render the page',
+              },
+              {
+                ja: '**後で処理する**: 決済の承認などはキューに積んで、回復してから処理する',
+                en: '**Process it later**: put things like payment authorizations on a queue and handle them after recovery',
+              },
+              {
+                ja: '**はっきり失敗を返す**: 代わりがない処理は 503 と `Retry-After` を返す（考え方は [レートリミッターの 429 レスポンス](#rate-limiter/response) と同じ）',
+                en: '**Fail explicitly**: when there is no substitute, return 503 with `Retry-After` (the same idea as the [rate limiter\'s 429 response](#rate-limiter/response))',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'フォールバック自体が、壊れた依存先や同じ DB に頼っていないか確認しましょう。フォールバックが重い処理だと、今度はそれが新しいボトルネックになります。',
+              en: 'Check that the fallback itself does not rely on the broken dependency or the same database. A heavy fallback just becomes the next bottleneck.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-half-open',
+        title: { ja: '回復をどう確かめるか', en: 'How to detect recovery' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '待機時間が過ぎると HALF-OPEN になり、決めた件数（たとえば 3 件）だけ本物の呼び出しを通します。その件数を超えたリクエストは、まだフォールバックで返します。試しの呼び出しが成功すれば CLOSED に戻り、1 件でも失敗すれば OPEN に戻って待機をやり直します。',
+              en: 'Once the wait duration passes, the breaker goes HALF-OPEN and lets a set number of real calls through (say, 3). Requests beyond that still get the fallback. If the trial calls succeed it returns to CLOSED; if any of them fail it goes back to OPEN and the wait starts over.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**試しの件数を絞る**: いきなり全トラフィックを戻すと、回復しかけの依存先をまた倒してしまう',
+                en: '**Keep trial calls few**: sending all traffic back at once can knock over a dependency that is only just recovering',
+              },
+              {
+                ja: '**待機時間を伸ばしていく**: 何度も OPEN に戻るなら、10 秒 → 20 秒 → 40 秒と待機を伸ばす（指数バックオフ）',
+                en: '**Grow the wait**: if it keeps falling back to OPEN, stretch the wait from 10s to 20s to 40s (exponential backoff)',
+              },
+              {
+                ja: '**タイミングをずらす**: 数百台のインスタンスが同じ瞬間に試すと、それ自体が負荷の山になる。待機時間にランダムなゆらぎ（ジッター）を足す',
+                en: '**Spread out the timing**: hundreds of instances probing at the same instant create a load spike of their own, so add random jitter to the wait',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'cb-combine',
+        title: { ja: '他の仕組みとの組み合わせ', en: 'Combining it with other patterns' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'サーキットブレーカーは単体では完成しません。次の仕組みと組み合わせて使います。',
+              en: 'A circuit breaker is not complete on its own. It is used together with these patterns.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**タイムアウト**: ブレーカーが失敗を数えられるのは、呼び出しがいつか終わるから。すべての外部呼び出しに必ずタイムアウトを付ける',
+                en: '**Timeouts**: the breaker can only count failures because calls eventually end. Put a timeout on every remote call',
+              },
+              {
+                ja: '**リトライ（指数バックオフ＋ジッター）**: 一時的なエラーはリトライで救う。ただしブレーカーが OPEN のときはリトライしない。詳しくは [AWS Builders\' Library の解説](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)',
+                en: '**Retries (exponential backoff + jitter)**: retries rescue transient errors, but do not retry while the breaker is OPEN. See the [AWS Builders\' Library article](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)',
+              },
+              {
+                ja: '**バルクヘッド**: 依存先ごとにスレッドや接続の枠を分け、1 つが詰まっても他を巻き込まないようにする（[Azure の Bulkhead パターン](https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead)）',
+                en: '**Bulkheads**: give each dependency its own pool of threads or connections so one clog does not drag down the rest ([Azure\'s Bulkhead pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead))',
+              },
+              {
+                ja: '**レートリミッター**: 向きが逆の仕組み。[レートリミッター](#rate-limiter) は呼び出し元が多すぎるときに**自分**を守り、ブレーカーは依存先が弱っているときに**相手と自分**を守る',
+                en: '**Rate limiters**: the opposite direction. A [rate limiter](#rate-limiter) protects **you** from too many callers; a breaker protects **both sides** when a dependency is weak',
+              },
+              {
+                ja: '**ヘルスチェックと外れ値検出**: ロードバランサーやプロキシが、エラーの多いインスタンスだけを振り分け先から外す。ブレーカーが「サービス全体」を見るのに対し、こちらは「1 台ごと」を見る',
+                en: '**Health checks and outlier detection**: the load balancer or proxy removes only the instances that are erroring. A breaker looks at the whole service; these look at one host at a time',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'リトライとブレーカーの役割の違いは [Azure の Circuit Breaker パターン](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker) にも整理されています。',
+              en: 'The difference between retries and breakers is also laid out in [Azure\'s Circuit Breaker pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-placement',
+        title: { ja: 'どこに実装するか', en: 'Where to implement it' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**アプリ内のライブラリ**: Resilience4j などを使い、依存先の呼び出しごとに包む。フォールバックをコードで細かく書けるのが強み',
+                en: '**A library in the app**: wrap each dependency call with something like Resilience4j. The strength is that you can write fine-grained fallbacks in code',
+              },
+              {
+                ja: '**サービスメッシュやプロキシ**: Envoy などがネットワークの層で肩代わりする。アプリのコードを変えずに全サービスへ適用できるが、フォールバックの中身までは書けない',
+                en: '**A service mesh or proxy**: Envoy and similar tools handle it at the network layer. You can apply it to every service without code changes, but you cannot write the fallback logic there',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '名前に注意: Envoy の [circuit breaking](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) は「最大接続数・最大リクエスト数」の上限で、この記事の状態機械とは別物です（どちらかというとバルクヘッドに近い）。失敗したホストを一時的に外す動きは [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) が担います。',
+              en: 'Watch the naming: Envoy\'s [circuit breaking](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) is a set of limits on connections and requests, not the state machine in this article (it is closer to a bulkhead). Temporarily ejecting failing hosts is done by [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier).',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'ブレーカーの状態は、ふつうインスタンスごとにメモリで持ちます。台数が多いと各台が別々のタイミングで開きますが、それで問題ありません。状態を Redis などで共有すると、その共有先が新しい障害点になるからです。',
+              en: 'Breaker state is usually kept in memory on each instance. With many instances, each one opens at a slightly different moment, and that is fine: sharing the state through something like Redis would just add a new point of failure.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-code',
+        title: { ja: '実装イメージ', en: 'What the code looks like' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '失敗率で判定するブレーカーの流れを、疑似コードで書くとこうなります。',
+              en: 'Here is the flow of a failure-rate breaker, written as pseudocode.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: '失敗率で判定するブレーカー（疑似コード）', en: 'A failure-rate breaker (pseudocode)' },
+            code: `state = CLOSED
+window = SlidingWindow(size = 20)   // results of the last 20 calls
+openedAt = null
+
+call(request):
+    if state == OPEN:
+        if now() - openedAt < WAIT:      // still cooling down
+            return fallback(request)      // fail fast, no remote call
+        state = HALF_OPEN                 // time to test the dependency
+
+    try:
+        response = dependency.call(request, timeout = 800ms)
+        window.record(SUCCESS)
+        if state == HALF_OPEN:
+            state = CLOSED                // it recovered
+            window.clear()
+        return response
+
+    catch Timeout, ConnectionError, ServerError:
+        window.record(FAILURE)
+        if state == HALF_OPEN
+           or (window.count() >= 10 and window.failureRate() >= 0.5):
+            state = OPEN
+            openedAt = now()
+        return fallback(request)`,
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '実際のライブラリでは、HALF-OPEN で通す件数の上限や、複数スレッドから同時に呼ばれたときの排他もここに加わります。自作するより、定番ライブラリを使うのが安全です。',
+              en: 'Real libraries also cap the number of calls allowed in HALF-OPEN and handle concurrent callers safely. Using a well-known library is safer than writing your own.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-observe',
+        title: { ja: '監視と運用', en: 'Monitoring and operations' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ブレーカーが開いたということは、どこかで問題が起きているということです。SRE の視点では、ブレーカーは「早期警報」の役割も果たします。',
+              en: 'An open breaker means something is wrong somewhere. From an SRE point of view, breakers double as an early warning system.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**状態の変化をすべて記録する**: いつ、どの依存先のブレーカーが開いて閉じたかをログとメトリクスに残す',
+                en: '**Record every state change**: log and emit metrics for when each dependency\'s breaker opened and closed',
+              },
+              {
+                ja: '**開いたらアラート**: OPEN が続いている、または何度も開閉を繰り返しているならオンコール担当に知らせる',
+                en: '**Alert when it opens**: page on-call if a breaker stays OPEN or keeps flapping between states',
+              },
+              {
+                ja: '**見るべき数字**: 失敗率、遅い呼び出しの割合、拒否した（fail fast した）件数、フォールバックを返した件数',
+                en: '**Numbers to watch**: failure rate, slow-call rate, calls rejected by fail fast, and fallbacks served',
+              },
+              {
+                ja: '**手動で操作できるようにする**: 障害対応中に強制的に開く・閉じるスイッチがあると、切り分けや段階的な復旧に使える',
+                en: '**Allow manual control**: a switch to force a breaker open or closed during an incident helps with isolating the problem and recovering step by step',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'フォールバックが働いている間は、ユーザーからはエラーに見えません。だからこそ、ブレーカーのメトリクスを見ていないと「実は依存先が 1 時間落ちていた」に気づけません。',
+              en: 'While fallbacks are working, users do not see errors. That is exactly why, without breaker metrics, you might not notice that a dependency has been down for an hour.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'cb-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '目的は、壊れた依存先に待たされ続けて、自分まで止まる連鎖障害を防ぐこと',
+                en: 'The goal is to stop cascading failures, where waiting on a broken dependency takes you down too',
+              },
+              {
+                ja: 'CLOSED → OPEN → HALF-OPEN → CLOSED の 3 状態。ブレーカーは依存先ごとに持つ',
+                en: 'Three states: CLOSED → OPEN → HALF-OPEN → CLOSED, with one breaker per dependency',
+              },
+              {
+                ja: '開く条件は失敗率＋最小呼び出し数＋遅い呼び出し。4xx は失敗に数えない',
+                en: 'Open on failure rate, with a minimum number of calls and slow calls counted; do not count 4xx',
+              },
+              {
+                ja: 'OPEN の間はフォールバックを返し、HALF-OPEN では少数の試行で回復を確かめる',
+                en: 'Serve fallbacks while OPEN, and confirm recovery in HALF-OPEN with a few trial calls',
+              },
+              {
+                ja: 'タイムアウト・リトライ・バルクヘッドと組み合わせ、状態の変化は監視してアラートにする',
+                en: 'Combine it with timeouts, retries and bulkheads, and monitor state changes with alerts',
+              },
+            ],
           },
         ],
       },

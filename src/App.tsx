@@ -6,6 +6,7 @@ import { OnThisPage } from './components/OnThisPage';
 import { Content } from './components/Content';
 import { Home } from './components/Home';
 import { TopBar } from './components/TopBar';
+import { SearchModal } from './components/SearchModal';
 import { useTheme } from './useTheme';
 import './app.css';
 
@@ -30,7 +31,20 @@ function viewFromHash(): View {
 export default function App() {
   const [view, setView] = useState<View>(viewFromHash);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchOpen, setSearchOpen] = useState(false);
   const isHome = view === 'home';
+
+  // Open the search palette with ⌘K / Ctrl+K from anywhere.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Keep the URL hash in sync with the current view. If the hash already points
   // at the current topic (possibly with a #topic/section suffix), leave it be so
@@ -73,9 +87,9 @@ export default function App() {
   useEffect(() => {
     const base =
       lang === 'ja'
-        ? 'SysDesign Visual — 図を動かして学ぶシステム設計入門'
-        : 'SysDesign Visual — Learn system design by interactive diagrams';
-    document.title = isHome ? base : `${t(activeTopic.title, lang)} · SysDesign Visual`;
+        ? 'Reliable Owl — 図で学ぶシステム設計と SRE'
+        : 'Reliable Owl — Learn system design & SRE with interactive diagrams';
+    document.title = isHome ? base : `${t(activeTopic.title, lang)} · Reliable Owl`;
   }, [isHome, activeTopic, lang]);
 
   const sectionEls = useRef<Map<string, HTMLElement>>(new Map());
@@ -158,8 +172,14 @@ export default function App() {
       className={`layout ${isHome ? 'layout--home' : ''} ${!isHome && !sidebarOpen ? 'layout--collapsed' : ''
         }`}
     >
-      {/* Language + theme controls, fixed top-right on every view */}
-      <TopBar theme={theme} onToggleTheme={toggle} />
+      {/* Search + language + theme controls, fixed top-right on every view */}
+      <TopBar theme={theme} onToggleTheme={toggle} onOpenSearch={() => setSearchOpen(true)} />
+
+      <SearchModal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onNavigate={handleSelect}
+      />
 
       {isHome ? (
         <Home onOpenTopic={openTopic} />

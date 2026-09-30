@@ -47,25 +47,25 @@ export function useLang() {
 
 // ===== UI string dictionary =====
 export const ui = {
-  brandTitle: { ja: 'SysDesign Visual', en: 'SysDesign Visual' },
-  brandSubtitle: { ja: '図で学ぶ設計', en: 'Learn by Diagrams' },
+  brandTitle: { ja: 'Reliable Owl', en: 'Reliable Owl' },
+  brandSubtitle: { ja: 'システム設計 & SRE を図で', en: 'System Design & SRE, visualized' },
   onThisPage: { ja: 'このページ', en: 'On this page' },
   footer: {
-    ja: 'Built by Kanta Nakamura · SysDesign Visual',
-    en: 'Built by Kanta Nakamura · SysDesign Visual',
+    ja: 'Built by Kanta Nakamura · Reliable Owl',
+    en: 'Built by Kanta Nakamura · Reliable Owl',
   },
   topicEyebrow: { ja: 'トピック', en: 'TOPIC' },
   home: { ja: 'ホーム', en: 'Home' },
   heroTagline: {
-    ja: 'システム設計を、図で動かして学ぶ。',
-    en: 'Learn system design by watching it move.',
+    ja: 'システム設計と SRE を、図で動かして学ぶ。',
+    en: 'Learn system design & SRE by watching them move.',
   },
   heroSub: {
-    ja: '定番の設計課題を、スクロールしながら読み、図を動かして理解する学習ノート。',
-    en: 'A learning notebook for classic design problems — read as you scroll, and watch the diagrams move.',
+    ja: 'システム設計と信頼性（SRE）の定番トピックを、スクロールしながら読み、図を動かして理解する学習ノート。',
+    en: 'A learning notebook for system design and reliability (SRE) — read as you scroll, and watch the diagrams move.',
   },
   heroCta: { ja: '学び始める', en: 'Start learning' },
-  liveLabel: { ja: 'ライブ · リクエストの流れ', en: 'live · request flow' },
+  liveLabel: { ja: 'ライブ · 自己修復', en: 'live · self-healing' },
   statTopics: { ja: 'トピック', en: 'Topics' },
   statDiagrams: { ja: '動く図', en: 'Interactive diagrams' },
   statLangs: { ja: '言語', en: 'Languages' },
@@ -101,6 +101,10 @@ export const ui = {
   makeHit: { ja: 'ヒットにする', en: 'Make it hit' },
   sharedStore: { ja: '共有ストア', en: 'Shared store' },
   perServer: { ja: '個別', en: 'Per-server' },
+  search: { ja: '検索', en: 'Search' },
+  searchPlaceholder: { ja: 'トピックやセクションを検索…', en: 'Search topics and sections…' },
+  searchEmpty: { ja: '該当する項目がありません', en: 'No matches found' },
+  searchHint: { ja: '↑↓ で移動 · Enter で開く · Esc で閉じる', en: '↑↓ to navigate · Enter to open · Esc to close' },
 } satisfies Record<string, LocalizedString>;
 
 export function useUi() {

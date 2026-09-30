@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { topics } from '../data/content';
+import { categories, topics } from '../data/content';
 import { Logo } from './Logo';
 import { t, useLang, useUi } from '../i18n';
 
@@ -26,6 +26,18 @@ export function Sidebar({
 
   // Topics the user has manually collapsed even though they are active.
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  // Categories the user has collapsed (hides all topics under the heading).
+  const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
+
+  const toggleCategory = (catId: string) => {
+    setCollapsedCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(catId)) next.delete(catId);
+      else next.add(catId);
+      return next;
+    });
+  };
 
   // When the active topic changes (e.g. via a card or hash link), expand it.
   useEffect(() => {
@@ -62,7 +74,7 @@ export function Sidebar({
     <aside className="sidebar">
       <button className="sidebar__brand" onClick={onHome} aria-label={uiText('home')}>
         <div className="sidebar__logo">
-          <Logo size={24} color="#fff" />
+          <Logo size={36} color="#fff" />
         </div>
         <div className="sidebar__brand-text">
           <div className="sidebar__title">{uiText('brandTitle')}</div>
@@ -80,51 +92,87 @@ export function Sidebar({
         </svg>
       </button>
       <nav className="sidebar__nav">
-        {topics.map((topic) => {
-          // The active topic is expanded unless the user manually collapsed it.
-          const isActive = !isHome && topic.id === activeTopicId;
-          const isOpen = isActive && !collapsed.has(topic.id);
+        {categories.map((cat) => {
+          const catTopics = topics.filter((tp) => tp.category === cat.id);
+          if (catTopics.length === 0) return null;
+          const catOpen = !collapsedCats.has(cat.id);
           return (
-            <div key={topic.id} className="nav-group">
+            <div key={cat.id} className="nav-category">
               <button
-                className={`nav-group__toggle ${isActive ? 'nav-group__toggle--active' : ''}`}
-                onClick={() => handleToggle(topic.id, topic.sections[0].id)}
-                aria-expanded={isOpen}
+                className="nav-category__label"
+                onClick={() => toggleCategory(cat.id)}
+                aria-expanded={catOpen}
               >
                 <motion.span
-                  className="nav-group__chevron"
-                  animate={{ rotate: isOpen ? 90 : 0 }}
+                  className="nav-category__chevron"
+                  animate={{ rotate: catOpen ? 90 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
                   ▸
                 </motion.span>
-                <span className="nav-group__label">{t(topic.title, lang)}</span>
+                {t(cat.label, lang)}
               </button>
               <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.ul
-                    key="list"
+                {catOpen && (
+                  <motion.div
+                    key="cat-body"
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.25, ease: 'easeInOut' }}
                     style={{ overflow: 'hidden' }}
                   >
-                    {topic.sections.map((s) => {
-                      const isActive = s.id === activeSectionId;
+                    {catTopics.map((topic) => {
+                      // The active topic is expanded unless the user manually collapsed it.
+                      const isActive = !isHome && topic.id === activeTopicId;
+                      const isOpen = isActive && !collapsed.has(topic.id);
                       return (
-                        <li key={s.id}>
+                        <div key={topic.id} className="nav-group">
                           <button
-                            className={`nav-link ${isActive ? 'nav-link--active' : ''}`}
-                            onClick={() => onSelect(topic.id, s.id)}
+                            className={`nav-group__toggle ${isActive ? 'nav-group__toggle--active' : ''}`}
+                            onClick={() => handleToggle(topic.id, topic.sections[0].id)}
+                            aria-expanded={isOpen}
                           >
-                            <span className="nav-link__bar" />
-                            {t(s.title, lang)}
+                            <motion.span
+                              className="nav-group__chevron"
+                              animate={{ rotate: isOpen ? 90 : 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              ▸
+                            </motion.span>
+                            <span className="nav-group__label">{t(topic.title, lang)}</span>
                           </button>
-                        </li>
+                          <AnimatePresence initial={false}>
+                            {isOpen && (
+                              <motion.ul
+                                key="list"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                style={{ overflow: 'hidden' }}
+                              >
+                                {topic.sections.map((s) => {
+                                  const isActive = s.id === activeSectionId;
+                                  return (
+                                    <li key={s.id}>
+                                      <button
+                                        className={`nav-link ${isActive ? 'nav-link--active' : ''}`}
+                                        onClick={() => onSelect(topic.id, s.id)}
+                                      >
+                                        <span className="nav-link__bar" />
+                                        {t(s.title, lang)}
+                                      </button>
+                                    </li>
+                                  );
+                                })}
+                              </motion.ul>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       );
                     })}
-                  </motion.ul>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>

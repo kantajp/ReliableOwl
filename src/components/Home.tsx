@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { type MouseEvent, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { topics } from '../data/content';
+import { categories, topics } from '../data/content';
 import { Logo } from './Logo';
 import { SocialLinks } from './SocialLinks';
 import { HeroFluid } from './HeroFluid';
-import { HeroTopology } from './HeroTopology';
+import { TopicCarousel } from './TopicCarousel';
+import { HeroSelfHealing } from './hero/HeroSelfHealing';
 import { t, useLang, useUi } from '../i18n';
 import '../home.css';
 
@@ -12,8 +13,7 @@ interface Props {
   onOpenTopic: (topicId: string) => void;
 }
 
-// Track the pointer as CSS variables (--mx / --my) for spotlight effects.
-// Writes straight to the element's style, so it never triggers a React re-render.
+// Pointer spotlight for the hero and feature cards (writes CSS vars directly).
 function trackPointer(e: MouseEvent<HTMLElement>) {
   const el = e.currentTarget;
   const r = el.getBoundingClientRect();
@@ -21,36 +21,12 @@ function trackPointer(e: MouseEvent<HTMLElement>) {
   el.style.setProperty('--my', `${e.clientY - r.top}px`);
 }
 
-// Small decorative icon for each topic card.
-function TopicGlyph({ index }: { index: number }) {
-  const glyphs = [
-    // link / chain (URL shortener)
-    <g key="a" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M9 15a4 4 0 0 1 0-6l2-2a4 4 0 0 1 6 6l-1 1" />
-      <path d="M15 9a4 4 0 0 1 0 6l-2 2a4 4 0 0 1-6-6l1-1" />
-    </g>,
-    // gate / limiter
-    <g key="b" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="10" width="16" height="10" rx="2" />
-      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-    </g>,
-  ];
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24">
-      {glyphs[index % glyphs.length]}
-    </svg>
-  );
-}
-
 const featureIcons: ReactNode[] = [
-  // play / motion
   <path key="a" d="M8 5.5v13l10.5-6.5L8 5.5z" />,
-  // document / read
   <g key="b">
     <path d="M7 3h7l5 5v13H7z" />
     <path d="M14 3v5h5M10 13h6M10 17h6" />
   </g>,
-  // globe / languages
   <g key="c">
     <circle cx="12" cy="12" r="9" />
     <path d="M3 12h18M12 3c2.5 2.5 3.8 5.8 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.8-3.8-9s1.3-6.5 3.8-9z" />
@@ -72,103 +48,6 @@ export function Home({ onOpenTopic }: Props) {
     { t: uiText('feat3Title'), b: uiText('feat3Body') },
   ];
 
-  // Topic carousel: seamless infinite loop. The list is tripled and we keep the
-  // viewport centered on the middle copy, jumping silently when we drift off it.
-  const LEN = topics.length;
-  const GAP = 18;
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const [vw, setVw] = useState(0);
-  const [index, setIndex] = useState(LEN); // start on the middle copy
-  const [animate, setAnimate] = useState(true);
-  const [drag, setDrag] = useState(0); // live pointer-drag offset in px
-
-  useEffect(() => {
-    const el = viewportRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setVw(el.clientWidth));
-    ro.observe(el);
-    setVw(el.clientWidth);
-    return () => ro.disconnect();
-  }, []);
-
-  // After a silent (non-animated) jump, re-enable the transition next frame.
-  useEffect(() => {
-    if (animate) return;
-    const id = requestAnimationFrame(() => requestAnimationFrame(() => setAnimate(true)));
-    return () => cancelAnimationFrame(id);
-  }, [animate]);
-
-  // Horizontal wheel / trackpad swipe pages the carousel (no need to grab a card).
-  useEffect(() => {
-    const el = viewportRef.current;
-    if (!el) return;
-    let accum = 0;
-    let lock = false;
-    const onWheel = (e: WheelEvent) => {
-      // Only react to horizontal intent; leave vertical page scrolling alone.
-      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : 0;
-      if (dx === 0) return;
-      e.preventDefault();
-      if (lock) return;
-      accum += dx;
-      if (Math.abs(accum) > 40) {
-        setAnimate(true);
-        setIndex((i) => i + (accum > 0 ? 1 : -1));
-        accum = 0;
-        lock = true;
-        setTimeout(() => {
-          lock = false;
-        }, 450);
-      }
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, []);
-
-  const VISIBLE = vw < 560 ? 1 : vw < 720 ? 2 : 3;
-  const cardW = vw > 0 ? (vw - GAP * (VISIBLE - 1)) / VISIBLE : 0;
-  const step = cardW + GAP;
-  const display = [...topics, ...topics, ...topics];
-
-  const go = (dir: 1 | -1) => {
-    setAnimate(true);
-    setIndex((i) => i + dir);
-  };
-
-  // Pointer/touch drag to swipe the carousel.
-  const onPointerDown = (e: { clientX: number }) => {
-    const startX = e.clientX;
-    setAnimate(false);
-    let last = 0;
-    const move = (ev: PointerEvent) => {
-      last = ev.clientX - startX;
-      setDrag(last);
-    };
-    const up = () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-      setDrag(0);
-      setAnimate(true);
-      if (step > 0 && Math.abs(last) > step / 4) {
-        setIndex((i) => i + (last < 0 ? 1 : -1));
-      }
-    };
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
-  };
-
-  // When the animated move ends, if we've drifted past the middle copy, snap
-  // back by one list length with no animation — invisible to the eye.
-  const onTrackTransitionEnd = () => {
-    if (index >= LEN * 2) {
-      setAnimate(false);
-      setIndex((i) => i - LEN);
-    } else if (index < LEN) {
-      setAnimate(false);
-      setIndex((i) => i + LEN);
-    }
-  };
-
   return (
     <main className="home">
       {/* ===== Hero ===== */}
@@ -179,7 +58,7 @@ export function Home({ onOpenTopic }: Props) {
 
         <div className="hero__content">
           <motion.div {...fadeUp} transition={{ duration: 0.6, delay: 0.05 }} className="hero__logo">
-            <Logo size={40} color="#fff" />
+            <Logo size={64} color="#fff" />
           </motion.div>
 
           <motion.h1 {...fadeUp} transition={{ duration: 0.6, delay: 0.1 }} className="hero__title">
@@ -220,74 +99,24 @@ export function Home({ onOpenTopic }: Props) {
               </span>
             </div>
             <div className="hero-window__body">
-              <HeroTopology />
+              <HeroSelfHealing owl />
             </div>
           </motion.div>
-
         </div>
       </section>
 
       <div className="home__inner">
-        {/* ===== Topic cards (carousel) ===== */}
-        <section className="home-section">
-          <h2 className="home-section__heading">{uiText('topicsHeading')}</h2>
-          <div className="carousel">
-            <button
-              className="carousel__btn carousel__btn--prev"
-              onClick={() => go(-1)}
-              aria-label="Previous topics"
-            >
-              ‹
-            </button>
-            <div
-              className="carousel__viewport"
-              ref={viewportRef}
-              onPointerDown={onPointerDown}
-            >
-              <div
-                className="carousel__track"
-                style={{
-                  gap: GAP,
-                  transform: `translateX(${-index * step + drag}px)`,
-                  transition: animate ? 'transform 0.45s ease' : 'none',
-                }}
-                onTransitionEnd={onTrackTransitionEnd}
-              >
-                {display.map((topic, i) => (
-                  <button
-                    key={i}
-                    className="topic-card"
-                    style={{ flex: `0 0 ${cardW}px`, width: cardW }}
-                    onClick={() => onOpenTopic(topic.id)}
-                    onMouseMove={trackPointer}
-                  >
-                    <span className="topic-card__glow" aria-hidden="true" />
-                    <span className="topic-card__top">
-                      <span className="topic-card__glyph">
-                        <TopicGlyph index={i % LEN} />
-                      </span>
-                      <span className="topic-card__meta">
-                        {topic.sections.length} {uiText('sectionsUnit')}
-                      </span>
-                    </span>
-                    <span className="topic-card__title">{t(topic.title, lang)}</span>
-                    <span className="topic-card__desc">{t(topic.tagline, lang)}</span>
-                    <span className="topic-card__cta">
-                      {uiText('cardCta')} <span className="topic-card__arrow">→</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button
-              className="carousel__btn carousel__btn--next"
-              onClick={() => go(1)}
-              aria-label="More topics"
-            >
-              ›
-            </button>
-          </div>
-        </section>
+        {/* ===== Topics, grouped by category ===== */}
+        {categories.map((cat) => {
+          const catTopics = topics.filter((tp) => tp.category === cat.id);
+          if (catTopics.length === 0) return null;
+          return (
+            <section className="home-section" key={cat.id}>
+              <h2 className="home-section__heading">{t(cat.label, lang)}</h2>
+              <TopicCarousel items={catTopics} onOpenTopic={onOpenTopic} />
+            </section>
+          );
+        })}
 
         {/* ===== Features ===== */}
         <section className="home-section">
