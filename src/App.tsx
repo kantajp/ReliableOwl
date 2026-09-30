@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { topics } from './data/content';
+import { t, useLang } from './i18n';
 import { Sidebar } from './components/Sidebar';
 import { OnThisPage } from './components/OnThisPage';
 import { Content } from './components/Content';
@@ -40,6 +41,17 @@ export default function App() {
   const activeTopic = topics.find((t) => t.id === view) ?? topics[0];
   const [activeId, setActiveId] = useState(activeTopic.sections[0].id);
   const { theme, toggle } = useTheme();
+  const { lang } = useLang();
+
+  // Keep the document title in sync with the current topic and language (helps
+  // search results, browser history and bookmarks).
+  useEffect(() => {
+    const base =
+      lang === 'ja'
+        ? 'SysDesign Visual — 図で学ぶシステム設計'
+        : 'SysDesign Visual — Learn system design by diagrams';
+    document.title = isHome ? base : `${t(activeTopic.title, lang)} · SysDesign Visual`;
+  }, [isHome, activeTopic, lang]);
   const sectionEls = useRef<Map<string, HTMLElement>>(new Map());
   const observer = useRef<IntersectionObserver | null>(null);
 
