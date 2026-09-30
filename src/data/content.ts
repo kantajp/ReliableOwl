@@ -78,8 +78,8 @@ export const topics: Topic[] = [
           {
             type: 'p',
             text: {
-              ja: 'システム設計では「この操作は速いのか遅いのか」を桁で捉えることが重要です。時間の単位は、1つ小さくなるごとに1000分の1になります。',
-              en: 'In system design, what matters is grasping whether an operation is fast or slow by order of magnitude. Each smaller unit of time is 1/1000 of the previous.',
+              ja: 'システム設計では「この操作は速いのか遅いのか」を**桁で捉える**ことが重要です。時間の単位は、1つ小さくなるごとに1000分の1になります。',
+              en: 'In system design, what matters is grasping whether an operation is fast or slow **by order of magnitude**. Each smaller unit of time is 1/1000 of the previous.',
             },
           },
           {
@@ -94,8 +94,8 @@ export const topics: Topic[] = [
           {
             type: 'p',
             text: {
-              ja: 'ポイントは「メモリは ns、ディスクや SSD は μs、ネットワーク往復は ms」というように、装置ごとに桁が違うこと。同じ処理でも、メモリで済むかネットワークを越えるかで100万倍近く変わります。',
-              en: 'The key insight: different layers live at different orders of magnitude — memory in ns, SSD/disk in μs, network round trips in ms. The same logical step can vary by nearly a million times depending on whether it stays in memory or crosses the network.',
+              ja: 'ポイントは「メモリは ns、ディスクや SSD は μs、ネットワーク往復は ms」というように、**装置ごとに桁が違う**こと。同じ処理でも、メモリで済むかネットワークを越えるかで100万倍近く変わります。',
+              en: 'The key insight: different layers live at **different orders of magnitude** — memory in ns, SSD/disk in μs, network round trips in ms. The same logical step can vary by nearly a million times depending on whether it stays in memory or crosses the network.',
             },
           },
           {
@@ -187,7 +187,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: 'システムデザイン面接は、正解を1つ当てるテストではありません。曖昧な課題を、要件確認 → 見積もり → 設計 → 深掘り、という順で構造的に進め、判断とトレードオフを声に出して説明する力を見られます。',
+              ja: 'システムデザイン面接は、正解を1つ当てるテストではありません。曖昧な課題を、**要件確認 → 見積もり → 設計 → 深掘り**、という順で構造的に進め、判断とトレードオフを声に出して説明する力を見られます。',
               en: 'A system design interview is not a test with one right answer. You are assessed on how you take a vague problem and work through it structurally — clarify, estimate, design, deep dive — while narrating your decisions and trade-offs out loud.',
             },
           },
@@ -218,16 +218,16 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: '課題はわざと曖昧に出されます。いきなり作らず、質問でスコープを絞ります。「何を作らないか」を決めるのも同じくらい重要です。',
-              en: 'The prompt is intentionally vague. Do not start building — narrow the scope with questions. Deciding what NOT to build matters just as much.',
+              ja: '課題はわざと曖昧に出されます。いきなり作らず、質問でスコープを絞ります。**「何を作らないか」を決める**のも同じくらい重要です。',
+              en: 'The prompt is intentionally vague. Do not start building — narrow the scope with questions. **Deciding what NOT to build** matters just as much.',
             },
           },
           {
             type: 'list',
             items: [
-              { ja: '機能要件: 誰が何をできるか（例: URLを短縮する、リダイレクトする）', en: 'Functional: who can do what (e.g. shorten a URL, redirect)' },
-              { ja: '非機能要件: 規模・可用性・レイテンシ・一貫性の要求', en: 'Non-functional: scale, availability, latency, consistency needs' },
-              { ja: 'スコープ外: 今回作らない機能を明言して合意する', en: 'Out of scope: state and agree on what you will not build' },
+              { ja: '**機能要件**: 誰が何をできるか（例: URLを短縮する、リダイレクトする）', en: '**Functional**: who can do what (e.g. shorten a URL, redirect)' },
+              { ja: '**非機能要件**: 規模・可用性・レイテンシ・一貫性の要求', en: '**Non-functional**: scale, availability, latency, consistency needs' },
+              { ja: '**スコープ外**: 今回作らない機能を明言して合意する', en: '**Out of scope**: state and agree on what you will not build' },
             ],
           },
           {
@@ -304,8 +304,8 @@ storage(5y) = 1M × 500B × 365 × 5 ≈ 0.9 TB`,
           {
             type: 'list',
             items: [
-              { ja: 'エンドポイント: メソッド・パス・入出力（例: POST /shorten）', en: 'Endpoints: method, path, request/response (e.g. POST /shorten)' },
-              { ja: 'データモデル: 主要なテーブル/コレクションと主キー', en: 'Data model: the main tables/collections and their primary keys' },
+              { ja: '**エンドポイント**: メソッド・パス・入出力（例: POST /shorten）', en: '**Endpoints**: method, path, request/response (e.g. POST /shorten)' },
+              { ja: '**データモデル**: 主要なテーブル/コレクションと主キー', en: '**Data model**: the main tables/collections and their primary keys' },
             ],
           },
           {
@@ -354,17 +354,17 @@ table urls (key PK, long_url, created_at, expires_at?)`,
           {
             type: 'p',
             text: {
-              ja: '最小構成のボトルネックを見つけ、順に潰します。ここが差のつく本番。各改善は必ずトレードオフとセットで語ります。',
-              en: 'Find the bottlenecks in the baseline and address them one by one. This is where you stand out — always pair each improvement with its trade-off.',
+              ja: '最小構成のボトルネックを見つけ、順に潰します。ここが差のつく本番。各改善は必ず**トレードオフとセットで語ります**。',
+              en: 'Find the bottlenecks in the baseline and address them one by one. This is where you stand out — always **pair each improvement with its trade-off**.',
             },
           },
           {
             type: 'list',
             items: [
-              { ja: 'キャッシュ: 読み取りを高速化（一貫性とのトレードオフ）', en: 'Caching: speed up reads (trade-off with consistency)' },
-              { ja: 'レプリケーション / シャーディング: 負荷とデータを分散', en: 'Replication / sharding: spread load and data' },
-              { ja: '単一障害点の解消: 冗長化で可用性を上げる', en: 'Remove single points of failure: add redundancy for availability' },
-              { ja: 'ボトルネック: DB・帯域・ホットキーなどを特定して対処', en: 'Bottlenecks: identify and address DB, bandwidth, hot keys' },
+              { ja: '**キャッシュ**: 読み取りを高速化（一貫性とのトレードオフ）', en: '**Caching**: speed up reads (trade-off with consistency)' },
+              { ja: '**レプリケーション / シャーディング**: 負荷とデータを分散', en: '**Replication / sharding**: spread load and data' },
+              { ja: '**単一障害点の解消**: 冗長化で可用性を上げる', en: '**Remove single points of failure**: add redundancy for availability' },
+              { ja: '**ボトルネック**: DB・帯域・ホットキーなどを特定して対処', en: '**Bottlenecks**: identify and address DB, bandwidth, hot keys' },
             ],
           },
           {
@@ -1887,8 +1887,8 @@ if count > LIMIT:
                 en: '**Timeouts**: the breaker can only count failures because calls eventually end. Put a timeout on every remote call',
               },
               {
-                ja: '**リトライ（指数バックオフ＋ジッター）**: 一時的なエラーはリトライで救う。ただしブレーカーが OPEN のときはリトライしない。詳しくは [AWS Builders\' Library の解説](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)',
-                en: '**Retries (exponential backoff + jitter)**: retries rescue transient errors, but do not retry while the breaker is OPEN. See the [AWS Builders\' Library article](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)',
+                ja: '**リトライ（指数バックオフ＋ジッター）**: 一時的なエラーはリトライで救う。ただしブレーカーが OPEN のときはリトライしない',
+                en: '**Retries (exponential backoff + jitter)**: retries rescue transient errors, but do not retry while the breaker is OPEN',
               },
               {
                 ja: '**バルクヘッド**: 依存先ごとにスレッドや接続の枠を分け、1 つが詰まっても他を巻き込まないようにする（[Azure の Bulkhead パターン](https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead)）',
