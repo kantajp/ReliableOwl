@@ -93,8 +93,10 @@ export function TopicCarousel({
   const VISIBLE = vw < 560 ? 1 : vw < 720 ? 2 : 3;
   const cardW = vw > 0 ? (vw - GAP * (VISIBLE - 1)) / VISIBLE : 0;
   const step = cardW + GAP;
-  // Only loop when there are more topics than fit on screen.
-  const looping = LEN > VISIBLE;
+  // Loop when topics overflow the viewport, or when a category has 3+ topics
+  // (so every category with enough content slides like the others, even when
+  // the cards happen to fit exactly on a wide screen).
+  const looping = LEN > VISIBLE || LEN >= 3;
   const display = looping ? [...items, ...items, ...items] : items;
   const baseOffset = looping ? index * step : 0;
 
