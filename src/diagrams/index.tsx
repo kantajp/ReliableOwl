@@ -6,6 +6,8 @@ import { RlAlgorithms, RlAllowDeny, RlArchitecture, RlCapacity, RlDistributed, R
 import { CbStateMachine } from './CircuitBreakerDiagrams';
 import { SloBudget, SloLadder, SloNines } from './SloDiagrams';
 import { BackoffLadder, RetryStorm } from './RetryDiagrams';
+import { DbReplicaLag, DbReplication, DbSharding } from './DatabaseScaleDiagrams';
+import { ConsistentHashRing } from './ConsistentHashDiagram';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -34,6 +36,10 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'slo-budget': SloBudget,
   'retry-storm': RetryStorm,
   'retry-backoff': BackoffLadder,
+  'db-replication': DbReplication,
+  'db-replica-lag': DbReplicaLag,
+  'db-sharding': DbSharding,
+  'db-consistent-hash': ConsistentHashRing,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {

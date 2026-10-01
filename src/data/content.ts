@@ -29,7 +29,11 @@ export type DiagramId =
   | 'slo-nines'
   | 'slo-budget'
   | 'retry-storm'
-  | 'retry-backoff';
+  | 'retry-backoff'
+  | 'db-replication'
+  | 'db-replica-lag'
+  | 'db-sharding'
+  | 'db-consistent-hash';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -2140,6 +2144,434 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             text: {
               ja: '基本となる考え方は Google SRE 本の [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) と [Embracing Risk](https://sre.google/sre-book/embracing-risk/)、実践の手順は [SRE Workbook の Implementing SLOs](https://sre.google/workbook/implementing-slos/) にまとまっています。',
               en: 'The core ideas are in the Google SRE book chapters [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) and [Embracing Risk](https://sre.google/sre-book/embracing-risk/); the practical steps are in [Implementing SLOs from the SRE Workbook](https://sre.google/workbook/implementing-slos/).',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'database-scaling',
+    category: 'system-design',
+    title: { ja: 'データベースのスケール', en: 'Scaling Databases' },
+    tagline: {
+      ja: '1台から始めて、読み取り・書き込みを横に広げる。フィード型アプリを例に。',
+      en: 'Start with one box, then scale reads and writes outward. With a feed app as the example.',
+    },
+    sections: [
+      {
+        id: 'ds-intro',
+        title: { ja: 'なぜスケールが要るか', en: 'Why scale at all' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'どんなサービスも、最初は **DB 1台** で十分です。フィード型アプリも、ユーザーが数千人のうちは1台で投稿もタイムライン取得もさばけます。問題はユーザーが増えてから。ある日、1台では受けきれなくなります。',
+              en: 'Every service starts with **one database**, and that is fine. A feed app can serve posts and timelines from a single box while it has a few thousand users. The trouble starts as it grows: one day, one box can no longer keep up.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'まず「何が」限界なのかを見極めます。闇雲に分散させるのは、複雑さを一気に増やすので最後の手段です。',
+              en: 'First, pin down **what** is actually hitting its limit. Jumping straight to a distributed setup adds a lot of complexity, so it is a last resort.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**接続数**: 同時接続が多すぎて、新しいクエリが待たされる',
+                en: '**Connections**: too many concurrent connections, so new queries queue up',
+              },
+              {
+                ja: '**CPU**: 複雑なクエリや集計で計算が追いつかない',
+                en: '**CPU**: complex queries and aggregations outrun the processor',
+              },
+              {
+                ja: '**ディスク / IOPS**: 読み書きの入出力が頭打ちになる',
+                en: '**Disk / IOPS**: read/write throughput plateaus',
+              },
+              {
+                ja: '**データ量**: データが1台のディスクやメモリに乗らなくなる',
+                en: '**Data size**: the data no longer fits on one disk or in memory',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'まず計測し、インデックスやクエリの見直し、[キャッシュ](#url-shortener/cache-scale)で済むなら、そのほうが安くて簡単です。スケールの手段は、順に試すのが鉄則です。',
+              en: 'Measure first. If better indexes, query tuning, or [caching](#url-shortener/cache-scale) solve it, that is cheaper and simpler. Reach for scaling techniques in order, not all at once.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ds-vertical',
+        title: { ja: '垂直スケール（スケールアップ）', en: 'Scaling up (vertical)' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '一番簡単なのは、サーバーを**大きくする**ことです。CPU・メモリ・ディスクを増やす。コードもデータの持ち方も変えずに済むので、最初の一手として優秀です。多くのサービスは、これだけでかなり長く戦えます。',
+              en: 'The simplest move is to make the server **bigger**: more CPU, memory and disk. It needs no change to your code or data layout, which makes it an excellent first step. Many services get surprisingly far on this alone.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**限界がある**: 1台のマシンの上限（最大のインスタンス）に達したら、それ以上は大きくできない',
+                en: '**It has a ceiling**: once you reach the biggest machine available, you cannot go further',
+              },
+              {
+                ja: '**コストが跳ねる**: 大きいマシンほど、性能あたりの値段が割高になりがち',
+                en: '**Cost jumps**: the biggest machines cost disproportionately more per unit of performance',
+              },
+              {
+                ja: '**単一障害点のまま**: 1台なので、落ちたら全部止まる。可用性は上がらない',
+                en: '**Still a single point of failure**: it is one box, so if it dies, everything stops — availability does not improve',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'この「限界」「可用性」の2点が、次の**水平スケール（台数を増やす）**に進む理由になります。',
+              en: 'Those two issues — the ceiling and availability — are what push you toward **scaling out (adding machines)** next.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ds-replication',
+        title: { ja: '読み取りをスケールする: レプリケーション', en: 'Scaling reads: replication' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'フィード型アプリは、投稿（書き込み）よりタイムライン取得（読み取り）が圧倒的に多い **read-heavy** です。この場合の定石が**レプリケーション**。書き込みを受ける1台の**リーダー（primary）**と、その複製を持つ複数の**レプリカ（follower）**を用意し、読み取りをレプリカに分散します。',
+              en: 'A feed app is **read-heavy**: fetching timelines (reads) vastly outnumbers posting (writes). The standard answer here is **replication**: one **leader (primary)** takes the writes, and several **replicas (followers)** hold copies, so reads are spread across the replicas.',
+            },
+          },
+          { type: 'diagram', id: 'db-replication' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**書き込みはリーダーだけ**: 更新は必ずリーダーに送り、リーダーが各レプリカへ複製する',
+                en: '**Writes go only to the leader**: all updates go to the leader, which replicates them to the followers',
+              },
+              {
+                ja: '**読み取りはレプリカへ**: タイムラインやプロフィールの取得をレプリカに振り分ける。レプリカを足せば読み取り性能が上がる',
+                en: '**Reads go to replicas**: route timeline and profile fetches to replicas; add more replicas to add read capacity',
+              },
+              {
+                ja: '**可用性も上がる**: リーダーが落ちても、レプリカの1台を新リーダーに昇格できる（フェイルオーバー）',
+                en: '**Availability improves too**: if the leader dies, a replica can be promoted to become the new leader (failover)',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'これは読み取りの対策です。**書き込みはリーダー1台のまま**なので、書き込みが増えすぎると別の手（後述のシャーディング）が要ります。PostgreSQL のレプリケーションは [High Availability のドキュメント](https://www.postgresql.org/docs/current/high-availability.html) が詳しいです。',
+              en: 'This scales reads only. **Writes still go through a single leader**, so once writes grow too large you need another technique (sharding, below). PostgreSQL\'s replication is covered in its [High Availability docs](https://www.postgresql.org/docs/current/high-availability.html).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ds-lag',
+        title: { ja: 'レプリケーションラグと一貫性', en: 'Replication lag and consistency' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'レプリケーションはふつう**非同期**です。リーダーは書き込みを受けたらすぐ成功を返し、レプリカへの反映は少し遅れて届きます。この遅れを**レプリケーションラグ**と呼びます。ふだんは数ミリ秒〜数十ミリ秒ですが、負荷が高いと秒単位に伸びることもあります。',
+              en: 'Replication is usually **asynchronous**: the leader returns success as soon as it commits, and the change reaches the replicas a little later. That delay is **replication lag** — typically a few to tens of milliseconds, but it can stretch to seconds under load.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'このラグが、分かりにくいバグを生みます。ツイートを投稿した直後に自分のタイムラインを開くと、**まだレプリカに届いておらず、自分の投稿が表示されない**ことがあります。これが「自分の書き込みが読めない（read-your-writes）」問題です。',
+              en: 'This lag causes a subtle bug. Right after posting a tweet, you open your own timeline and **your tweet is missing, because it has not reached the replica yet**. This is the "read-your-writes" problem.',
+            },
+          },
+          { type: 'diagram', id: 'db-replica-lag' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**自分の書き込みは、しばらくリーダーから読む**: 投稿直後のそのユーザーだけ、少しの間だけリーダーを読ませる',
+                en: '**Read your own writes from the leader for a while**: for the user who just posted, read from the leader for a short window',
+              },
+              {
+                ja: '**最新を要求する読み取りだけ強い一貫性**: 全部ではなく「今すぐ正確であるべき」読み取りに限ってリーダーへ',
+                en: '**Strong consistency only where it matters**: send only the reads that must be exactly current to the leader, not all of them',
+              },
+              {
+                ja: '**ラグを監視する**: ラグが大きいレプリカは読み取りから一時的に外す',
+                en: '**Monitor the lag**: temporarily pull replicas with high lag out of the read pool',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'この「少し古くても最終的には揃う」考え方が**結果整合性（eventual consistency）**です。SQL / NoSQL と ACID / BASE の対比は [URL短縮の DB の節](#url-shortener/database) でも触れています。',
+              en: 'This "slightly stale but it converges" idea is **eventual consistency**. The SQL/NoSQL and ACID/BASE contrast also appears in the [URL shortener\'s database section](#url-shortener/database).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ds-sharding',
+        title: { ja: '書き込みをスケールする: シャーディング', en: 'Scaling writes: sharding' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'レプリカをいくら足しても、**書き込みはリーダー1台**のままです。書き込み自体が1台の限界を超えたら、データを**複数の DB に分割**します。これが**シャーディング（水平分割）**です。各 DB（シャード）が、データの一部だけを持ちます。',
+              en: 'No matter how many replicas you add, **writes still funnel through one leader**. When the write load itself exceeds one box, you **split the data across multiple databases**. This is **sharding (horizontal partitioning)**: each database (shard) holds only a slice of the data.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'どのデータをどのシャードに置くかは、**シャードキー**で決めます。フィード型アプリなら user_id が自然な候補です。分け方は主に2つ。下の図で切り替えてみてください。',
+              en: 'Which data lands on which shard is decided by a **shard key**. For a feed app, user_id is a natural choice. There are two main ways to split; toggle between them in the diagram below.',
+            },
+          },
+          { type: 'diagram', id: 'db-sharding' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**ハッシュ分割**: `shard = hash(user_id) % N`。分布が均等になりやすい。ただしシャードを増やすと、多くのキーの置き場所が変わる（再配置が大きい）',
+                en: '**Hash sharding**: `shard = hash(user_id) % N`. The distribution tends to be even, but adding a shard moves most keys (a large reshuffle)',
+              },
+              {
+                ja: '**範囲分割**: user_id の範囲でシャードを分ける。範囲指定の検索はしやすいが、特定の範囲にアクセスが集中する**ホットスポット**が起きやすい',
+                en: '**Range sharding**: split by ranges of user_id. Range scans are easy, but one range can attract most of the traffic — a **hotspot**',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'ホットスポットを避けるには、偏りにくいシャードキーを選びます。たとえば「有名人の user_id」のような一部に偏る値より、分布が均一なキーが向きます。',
+              en: 'To avoid hotspots, pick a shard key that spreads evenly — a uniformly distributed key beats one that clusters, like "celebrity user_ids".',
+            },
+          },
+          {
+            type: 'details',
+            summary: {
+              ja: '深掘り: コンシステントハッシュ（ノード追加時の再配置を減らす）',
+              en: 'Deep dive: consistent hashing (less reshuffling when you add a node)',
+            },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '`shard = hash(user_id) % N` には弱点があります。シャードを増やして **N が変わると、割り算の余りがほぼ全キーで変わり、データのほとんどが別のシャードに引っ越し**になります。たとえば 4 台から 5 台にすると、約 80% のキーが移動します。移動中は負荷も跳ね上がり、現実的ではありません。',
+                  en: '`shard = hash(user_id) % N` has a weakness. When you add a shard and **N changes, almost every key gets a new remainder, so most of the data has to move** to a different shard. Going from 4 to 5 shards moves about 80% of the keys. The load spikes during the move, which is impractical.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'これを解くのが**コンシステントハッシュ**です。考え方はこうです。',
+                  en: 'Consistent hashing solves this. The idea goes like this.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**リングを作る**: ハッシュ値の範囲（0 〜 最大値）を、端と端をつないだ円（リング）として考える',
+                    en: '**Make a ring**: treat the range of hash values (0 to max) as a circle, with the ends joined into a ring',
+                  },
+                  {
+                    ja: '**キーもノードもリング上に置く**: 各シャードを `hash(ノード名)` の位置に、各データを `hash(user_id)` の位置に配置する',
+                    en: '**Place both keys and nodes on the ring**: each shard sits at `hash(node name)`, each row sits at `hash(user_id)`',
+                  },
+                  {
+                    ja: '**時計回りで担当を決める**: あるキーは、リング上を時計回りに進んで最初に出会ったノードが担当する',
+                    en: '**Walk clockwise to find the owner**: a key belongs to the first node found going clockwise around the ring',
+                  },
+                ],
+              },
+              { type: 'diagram', id: 'db-consistent-hash' },
+              {
+                type: 'p',
+                text: {
+                  ja: 'こうすると、**ノードを1台足したとき、動くのは「追加した点と、その手前のノードの間」にあるキーだけ**です。残りのキーは担当が変わりません。移動量は全体の約 `1/N` に抑えられます。ノードを外すときも、その範囲を隣のノードが引き継ぐだけで済みます。',
+                  en: 'Now, **adding one node only moves the keys that fall between the new point and the node just before it** on the ring. Every other key keeps its owner. The data that moves is only about `1/N` of the total. Removing a node is just as cheap: its neighbor takes over that stretch.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'ノードをリング上に1点だけ置くと、担当範囲に偏りが出ます。そこで各ノードを**仮想ノード**として多数の点に分けてリングにばらまき、担当範囲を均一にします。',
+                  en: 'Placing each node at a single point leaves uneven ranges. So each node is split into many **virtual nodes** scattered around the ring, which evens out the ranges.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'DynamoDB や Cassandra などの分散データベース、分散キャッシュ、ロードバランサーで広く使われています。詳しくは [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing) を参照。',
+                  en: 'It is widely used in distributed databases like DynamoDB and Cassandra, in distributed caches, and in load balancers. See [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing) for more.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'ds-sharding-cost',
+        title: { ja: 'シャーディングの代償', en: 'The cost of sharding' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'シャーディングは強力ですが、**一気に複雑さが増えます**。だから「最後の手段」です。データが複数の DB に散るせいで、今まで当たり前だった操作が難しくなります。',
+              en: 'Sharding is powerful, but it **adds a lot of complexity all at once**, which is why it is a last resort. Because the data is now spread across databases, operations that used to be trivial become hard.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**複数シャードにまたがる検索**: 「フォロー中の全員の最新投稿」のような問い合わせが、全シャードに問い合わせて結果を集める必要がある',
+                en: '**Cross-shard queries**: a query like "latest posts from everyone I follow" must hit every shard and merge the results',
+              },
+              {
+                ja: '**JOIN が難しい**: 別シャードにあるテーブル同士は、DB の JOIN では結合できない',
+                en: '**JOINs get hard**: tables that live on different shards cannot be joined by the database',
+              },
+              {
+                ja: '**トランザクションが効きにくい**: 複数シャードをまたぐ更新を、1つの原子的な操作にするのは難しい',
+                en: '**Transactions weaken**: making an update across shards one atomic operation is difficult',
+              },
+              {
+                ja: '**リバランスが大変**: シャードを足すとき、データの引っ越しが発生する',
+                en: '**Rebalancing is painful**: adding a shard means physically moving data',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'だから順番が大切です。**まず垂直スケール → キャッシュ → レプリケーション → それでも書き込みが足りなければシャーディング**。シャーディングは、必要になるまで入れないのが賢明です。',
+              en: 'So the order matters: **vertical scale → caching → replication → and only if writes still overflow, sharding**. It is wise not to shard until you truly need to.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ds-sql-nosql',
+        title: { ja: 'SQL と NoSQL（スケールの観点）', en: 'SQL and NoSQL (for scaling)' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '多くの NoSQL（DynamoDB・Cassandra など）が「水平スケールしやすい」と言われるのは、**最初からシャーディング前提で設計されている**からです。JOIN や複数行トランザクションのような、分割すると難しくなる機能を、あえて捨てる（制限する）ことで、台数を増やしやすくしています。',
+              en: 'Many NoSQL stores (DynamoDB, Cassandra, etc.) are called "easy to scale horizontally" because they are **designed for sharding from day one**. They deliberately drop or limit the features that get hard once you split — JOINs, multi-row transactions — which makes adding machines easier.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**SQL（リレーショナル）**: JOIN や強いトランザクション（ACID）が得意。1台では強力だが、水平分割は自前で設計することが多い',
+                en: '**SQL (relational)**: strong at JOINs and transactions (ACID). Powerful on one box, but you often design the horizontal split yourself',
+              },
+              {
+                ja: '**NoSQL（KVS / ドキュメント / ワイドカラム）**: シャーディングが組み込み。キー引きが速く横に伸びるが、複雑な検索や結合は苦手',
+                en: '**NoSQL (key-value / document / wide-column)**: sharding is built in. Fast key lookups that scale out, but weak at complex queries and joins',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '「SQL か NoSQL か」より「このデータに、どんなアクセスパターンと一貫性が要るか」で選ぶのが実践的です。1つのサービスで両方を使い分けることもよくあります。',
+              en: 'In practice, choose by "what access pattern and consistency does this data need?" rather than "SQL vs NoSQL". A single service often uses both for different data.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ds-cache',
+        title: { ja: 'キャッシュで DB を守る', en: 'Protecting the DB with caching' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'スケールの話に戻ると、**一番効く読み取り対策は、そもそも DB を読まないこと**です。よく読まれるデータ（人気ツイート、プロフィール）をキャッシュ（Redis など）に載せれば、読み取りの大半を DB の手前で返せます。レプリカを足すより安く効くことが多いです。',
+              en: 'Coming back to scaling, **the most effective read optimization is to not read the DB at all**. Put frequently read data (popular tweets, profiles) in a cache (Redis) and most reads are served before they reach the DB — often cheaper and more effective than adding replicas.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**キャッシュの考え方は別記事に**: cache-aside などの戦略は [URL短縮のキャッシュの節](#url-shortener/cache-scale) で図付きで説明しています',
+                en: '**Cache strategies are covered elsewhere**: cache-aside and friends are explained with a diagram in the [URL shortener\'s cache section](#url-shortener/cache-scale)',
+              },
+              {
+                ja: '**キャッシュスタンピードに注意**: 人気データのキャッシュが同時に失効すると、全リクエストが一斉に DB へ殺到する。TTL をずらす・事前更新するなどで防ぐ',
+                en: '**Beware cache stampedes**: when a hot item\'s cache expires, all requests rush the DB at once. Prevent it by jittering TTLs or refreshing ahead of expiry',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'ds-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'まず計測し、安易に分散しない。垂直スケール → キャッシュ → レプリケーション → シャーディングの順で考える',
+                en: 'Measure first and do not distribute lightly. Think in the order: vertical scale → caching → replication → sharding',
+              },
+              {
+                ja: 'read-heavy はレプリケーションで読み取りを横に広げる。書き込みはリーダー1台のまま',
+                en: 'For read-heavy loads, replication scales reads outward; writes still go through one leader',
+              },
+              {
+                ja: '非同期レプリケーションにはラグがある。書いた直後の読み取りはリーダーから読むなどで補う',
+                en: 'Async replication has lag; cover the just-after-write read by reading from the leader',
+              },
+              {
+                ja: '書き込みが限界ならシャーディング。シャードキーの選び方でホットスポットが決まる',
+                en: 'When writes hit the limit, shard; the shard key choice decides whether you get hotspots',
+              },
+              {
+                ja: 'シャーディングは複雑さの代償が大きい。クロスシャード検索・JOIN・トランザクションが難しくなる',
+                en: 'Sharding is costly in complexity: cross-shard queries, JOINs and transactions all get harder',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '用語の整理には [Shard (Wikipedia)](https://en.wikipedia.org/wiki/Shard_%28database_architecture%29) と [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing)、実装例には [MongoDB の Sharding](https://www.mongodb.com/docs/manual/sharding/) が参考になります。',
+              en: 'For terminology, [Shard (Wikipedia)](https://en.wikipedia.org/wiki/Shard_%28database_architecture%29) and [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing) help; for an implementation, see [MongoDB\'s Sharding](https://www.mongodb.com/docs/manual/sharding/).',
             },
           },
         ],
