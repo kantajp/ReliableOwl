@@ -67,6 +67,9 @@ export interface Topic {
   category: CategoryId;
   title: LocalizedString;
   tagline: LocalizedString;
+  // ISO dates (YYYY-MM-DD) derived from git history, shown in the topic header.
+  publishedAt: string;
+  updatedAt: string;
   sections: Section[];
 }
 
@@ -74,6 +77,8 @@ export const topics: Topic[] = [
   {
     id: 'fundamentals',
     category: 'system-design',
+    publishedAt: '2026-09-30',
+    updatedAt: '2026-09-30',
     title: { ja: '基礎: 時間とメモリの単位', en: 'Basics: units of time & memory' },
     tagline: {
       ja: '設計の見積もりに欠かせない、時間とデータ量の「桁の感覚」。',
@@ -183,6 +188,8 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
   {
     id: 'interview',
     category: 'system-design',
+    publishedAt: '2026-09-30',
+    updatedAt: '2026-09-30',
     title: { ja: 'システムデザイン面接のフレームワーク', en: 'System design interview framework' },
     tagline: {
       ja: '45分の面接を、迷わず進めるための型。',
@@ -415,6 +422,8 @@ table urls (key PK, long_url, created_at, expires_at?)`,
   {
     id: 'url-shortener',
     category: 'system-design',
+    publishedAt: '2026-09-29',
+    updatedAt: '2026-09-30',
     title: { ja: 'URL短縮サービス', en: 'URL Shortener' },
     tagline: {
       ja: '長いURLを短いキーに変換してリダイレクトする、定番の設計課題。',
@@ -1065,6 +1074,8 @@ owner_id   VARCHAR    NULL         // optional`,
   {
     id: 'rate-limiter',
     category: 'system-design',
+    publishedAt: '2026-09-29',
+    updatedAt: '2026-09-30',
     title: { ja: 'レートリミッター', en: 'Rate Limiter' },
     tagline: {
       ja: '過剰なリクエストを制限して、システムを守る仕組み。',
@@ -1601,6 +1612,8 @@ if count > LIMIT:
   {
     id: 'sli-slo-sla',
     category: 'sre',
+    publishedAt: '2026-10-01',
+    updatedAt: '2026-10-01',
     title: { ja: 'SLI / SLO / SLA', en: 'SLI / SLO / SLA' },
     tagline: {
       ja: '信頼性を数字で決めて、守り、上手に使う。YouTube の動画再生を例に。',
@@ -2153,6 +2166,8 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
   {
     id: 'database-scaling',
     category: 'system-design',
+    publishedAt: '2026-10-01',
+    updatedAt: '2026-10-01',
     title: { ja: 'データベースのスケール', en: 'Scaling Databases' },
     tagline: {
       ja: '1台から始めて、読み取り・書き込みを横に広げる。フィード型アプリを例に。',
@@ -2581,6 +2596,8 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
   {
     id: 'retries',
     category: 'sre',
+    publishedAt: '2026-10-01',
+    updatedAt: '2026-10-01',
     title: { ja: 'リトライ・タイムアウト・バックオフ', en: 'Retries, Timeouts & Backoff' },
     tagline: {
       ja: '一時的な失敗を上手に拾い、やりすぎて障害を広げない。YouTube を例に。',
@@ -2924,6 +2941,8 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
   {
     id: 'circuit-breaker',
     category: 'sre',
+    publishedAt: '2026-09-30',
+    updatedAt: '2026-09-30',
     title: { ja: 'サーキットブレーカー', en: 'Circuit Breaker' },
     tagline: {
       ja: '障害の連鎖を止める、回復性パターンの定番。',

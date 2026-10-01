@@ -582,6 +582,14 @@
   margin: 0;
 }
 
+.topic-header__dates {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  letter-spacing: 0.01em;
+}
+
 .section {
   scroll-margin-top: 32px;
   margin-bottom: 64px;

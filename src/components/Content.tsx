@@ -43,6 +43,13 @@ function renderInline(text: string) {
   });
 }
 
+// Format an ISO date (YYYY-MM-DD) as e.g. "Sep 29, 2026".
+function formatDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function BlockView({ block, lang }: { block: Block; lang: Lang }) {
   switch (block.type) {
     case 'p':
@@ -124,6 +131,12 @@ const SectionView = forwardRef<HTMLElement, SectionProps>(function SectionView(
           <div className="topic-header__eyebrow">{uiText('topicEyebrow')}</div>
           <h1 className="topic-header__title">{t(topic.title, lang)}</h1>
           <p className="topic-header__tagline">{t(topic.tagline, lang)}</p>
+          <p className="topic-header__dates">
+            <span>Published {formatDate(topic.publishedAt)}</span>
+            {topic.updatedAt !== topic.publishedAt && (
+              <span className="topic-header__dates-sep"> · Updated {formatDate(topic.updatedAt)}</span>
+            )}
+          </p>
         </motion.div>
       )}
       <motion.div
