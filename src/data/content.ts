@@ -24,7 +24,10 @@ export type DiagramId =
   | 'rl-placement'
   | 'rl-race'
   | 'rl-architecture'
-  | 'cb-state-machine';
+  | 'cb-state-machine'
+  | 'slo-ladder'
+  | 'slo-nines'
+  | 'slo-budget';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -1583,6 +1586,558 @@ if count > LIMIT:
             text: {
               ja: '面接では「どこで・何を基準に・どのアルゴリズムで・分散でどう一貫性を保ち・超過時に何を返すか」の5点を全体図の上で一貫して説明できると、設計を俯瞰できていることが伝わります。',
               en: 'In an interview, walk this diagram covering five points coherently — where, keyed on what, which algorithm, how consistency holds across nodes, and what you return on excess — to show you can see the whole design.',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'sli-slo-sla',
+    category: 'sre',
+    title: { ja: 'SLI / SLO / SLA', en: 'SLI / SLO / SLA' },
+    tagline: {
+      ja: '信頼性を数字で決めて、守り、上手に使う。YouTube の動画再生を例に。',
+      en: 'Define reliability in numbers, defend it, and spend it wisely, using YouTube video playback as the example.',
+    },
+    sections: [
+      {
+        id: 'slo-intro',
+        title: { ja: 'なぜ必要か', en: 'Why it matters' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '「YouTube は絶対に止まってはいけない」と言いたくなりますが、**100% の信頼性は目指すべき目標ではありません**。視聴者のスマホの回線や Wi-Fi のほうが、よほど頻繁に途切れます。その差は誰にも気づかれないのに、99.99% を 99.999% にするには、費用も手間も桁違いにかかります。',
+              en: 'It is tempting to say "YouTube must never go down", but **100% reliability is the wrong target**. A viewer\'s phone network or Wi-Fi drops far more often than that. Nobody would notice the difference, yet going from 99.99% to 99.999% costs an order of magnitude more money and effort.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'しかも信頼性を上げるほど、新機能を出すスピードは落ちます。変更はいつも障害のきっかけになるからです。そこで「どこまで信頼できれば十分か」を数字で決めて、開発と運用で合意します。その道具が SLI・SLO・SLA です。',
+              en: 'On top of that, the more reliability you demand, the slower you can ship features, because every change is a chance to break something. So you decide in numbers how reliable is "reliable enough", and agree on it across development and operations. SLIs, SLOs and SLAs are the tools for that.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'この記事の数字は、説明のための仮の値です。YouTube の実際の SLO は公開されていません。',
+              en: 'The numbers in this article are illustrative. YouTube\'s real SLOs are not public.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'slo-terms',
+        title: { ja: '3つの違い', en: 'How the three differ' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**SLI（Service Level Indicator）**: 実際に測る指標。例: 再生ボタンを押した回数のうち、動画が実際に再生開始した割合',
+                en: '**SLI (Service Level Indicator)**: the metric you actually measure. Example: of all presses of the play button, the share where the video actually started',
+              },
+              {
+                ja: '**SLO（Service Level Objective）**: SLI の目標値。チームの中の約束。例: 30 日間で 99.9% 以上',
+                en: '**SLO (Service Level Objective)**: the target for an SLI, a promise inside the team. Example: at least 99.9% over 30 days',
+              },
+              {
+                ja: '**SLA（Service Level Agreement）**: 顧客との契約。破ると返金などのペナルティがある。例: 99.5% を下回ったら月額料金の一部を返金',
+                en: '**SLA (Service Level Agreement)**: a contract with customers, with penalties such as refunds when broken. Example: refund part of the monthly fee if it drops below 99.5%',
+              },
+            ],
+          },
+          { type: 'diagram', id: 'slo-ladder' },
+          {
+            type: 'p',
+            text: {
+              ja: '大事なのは並び順です。**SLA は SLO より緩く**しておきます。SLO を守るよう運用していれば、SLA 違反の手前で異変に気づいて手を打てるからです。SLO と SLA を同じ値にすると、目標を外した瞬間に返金が発生してしまいます。',
+              en: 'The order is what matters. **Keep the SLA looser than the SLO.** If you operate to the SLO, you notice trouble and act before you get anywhere near an SLA breach. If the SLO and SLA are the same number, missing your target means paying refunds on the spot.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '無料で見ている視聴者との間に、ふつう SLA はありません。SLA が登場するのは、動画配信の仕組みを企業に有料で提供する場合のように、契約がある場面です。一方 SLI と SLO は、契約がなくても社内の信頼性の管理に使います。',
+              en: 'There is usually no SLA with viewers who watch for free. SLAs appear where there is a paid contract, for example when a company buys video delivery as a service. SLIs and SLOs, on the other hand, are used internally to manage reliability whether or not a contract exists.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'slo-sli',
+        title: { ja: 'SLI の選び方', en: 'Choosing SLIs' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'SLI は**ユーザーが感じることを測る**のが原則です。基本の形は「良いイベント ÷ 全イベント」の割合です。割合にしておくと 0〜100% にそろい、サービスや時間帯が違っても比べやすくなります。',
+              en: 'The rule for SLIs is to **measure what users actually feel**. The basic shape is a ratio: good events ÷ all events. As a ratio it always falls between 0 and 100%, which makes it easy to compare across services and times of day.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'YouTube なら、ユーザーの行動（ユーザージャーニー）ごとに SLI を立てます。',
+              en: 'For YouTube, you set SLIs per user journey.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**再生開始の成功率（可用性）**: 再生を試みた回数のうち、動画が再生開始した割合。目標 99.9%',
+                en: '**Playback start success (availability)**: of all playback attempts, the share where the video started. Target 99.9%',
+              },
+              {
+                ja: '**再生開始までの速さ（レイテンシ）**: 再生開始のうち、2 秒以内に最初の映像が出た割合。目標 99%',
+                en: '**Time to start (latency)**: of all playback starts, the share where the first frame appeared within 2 seconds. Target 99%',
+              },
+              {
+                ja: '**再生の滑らかさ（品質）**: 再生のうち、読み込み待ちで止まった時間が再生時間の 1% 未満だった割合。目標 98%',
+                en: '**Smooth playback (quality)**: of all plays, the share where time spent stalled while buffering was under 1% of the watch time. Target 98%',
+              },
+              {
+                ja: '**アップロード後の処理（鮮度）**: アップロードされた動画のうち、10 分以内に視聴できるようになった割合。目標 99%',
+                en: '**Upload processing (freshness)**: of all uploaded videos, the share that became watchable within 10 minutes. Target 99%',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '目標はジャーニーごとに変えてかまいません。再生開始は一番大事なので厳しく、コメントの表示などはもう少し緩くてもよい、という具合です。',
+              en: 'Targets can differ per journey. Playback starting is the most important, so it gets the strictest target; something like loading comments can be a bit looser.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'CPU 使用率やメモリ使用量は SLI に向きません。CPU が 90% でも動画が問題なく再生されていればユーザーは困りませんし、逆に CPU が低くても再生が失敗していることがあります。こうした値は、原因を調べるための指標として別に見ます。',
+              en: 'CPU and memory usage make poor SLIs. Users are fine if CPU is at 90% and videos still play, and playback can fail while CPU is low. Watch those numbers separately, as tools for finding causes.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'slo-measure',
+        title: { ja: 'どこで測るか', en: 'Where to measure' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '同じ「再生開始の成功率」でも、どこで測るかで見えるものが変わります。',
+              en: 'Even for the same "playback start success" SLI, where you measure it changes what you can see.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**サーバーのログ**: 一番手軽。ただし、リクエストがサーバーに届かなかった失敗（回線や DNS の問題）は記録されない',
+                en: '**Server logs**: the easiest option, but failures where the request never reached the server (network or DNS problems) are never recorded',
+              },
+              {
+                ja: '**CDN やロードバランサー**: 動画を配る入口で測る。サーバーが落ちて返せなかった分も数えられる',
+                en: '**CDN or load balancer**: measure at the edge that serves video. Requests that failed because a server was down are counted too',
+              },
+              {
+                ja: '**外からの定期チェック（合成監視）**: 世界各地から決まった動画を定期的に再生してみる。トラフィックが少ない時間帯でも異常に気づける',
+                en: '**Probes from outside (synthetic monitoring)**: play a known video on a schedule from locations around the world. You catch problems even when real traffic is low',
+              },
+              {
+                ja: '**プレイヤー側の計測**: アプリやブラウザのプレイヤーが「再生開始できたか」を報告する。ユーザーの体験に一番近いが、集計の仕組みづくりに手間がかかる',
+                en: '**Player-side telemetry**: the app or browser player reports whether playback started. Closest to what users experience, but building the reporting pipeline takes effort',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'ユーザーに近いほど正確で、サーバーに近いほど手軽です。最初はロードバランサーで測り始めて、余力ができたらプレイヤー側の計測を足す、という順番が現実的です。',
+              en: 'The closer to the user, the more accurate; the closer to the server, the easier. A realistic path is to start at the load balancer and add player-side telemetry once you have the capacity.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'slo-target',
+        title: { ja: 'SLO の決め方', en: 'Setting SLOs' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**測る期間**: 「直近 30 日」のように、毎日少しずつずれていく期間（ローリングウィンドウ）で見るのが一般的。月初にリセットされる「暦の月」より、ユーザーの体感に近い',
+                en: '**Measurement window**: a rolling window such as "the last 30 days" is the usual choice. It matches how users experience the service better than a calendar month that resets on the 1st',
+              },
+              {
+                ja: '**目標値**: 今の実績から決める。過去 1 か月が 99.95% なら、まずは 99.9% あたりから始める',
+                en: '**Target**: start from what you achieve today. If the last month was at 99.95%, begin around 99.9%',
+              },
+              {
+                ja: '**レイテンシの書き方**: 平均ではなく「2 秒以内に始まった割合」のように閾値で書く。平均は一部の極端に遅い再生を隠してしまう',
+                en: '**Writing latency targets**: use a threshold such as "the share that started within 2 seconds", not an average. An average hides the few extremely slow plays',
+              },
+              {
+                ja: '**見直し**: SLO は一度決めて終わりではない。四半期ごとなどに、ユーザーの不満や障害の振り返りと照らして調整する',
+                en: '**Review**: an SLO is not set once and forgotten. Revisit it, for example every quarter, against user complaints and incident reviews',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '最初から高すぎる目標にしないこと。守れない SLO は誰も気にしなくなり、意味を失います。**緩めに始めて、少しずつ締める**ほうがうまくいきます。',
+              en: 'Do not start with a target that is too high. An SLO nobody can meet is soon ignored and loses its meaning. **Start loose and tighten gradually.**',
+            },
+          },
+        ],
+      },
+      {
+        id: 'slo-nines',
+        title: { ja: '9 の数と許される停止時間', en: 'Counting nines and allowed downtime' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '可用性は「99.9%（スリーナイン）」のように 9 の数で呼ばれます。数字の差は小さく見えますが、**9 が1つ増えるごとに、許される停止時間は 1/10 になります**。下の計算機で目標を切り替えてみてください。',
+              en: 'Availability is often described by its count of nines, as in "99.9% (three nines)". The numbers look close together, but **each extra nine cuts the allowed downtime to a tenth**. Try switching targets in the calculator below.',
+            },
+          },
+          { type: 'diagram', id: 'slo-nines' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**99.9%**: 30 日で 43.2 分、1 日なら約 1 分 26 秒まで止まってよい',
+                en: '**99.9%**: up to 43.2 minutes per 30 days, or about 1 minute 26 seconds per day',
+              },
+              {
+                ja: '**99.99%**: 30 日で約 4 分 19 秒。人が呼び出されてから対応を始めるだけで、使い切ってしまう長さ',
+                en: '**99.99%**: about 4 minutes 19 seconds per 30 days, gone in the time it takes an on-call engineer to start responding',
+              },
+              {
+                ja: '**規模で考える**: YouTube のように再生回数が膨大だと、99.9% でも 10 億回の再生のうち 100 万回の失敗を許すことになる。割合が同じでも、影響を受ける人の数は大きい',
+                en: '**Think in scale**: with YouTube\'s volume, even 99.9% allows 1 million failures per billion plays. The same percentage still affects a large number of people',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'もう1つ大事なのが、**依存先の可用性は掛け算になる**ことです。再生には認証・動画情報・配信（CDN）の 3 つが必要で、それぞれが 99.9% なら、全体は `0.999 × 0.999 × 0.999 ≈ 99.7%` まで下がります。全体の SLO は、依存先の SLO より高くできません。',
+              en: 'One more key point: **the availability of dependencies multiplies**. If playback needs auth, video metadata and delivery (CDN), each at 99.9%, the whole drops to `0.999 × 0.999 × 0.999 ≈ 99.7%`. Your overall SLO cannot be higher than what your dependencies provide.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'slo-budget',
+        title: { ja: 'エラーバジェット', en: 'Error budgets' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '`100% − SLO` が、失敗してよい量になります。これを**エラーバジェット（失敗の予算）**と呼びます。SLO 99.9% なら予算は 0.1% で、30 日間なら 43.2 分ぶんの停止にあたります。',
+              en: '`100% − SLO` is the amount of failure you are allowed. This is the **error budget**. With an SLO of 99.9% the budget is 0.1%, which over 30 days is worth 43.2 minutes of downtime.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '予算は「使ってよいもの」です。残っているうちは新機能のリリースや実験に使い、使い切ったら信頼性の改善を優先します。こうすると「早く出したい開発」と「止めたくない運用」の言い争いが、**残りの予算という1つの数字の話**に変わります。',
+              en: 'The budget is meant to be spent. While some is left, spend it on feature releases and experiments; once it runs out, put reliability work first. This turns the argument between "developers who want to ship" and "operators who want stability" into **a conversation about one number: the budget left**.',
+            },
+          },
+          { type: 'diagram', id: 'slo-budget' },
+          {
+            type: 'p',
+            text: {
+              ja: '図の「大きな障害あり」では、12 日目に 30 分ほど再生開始が失敗し、1 回で予算の約 7 割を使っています。残りの日数で予算が尽きると、リリースを止めて信頼性の作業に切り替える判断になります。',
+              en: 'In the "with a major outage" scenario, playback starts fail for about 30 minutes on day 12, using roughly 70% of the budget in one go. When the budget runs out before the window ends, the call is to stop releases and switch to reliability work.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '予算が尽きたときに何をするかは、事前に文書で決めておきます（エラーバジェットポリシー）。例は [SRE Workbook の Error Budget Policy](https://sre.google/workbook/error-budget-policy/) にあります。',
+              en: 'Decide in writing ahead of time what happens when the budget runs out (an error budget policy). There is an example in [the SRE Workbook\'s Error Budget Policy](https://sre.google/workbook/error-budget-policy/).',
+            },
+          },
+          {
+            type: 'details',
+            summary: {
+              ja: '深掘り: エラーバジェットポリシーには何を書くか',
+              en: 'Deep dive: what goes into an error budget policy',
+            },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: 'エラーバジェットポリシーは、「予算が尽きたら何をするか」を障害が起きる前に合意しておく短い文書です。狙いは2つ。SLO 違反の繰り返しから顧客を守ることと、信頼性と機能開発のバランスを取る動機づけです。**罰ではありません**。「今は機能より信頼性が大事」とデータが示したときに、堂々と信頼性に集中してよいという許可証です。',
+                  en: 'An error budget policy is a short document that agrees, before any incident, on what happens when the budget runs out. It has two goals: protect customers from repeated SLO misses, and create an incentive to balance reliability against feature work. **It is not a punishment.** It is permission to focus on reliability without guilt when the data says reliability now matters more than features.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '基本のルールはシンプルです。',
+                  en: 'The core rule is simple.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**SLO 以上なら**: 通常どおりリリースを進めてよい',
+                    en: '**At or above the SLO**: releases proceed as normal',
+                  },
+                  {
+                    ja: '**予算を使い切ったら**: SLO に戻るまで、最優先の不具合（P0）とセキュリティ修正を除いて、変更とリリースをすべて止める',
+                    en: '**Budget exhausted**: halt all changes and releases, except top-priority (P0) bugs and security fixes, until the service is back within SLO',
+                  },
+                ],
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'ただし、予算を使い切った原因によって対応は変わります。',
+                  en: 'What the team does next, though, depends on why the budget was spent.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**信頼性作業を優先すべき**: 自分たちのコードのバグや手順ミスが原因だったとき。ポストモーテムで「固い依存を緩められる」と分かったとき',
+                    en: '**Must work on reliability**: when the team\'s own code bug or procedural error caused the miss, or a postmortem reveals a chance to soften a hard dependency',
+                  },
+                  {
+                    ja: '**機能開発を続けてよい**: 全社的なネットワーク障害が原因のとき。他チームのサービスが原因で、そのチームが既にリリースを凍結して対応しているとき。負荷試験など SLO の対象外のトラフィックが予算を消費したとき',
+                    en: '**May keep building features**: when the cause was a company-wide network problem, or another team\'s service (and they have already frozen their own releases), or when out-of-scope traffic such as load tests consumed the budget',
+                  },
+                ],
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '大きな障害には、追加のルールを決めておきます。',
+                  en: 'Larger incidents get extra rules.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**1回の障害が予算の 20% 超を使ったら**: ポストモーテムを必ず書き、根本原因に対する P0 のアクションを最低1つ入れる',
+                    en: '**A single incident spends more than 20% of the budget**: a postmortem is required, with at least one P0 action item addressing the root cause',
+                  },
+                  {
+                    ja: '**同じ種類の障害が四半期で予算の 20% 超を使ったら**: 翌四半期の計画に、その問題を直す P0 項目を入れる',
+                    en: '**One class of outage spends more than 20% over a quarter**: put a P0 item in next quarter\'s plan to fix it',
+                  },
+                ],
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: '予算の計算やルールの適用でもめたとき、誰が最終判断をするか（例: CTO にエスカレーション）も先に決めておくと、障害対応中の言い争いを避けられます。',
+                  en: 'Decide in advance who makes the final call when people disagree about the budget math or the policy (for example, escalate to the CTO). It avoids arguments in the middle of an incident.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'slo-alerting',
+        title: { ja: 'SLO にもとづくアラート', en: 'Alerting on SLOs' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '「エラー率が 1% を超えたら通知」のような決め方だと、一瞬の山で夜中に起こされたり、逆に低いエラー率が何日も続いて予算を使い切るのを見逃したりします。そこで、**予算を消費する速さ（バーンレート）**で通知します。',
+              en: 'A rule like "alert when the error rate goes over 1%" either wakes people up for a brief spike, or misses a low error rate that quietly burns the whole budget over several days. So you alert on **how fast the budget is being spent (the burn rate)** instead.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**バーンレート 1**: ちょうど 30 日で予算を使い切るペース。SLO 99.9% なら、エラー率 0.1% が続いている状態',
+                en: '**Burn rate 1**: the pace that uses up the budget in exactly 30 days. With an SLO of 99.9%, that is a steady 0.1% error rate',
+              },
+              {
+                ja: '**バーンレート 14.4**: 1 時間で予算の 2% を使うペース。このままだと約 2 日で尽きるので、すぐ人を呼ぶ',
+                en: '**Burn rate 14.4**: the pace that spends 2% of the budget in one hour. At that rate it is gone in about 2 days, so page someone right away',
+              },
+              {
+                ja: '**バーンレート 6**: 6 時間で予算の 5% を使うペース。これも呼び出し',
+                en: '**Burn rate 6**: the pace that spends 5% of the budget in six hours. This also pages',
+              },
+              {
+                ja: '**バーンレート 1 が 3 日続く**: 予算の 10% を使う。急ぎではないので、翌営業日に対応するチケットにする',
+                en: '**Burn rate 1 for 3 days**: spends 10% of the budget. Not urgent, so file a ticket for the next working day',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'さらに、長い窓（1 時間）と短い窓（5 分）の両方で条件を満たしたときだけ通知すると、すでに収まった障害で鳴り続けるのを防げます。これを**マルチウィンドウ・マルチバーンレート**のアラートと呼びます。',
+              en: 'On top of that, alerting only when both a long window (1 hour) and a short window (5 minutes) meet the condition stops alerts from firing for an incident that is already over. This is called **multiwindow, multi-burn-rate** alerting.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'ここで使った数値は [SRE Workbook の Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/) が勧める出発点です。',
+              en: 'The numbers here are the starting points recommended in [Alerting on SLOs from the SRE Workbook](https://sre.google/workbook/alerting-on-slos/).',
+            },
+          },
+          {
+            type: 'details',
+            summary: {
+              ja: '深掘り: マルチウィンドウ・マルチバーンレートの作り方',
+              en: 'Deep dive: building multiwindow, multi-burn-rate alerts',
+            },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '1つのバーンレートだけで通知すると、必ずどこかで困ります。速いバーンレートだけを見ると、低いエラー率がじわじわ予算を食う障害を見逃します。逆に遅いバーンレートだけを見ると、障害がもう収まっているのにアラートが鳴り続けます（リセットが遅い）。そこで**速さの違う複数のルールを並べ**、さらに各ルールを**長い窓と短い窓の AND**にします。',
+                  en: 'Alerting on a single burn rate always hurts somewhere. Watch only a fast burn rate and you miss a low error rate that quietly eats the budget. Watch only a slow one and the alert keeps firing long after the incident is over (slow to reset). So you **run several rules at different speeds**, and make each rule an **AND of a long window and a short window**.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '99.9% の SLO での出発点として、SRE Workbook はこの3段を勧めています。',
+                  en: 'As a starting point for a 99.9% SLO, the SRE Workbook recommends these three tiers.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**ページ（即対応）**: 長い窓 1 時間・短い窓 5 分、バーンレート 14.4。1 時間で予算の 2% を使うペース',
+                    en: '**Page (respond now)**: long window 1h, short window 5m, burn rate 14.4 — the pace that spends 2% of the budget in an hour',
+                  },
+                  {
+                    ja: '**ページ（即対応）**: 長い窓 6 時間・短い窓 30 分、バーンレート 6。6 時間で予算の 5% を使うペース',
+                    en: '**Page (respond now)**: long window 6h, short window 30m, burn rate 6 — spends 5% of the budget in six hours',
+                  },
+                  {
+                    ja: '**チケット（翌営業日）**: 長い窓 3 日・短い窓 6 時間、バーンレート 1。3 日で予算の 10% を使うペース',
+                    en: '**Ticket (next working day)**: long window 3d, short window 6h, burn rate 1 — spends 10% of the budget in three days',
+                  },
+                ],
+              },
+              {
+                type: 'code',
+                label: { ja: 'ページ用アラートの例（擬似）', en: 'Example paging alert (pseudo)' },
+                code: `# fire only when BOTH windows exceed the threshold
+page if ( burn_rate(1h) > 14.4 and burn_rate(5m) > 14.4 )
+     or ( burn_rate(6h) > 6    and burn_rate(30m) > 6   )
+
+ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '短い窓は、長い窓のだいたい **1/12** にします。短い窓の役割は「まだ燃えているか」の確認です。障害が収まると短い窓の値が先に下がるので、アラートが数分で自動的に解除されます。長い窓だけだと、解除まで 1 時間待つことになります。',
+                  en: 'Make the short window about **1/12** of the long one. Its job is to check "is it still burning?" When the incident ends, the short window drops first, so the alert clears itself within minutes. With only the long window, you would wait an hour for it to reset.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'warn',
+                text: {
+                  ja: '低トラフィックのサービスでは、この方式が暴れます。1 時間に 10 リクエストしかないと、1 回の失敗で瞬間エラー率が 10% になり、巨大なバーンレートとして即ページしてしまいます。対策は、合成トラフィックで下駄を履かせる、小さなサービスをまとめて監視する、1 回の失敗の重みを下げる、などです。',
+                  en: 'On low-traffic services this approach misbehaves. At 10 requests per hour, a single failure makes the instantaneous error rate 10%, which looks like a huge burn rate and pages immediately. Remedies include adding synthetic traffic, grouping small services together for monitoring, or reducing the weight of a single failure.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'slo-pitfalls',
+        title: { ja: 'よくある落とし穴', en: 'Common pitfalls' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**SLI が多すぎる**: 指標が 20 個あると、どれも見られなくなる。大事なユーザージャーニーごとに数個に絞る',
+                en: '**Too many SLIs**: with 20 indicators, nobody watches any of them. Keep a few per important user journey',
+              },
+              {
+                ja: '**内部の数字を SLO にする**: CPU やキューの長さは、ユーザーの体験を表さない',
+                en: '**Making internal numbers SLOs**: CPU or queue length do not describe what users experience',
+              },
+              {
+                ja: '**SLO と SLA を同じ値にする**: 余裕がなくなり、目標を外すとすぐ契約違反になる',
+                en: '**Setting the SLO equal to the SLA**: there is no margin left, so missing the target is instantly a contract breach',
+              },
+              {
+                ja: '**決めただけで使わない**: 予算が尽きてもリリースが続くなら、SLO はただの飾り。エラーバジェットポリシーとセットで運用する',
+                en: '**Setting them and never using them**: if releases continue after the budget is gone, the SLO is just decoration. Pair it with an error budget policy',
+              },
+              {
+                ja: '**平均で測る**: 平均レイテンシは、一部の遅い再生に苦しむユーザーを隠す。閾値を超えた割合で測る',
+                en: '**Measuring with averages**: average latency hides the users stuck with slow playback. Measure the share that crossed a threshold',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'slo-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '100% は目指さない。どこまでで十分かを数字で決めて合意する',
+                en: 'Do not aim for 100%. Decide and agree in numbers on what is good enough',
+              },
+              {
+                ja: 'SLI は測る指標、SLO はチームの目標、SLA は顧客との契約。SLA ＜ SLO ＜ 実際の値の順に余裕を持たせる',
+                en: 'An SLI is what you measure, an SLO is the team target, an SLA is the customer contract. Leave headroom in the order SLA < SLO < actual',
+              },
+              {
+                ja: 'SLI はユーザーが感じることを「良いイベント ÷ 全イベント」で測る',
+                en: 'Measure what users feel, as good events ÷ all events',
+              },
+              {
+                ja: '9 が1つ増えると許される停止時間は 1/10。依存先の可用性は掛け算になる',
+                en: 'Each extra nine cuts allowed downtime to a tenth, and dependency availability multiplies',
+              },
+              {
+                ja: 'エラーバジェットで開発の速さと信頼性のバランスを取り、アラートはバーンレートで出す',
+                en: 'Use the error budget to balance speed and reliability, and alert on burn rate',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '基本となる考え方は Google SRE 本の [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) と [Embracing Risk](https://sre.google/sre-book/embracing-risk/)、実践の手順は [SRE Workbook の Implementing SLOs](https://sre.google/workbook/implementing-slos/) にまとまっています。',
+              en: 'The core ideas are in the Google SRE book chapters [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) and [Embracing Risk](https://sre.google/sre-book/embracing-risk/); the practical steps are in [Implementing SLOs from the SRE Workbook](https://sre.google/workbook/implementing-slos/).',
             },
           },
         ],

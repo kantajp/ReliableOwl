@@ -4,6 +4,7 @@ import { IvTimeline } from './InterviewDiagrams';
 import { UrlArchitecture, UrlBasicFlow, UrlCacheEviction, UrlCacheScale, UrlCapacity, UrlKeyGeneration, UrlKeyUniqueness, UrlReadWrite } from './UrlDiagrams';
 import { RlAlgorithms, RlAllowDeny, RlArchitecture, RlCapacity, RlDistributed, RlPlacement, RlRace, RlTokenBucket, RlWhy } from './RateLimiterDiagrams';
 import { CbStateMachine } from './CircuitBreakerDiagrams';
+import { SloBudget, SloLadder, SloNines } from './SloDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -27,6 +28,9 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'rl-race': RlRace,
   'rl-architecture': RlArchitecture,
   'cb-state-machine': CbStateMachine,
+  'slo-ladder': SloLadder,
+  'slo-nines': SloNines,
+  'slo-budget': SloBudget,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {
