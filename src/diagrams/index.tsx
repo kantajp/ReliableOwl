@@ -5,6 +5,7 @@ import { UrlArchitecture, UrlBasicFlow, UrlCacheEviction, UrlCacheScale, UrlCapa
 import { RlAlgorithms, RlAllowDeny, RlArchitecture, RlCapacity, RlDistributed, RlPlacement, RlRace, RlTokenBucket, RlWhy } from './RateLimiterDiagrams';
 import { CbStateMachine } from './CircuitBreakerDiagrams';
 import { SloBudget, SloLadder, SloNines } from './SloDiagrams';
+import { BackoffLadder, RetryStorm } from './RetryDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -31,6 +32,8 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'slo-ladder': SloLadder,
   'slo-nines': SloNines,
   'slo-budget': SloBudget,
+  'retry-storm': RetryStorm,
+  'retry-backoff': BackoffLadder,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {

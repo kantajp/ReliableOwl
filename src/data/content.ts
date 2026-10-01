@@ -27,7 +27,9 @@ export type DiagramId =
   | 'cb-state-machine'
   | 'slo-ladder'
   | 'slo-nines'
-  | 'slo-budget';
+  | 'slo-budget'
+  | 'retry-storm'
+  | 'retry-backoff';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -2139,6 +2141,349 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
               ja: '基本となる考え方は Google SRE 本の [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) と [Embracing Risk](https://sre.google/sre-book/embracing-risk/)、実践の手順は [SRE Workbook の Implementing SLOs](https://sre.google/workbook/implementing-slos/) にまとまっています。',
               en: 'The core ideas are in the Google SRE book chapters [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) and [Embracing Risk](https://sre.google/sre-book/embracing-risk/); the practical steps are in [Implementing SLOs from the SRE Workbook](https://sre.google/workbook/implementing-slos/).',
             },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'retries',
+    category: 'sre',
+    title: { ja: 'リトライ・タイムアウト・バックオフ', en: 'Retries, Timeouts & Backoff' },
+    tagline: {
+      ja: '一時的な失敗を上手に拾い、やりすぎて障害を広げない。YouTube を例に。',
+      en: 'Recover from transient failures without making outages worse. With YouTube as the example.',
+    },
+    sections: [
+      {
+        id: 'rt-intro',
+        title: { ja: 'なぜ必要か', en: 'Why it matters' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ネットワーク越しの呼び出しは、ときどき失敗します。パケットの取りこぼし、一瞬の過負荷、サーバーの再起動などです。こうした**一時的な失敗（transient failure）**の多くは、少し待ってもう一度試すと成功します。YouTube アプリが動画情報の取得に一度失敗しても、すぐ再取得できれば、ユーザーは何も気づきません。',
+              en: 'Calls over the network fail from time to time: a dropped packet, a brief overload, a server restarting. Many of these **transient failures** succeed if you simply wait a moment and try again. If the YouTube app fails once to fetch video metadata but refetches right away, the user never notices.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'ただしリトライは、使い方を間違えると**障害を広げる凶器**になります。弱ったサーバーに全員が一斉に再送すると、とどめを刺してしまうからです。この記事では、リトライを安全にするための3点セット、**タイムアウト・バックオフ・ジッター**を見ていきます。',
+              en: 'But done wrong, retries become a **weapon that spreads the outage**: if everyone resends to a struggling server at once, the retries finish it off. This article walks through the trio that makes retries safe — **timeouts, backoff and jitter**.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'リトライは「一時的な失敗」にだけ有効です。404 や 400 のような、何度試しても結果が変わらない失敗はリトライしてはいけません（判断の仕方は後の節で）。',
+              en: 'Retries only help with transient failures. Do not retry failures like 404 or 400 that will never change no matter how often you try (how to tell them apart is covered later).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'rt-timeout',
+        title: { ja: 'まずタイムアウト', en: 'Start with timeouts' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'リトライの前に、そもそも**いつ「失敗」と判断するか**を決める必要があります。それがタイムアウトです。応答が返ってこない呼び出しを待ち続けると、スレッドや接続がふさがり、[サーキットブレーカー](#circuit-breaker)の記事で見たような連鎖障害につながります。',
+              en: 'Before retrying, you must decide **when a call counts as "failed"**. That is the timeout. Waiting forever on a call that never responds ties up threads and connections, leading to the kind of cascading failure covered in the [circuit breaker](#circuit-breaker) article.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**短すぎると**: まだ処理中の正常なリクエストまで失敗扱いにし、無駄なリトライを生む',
+                en: '**Too short**: healthy requests that are still processing get marked as failures, generating pointless retries',
+              },
+              {
+                ja: '**長すぎると**: 落ちている相手を長時間待ち、リソースを握り続ける',
+                en: '**Too long**: you wait on a dead dependency for ages, holding resources the whole time',
+              },
+              {
+                ja: '**決め方**: 正常時の応答時間の分布を見て、p99 より少し上に置くのが目安。平均ではなく裾（遅い側）で決める',
+                en: '**How to set it**: look at the healthy response-time distribution and place it a bit above p99 — decide on the tail, not the average',
+              },
+              {
+                ja: '**全体の予算から配分する**: ユーザーへの応答が 2 秒以内なら、その内側で各依存先のタイムアウトを割り振る（deadline の伝播）',
+                en: '**Budget it from the whole**: if the user-facing response must be within 2s, allocate each dependency\'s timeout inside that budget (deadline propagation)',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'タイムアウトは「接続まで」と「応答全体まで」を分けて設定します。接続はすぐできるはずなので短く、処理を含む全体は少し長く、という具合です。',
+              en: 'Set separate timeouts for "establishing the connection" and "the whole response". The connection should be quick, so keep it short; the full response, including processing, can be a little longer.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'rt-storm',
+        title: { ja: 'リトライの落とし穴（再送の雪崩）', en: 'The trap: retry storms' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'サーバーが一瞬だけ不調になり、多くのクライアントの呼び出しが同時に失敗したとします。全員が「1 秒後にリトライ」と決め打ちしていると、ちょうど 1 秒後に**全リトライが同じ瞬間に殺到**します。回復しかけたサーバーは、この波でまた倒れます。これが再送の雪崩（thundering herd / retry storm）です。下の図で、ジッターあり/なしを切り替えてみてください。',
+              en: 'Suppose the server has a brief blip and many clients\' calls fail at the same time. If they all hardcode "retry after 1 second", then exactly 1 second later **all the retries hit at the same instant**. The barely-recovering server is knocked over again by that wave. This is the retry storm (thundering herd). Toggle jitter on and off in the diagram below.',
+            },
+          },
+          { type: 'diagram', id: 'retry-storm' },
+          {
+            type: 'p',
+            text: {
+              ja: '対策は2つを組み合わせます。**バックオフ**で待ち時間を少しずつ延ばし、**ジッター**でその待ち時間をクライアントごとにばらけさせます。これで再送が時間軸に散らばり、サーバーが吸収できる低い波になります。',
+              en: 'The fix combines two things. **Backoff** stretches the wait a little more each time, and **jitter** scatters that wait randomly across clients. Together they spread the retries over time into a low wave the server can absorb.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'rt-backoff',
+        title: { ja: 'バックオフとジッター', en: 'Backoff and jitter' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '**指数バックオフ**は、試行ごとに待ち時間を倍にしていく方法です。基本の式はこうです。',
+              en: '**Exponential backoff** doubles the wait after each attempt. The basic formula is:',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: '指数バックオフ + ジッター', en: 'Exponential backoff + jitter' },
+            code: `wait = min(cap, base * 2^attempt)   // 0.5s, 1s, 2s, 4s, … (capped)
+wait = random(0, wait)              // full jitter: spread 0..wait`,
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**base**: 最初の待ち時間（例: 0.5 秒）',
+                en: '**base**: the first wait (e.g. 0.5s)',
+              },
+              {
+                ja: '**cap（上限）**: 待ち時間が無限に伸びないよう頭打ちにする（例: 30 秒）',
+                en: '**cap**: an upper bound so the wait does not grow forever (e.g. 30s)',
+              },
+              {
+                ja: '**ジッター**: 計算した待ち時間を「0〜その値」の乱数にする（フルジッター）。これがばらけさせる肝',
+                en: '**jitter**: replace the computed wait with a random value in 0..wait (full jitter) — this is what spreads them out',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: 'ジッターなしの指数バックオフだけでは不十分です。全員が同時に失敗すると、2 倍にしても「全員が同じ 2 秒後」に再送するだけだからです。AWS の実験でも、**フルジッターが競合と総リクエスト数を大きく減らす**と示されています（[Exponential Backoff And Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)）。',
+              en: 'Exponential backoff without jitter is not enough: if everyone fails at the same time, doubling just means everyone retries "2 seconds later" together. AWS\'s own experiments show that **full jitter sharply reduces contention and total request count** ([Exponential Backoff And Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)).',
+            },
+          },
+          { type: 'diagram', id: 'retry-backoff' },
+          {
+            type: 'details',
+            summary: {
+              ja: '深掘り: 数秒ずらすだけで、なぜ効くのか',
+              en: 'Deep dive: why shifting by a few seconds actually works',
+            },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '「たった数秒」でも効くのは、サーバーが落ちるかどうかを決めるのが**総リクエスト数ではなく、一瞬のピーク（同時に来る数）**だからです。効き方は2つに分けて考えると分かりやすいです。',
+                  en: 'A few seconds matters because whether a server falls over is decided by **the instantaneous peak (how many arrive at once), not the total count**. It helps to split the effect into two parts.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '**① ジッターがピークを下げる（これが本命）**',
+                  en: '**(1) Jitter lowers the peak — this is the main effect**',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '24 台が同時に失敗し、全員きっかり 2 秒後に再送すると、その瞬間に 24 件が1点に集中します。サーバーの容量が「0.25 秒あたり 14 件」なら、軽く超えて再び落ちます。ここで待ち時間を 0〜2 秒の乱数にばらすと、24 件が 2 秒間（＝0.25 秒のバケット 8 個）に散り、1 バケットあたり平均 `24 ÷ 8 = 3 件`。ピークが 24 → 3 前後に下がり、容量 14 の内側に収まります。**延ばした長さより、「同じ瞬間をなくした」ことが効いています。**',
+                  en: 'If 24 clients fail together and all retry exactly 2 seconds later, 24 requests pile onto a single instant. If the server\'s capacity is "14 per 0.25s", that spike blows past it and it falls again. Spread the wait randomly over 0–2 seconds and those 24 requests scatter across 2 seconds (eight 0.25s buckets), about `24 ÷ 8 = 3` per bucket. The peak drops from 24 to around 3, comfortably under the capacity of 14. **What helped was removing the shared instant, not the length of the delay.**',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '**② 指数バックオフが総量を抑える**',
+                  en: '**(2) Exponential backoff holds down the total**',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '相手が長く不調なとき、固定間隔（毎秒リトライ）だと一定ペースで叩き続けます。10 秒ダウンすれば 1 台につき約 10 回。指数バックオフ（0.5 → 1 → 2 → 4 秒…）なら、同じ 10 秒で約 4 回に減ります。待つほど呼び出し頻度が自動で下がるので、弱った相手に浴びせる総負荷が小さくなり、回復する時間を与えられます。',
+                  en: 'When the dependency stays unhealthy, a fixed interval (retry every second) keeps hammering at a constant pace: about 10 tries per client over a 10-second outage. Exponential backoff (0.5 → 1 → 2 → 4 s…) cuts that to about 4 tries in the same 10 seconds. The longer you wait, the less often you call, so the total load on the struggling dependency shrinks and it gets room to recover.',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'tip',
+                text: {
+                  ja: 'どちらか片方では足りません。バックオフだけだと「全員が同じ 2 秒後」に揃うのでピークは下がりません。ジッターだけだと総量は減りません。**両方そろって初めて、ピークを下げつつ総量も抑えられます。**',
+                  en: 'Neither half is enough alone. Backoff without jitter still lines everyone up at "2 seconds later", so the peak stays high. Jitter without backoff does not reduce the total. **Only together do they both lower the peak and hold down the total.**',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'rt-budget',
+        title: { ja: 'リトライの回数を制限する', en: 'Capping how much you retry' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'バックオフとジッターで波を平すだけでは足りません。相手が本当に落ちているなら、リトライは**いつか必ず打ち切る**必要があります。打ち切らないと、無駄な負荷をかけ続けます。',
+              en: 'Smoothing the wave with backoff and jitter is not enough. If the dependency is truly down, retries **must eventually stop**. Otherwise you just keep piling on useless load.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**回数の上限**: 「最大 3 回まで」のように単純に打ち切る。一番簡単',
+                en: '**A max attempt count**: simply stop after, say, 3 tries. The simplest option',
+              },
+              {
+                ja: '**リトライ予算（retry budget）**: 「全リクエストのうちリトライは 10% まで」のように、システム全体でリトライの総量を制限する。1 件ずつの上限より、過負荷時の暴走を防げる',
+                en: '**A retry budget**: cap total retries system-wide, e.g. "retries may be at most 10% of all requests". Better than a per-call limit at preventing runaway load under stress',
+              },
+              {
+                ja: '**多層でリトライしない**: 各層がそれぞれ 3 回リトライすると、3 層で最大 27 倍になる。リトライするのは原則1つの層だけにする',
+                en: '**Do not retry at every layer**: if each of 3 layers retries 3 times, that is up to 27× the load. As a rule, retry at only one layer',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'リトライとサーキットブレーカーは組み合わせます。ブレーカーが OPEN の間はリトライしません（即フォールバック）。多層リトライの増幅は、過負荷対策の定番論点です（[Google SRE 本 · Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/)）。',
+              en: 'Combine retries with a circuit breaker: do not retry while the breaker is OPEN (fall back immediately). The amplification from retrying at multiple layers is a classic overload topic ([Google SRE book · Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/)).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'rt-what',
+        title: { ja: '何をリトライしてよいか', en: 'What is safe to retry' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'すべての失敗をリトライしてよいわけではありません。2つの軸で判断します。「一時的な失敗か」と「同じ操作を2回やって安全か」です。',
+              en: 'Not every failure should be retried. Judge on two axes: "is it transient?" and "is doing the operation twice safe?"',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**リトライしてよい**: タイムアウト、接続エラー、[503 Service Unavailable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503)、429（レート制限）。これらは待てば変わる可能性がある',
+                en: '**Safe to retry**: timeouts, connection errors, [503 Service Unavailable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503), 429 (rate limited). These may change if you wait',
+              },
+              {
+                ja: '**リトライしてはいけない**: 400（不正なリクエスト）、404（存在しない）、401/403（認証・認可）。何度試しても同じ結果',
+                en: '**Do not retry**: 400 (bad request), 404 (not found), 401/403 (auth). The result will be the same no matter how often you try',
+              },
+              {
+                ja: '**サーバーの指示に従う**: 429 や 503 が [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After) ヘッダを返したら、自分のバックオフより優先してその時間だけ待つ',
+                en: '**Obey the server**: when a 429 or 503 includes a [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After) header, wait that long instead of your own backoff',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'もう1つの軸が**冪等性（べきとうせい / idempotency）**です。同じリクエストを2回処理しても結果が変わらない操作は、安全にリトライできます。読み取り（GET）はもともと安全です。書き込みは、**冪等キー**（リクエストごとに一意な ID）を付けて、サーバー側で「この ID は処理済み」と重複を弾けるようにします。',
+              en: 'The other axis is **idempotency**: an operation you can process twice with the same result is safe to retry. Reads (GET) are naturally safe. For writes, attach an **idempotency key** (a unique ID per request) so the server can reject a duplicate as "already processed".',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '冪等でない書き込みを素朴にリトライすると、二重課金や二重投稿が起きます。「視聴回数 +1」のような操作も、リトライで二重に数えないよう冪等キーで守ります。',
+              en: 'Naively retrying a non-idempotent write causes double charges or double posts. Even an operation like "+1 view count" needs an idempotency key so a retry does not count it twice.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'rt-server',
+        title: { ja: 'サーバー側の備え', en: 'The server\'s side' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'リトライはクライアントだけの話ではありません。サーバー側も、リトライされる前提で振る舞うと全体が安定します。',
+              en: 'Retries are not only a client concern. The whole system is steadier when the server behaves as if it will be retried.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**早く正しく断る**: 過負荷なら、遅く処理するより [503](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503) + [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After) で早く断るほうが、クライアントのリトライを制御できる',
+                en: '**Reject fast and clearly**: under overload, returning [503](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503) + [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After) quickly beats processing slowly — it lets you steer the client\'s retries',
+              },
+              {
+                ja: '**負荷を落とす（load shedding）**: 全部を遅くするより、一部を早く断って残りを守る。これも過負荷対策の基本（[Google SRE 本 · Handling Overload](https://sre.google/sre-book/handling-overload/)）',
+                en: '**Shed load**: rather than slowing everything, reject some requests fast to protect the rest — a core overload tactic ([Google SRE book · Handling Overload](https://sre.google/sre-book/handling-overload/))',
+              },
+              {
+                ja: '**冪等キーを尊重する**: 同じキーの再送は、処理済みの結果をそのまま返す',
+                en: '**Honor idempotency keys**: for a resend with the same key, return the already-computed result',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'rt-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'まずタイムアウトで「失敗」を素早く判定する。全体の時間予算から各依存先に配分する',
+                en: 'Start with timeouts to decide "failed" quickly, allocated to each dependency from an overall time budget',
+              },
+              {
+                ja: '一時的な失敗だけをリトライする。404 や 400 はリトライしない',
+                en: 'Retry only transient failures; never retry 404 or 400',
+              },
+              {
+                ja: '指数バックオフで待ちを倍にし、フルジッターでばらす。これで再送の雪崩を防ぐ',
+                en: 'Double the wait with exponential backoff and scatter it with full jitter to prevent retry storms',
+              },
+              {
+                ja: 'リトライは必ず上限で打ち切る。回数・リトライ予算・単層リトライで総量を抑える',
+                en: 'Always cap retries: use a max count, a retry budget, and retry at a single layer to bound the total',
+              },
+              {
+                ja: '書き込みは冪等キーで安全にする。サーバーは早く正しく断り、ブレーカーが OPEN ならリトライしない',
+                en: 'Make writes safe with idempotency keys; the server rejects fast and clearly, and do not retry while the breaker is OPEN',
+              },
+            ],
           },
         ],
       },
