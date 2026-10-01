@@ -1061,7 +1061,10 @@ strong {
 
 @media (max-width: 760px) {
   .layout {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr) lets the column shrink below its content's intrinsic width,
+       so long code lines scroll inside their own block instead of widening the
+       whole page. Plain `1fr` (= minmax(auto, 1fr)) caused horizontal overflow. */
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .sidebar {
@@ -1072,6 +1075,7 @@ strong {
   }
 
   .content {
+    min-width: 0;
     padding: 36px 20px 80px;
   }
 
