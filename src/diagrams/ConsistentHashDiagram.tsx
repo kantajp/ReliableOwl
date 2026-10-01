@@ -231,9 +231,9 @@ export function ConsistentHashRing() {
         })()}
         {/* clockwise hint arrow mark near the top-right */}
         {(() => {
-          const p = ringPoint(32, R);
+          const p = ringPoint(18, R + 30);
           return (
-            <text x={p.x + 10} y={p.y} fill="var(--text-dim)" fontSize={11} fontFamily={MONO}>
+            <text x={p.x + 6} y={p.y} fill="var(--text-dim)" fontSize={11} fontFamily={MONO}>
               {tr('時計回り ↻', 'clockwise ↻')}
             </text>
           );
@@ -280,8 +280,9 @@ export function ConsistentHashRing() {
           const label = tr(n.labelJa, n.labelEn);
           const lw = textWidth(label, 11) + 16;
           // Push the label pill outward along the radius so it sits off the ring.
-          const lp = ringPoint(n.deg, R + (n.deg > 90 && n.deg < 270 ? 24 : 20));
+          // Top-side labels get a larger offset so they clear the "0 / max" mark.
           const below = n.deg > 90 && n.deg < 270;
+          const lp = ringPoint(n.deg, R + (below ? 24 : 44));
           const pillY = below ? lp.y + 6 : lp.y - 24;
           return (
             <g

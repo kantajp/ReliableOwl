@@ -108,7 +108,9 @@ export function Sidebar({
                   animate={{ rotate: catOpen ? 90 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  ▸
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
                 </motion.span>
                 {t(cat.label, lang)}
               </button>
@@ -138,7 +140,9 @@ export function Sidebar({
                               animate={{ rotate: isOpen ? 90 : 0 }}
                               transition={{ duration: 0.2 }}
                             >
-                              ▸
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 6l6 6-6 6" />
+                              </svg>
                             </motion.span>
                             <span className="nav-group__label">{t(topic.title, lang)}</span>
                           </button>
