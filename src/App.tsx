@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { OnThisPage } from './components/OnThisPage';
 import { Content } from './components/Content';
 import { Home } from './components/Home';
+import { AboutPage } from './components/AboutPage';
 import { TopBar } from './components/TopBar';
 import { SearchModal } from './components/SearchModal';
 import { useTheme } from './useTheme';
@@ -25,6 +26,7 @@ function parseHash(): { topic: string; section: string | null } {
 // on the same screen. Unknown/empty hash → home.
 function viewFromHash(): View {
   const { topic } = parseHash();
+  if (topic === 'about') return 'about';
   return topics.some((t) => t.id === topic) ? topic : 'home';
 }
 
@@ -33,6 +35,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const isHome = view === 'home';
+  const isAbout = view === 'about';
 
   // Open the search palette with ⌘K / Ctrl+K from anywhere.
   useEffect(() => {
@@ -63,7 +66,7 @@ export default function App() {
   useEffect(() => {
     const onHashChange = () => {
       const { topic, section } = parseHash();
-      setView(topics.some((t) => t.id === topic) ? topic : 'home');
+      setView(topic === 'about' ? 'about' : topics.some((t) => t.id === topic) ? topic : 'home');
       if (section) {
         // Wait for the new topic to render, then scroll to the section.
         requestAnimationFrame(() =>
@@ -89,8 +92,12 @@ export default function App() {
       lang === 'ja'
         ? 'Reliable Owl — 図で学ぶシステム設計と SRE'
         : 'Reliable Owl — Learn system design & SRE with interactive diagrams';
-    document.title = isHome ? base : `${t(activeTopic.title, lang)} · Reliable Owl`;
-  }, [isHome, activeTopic, lang]);
+    document.title = isHome
+      ? base
+      : isAbout
+        ? (lang === 'ja' ? 'About · Reliable Owl' : 'About · Reliable Owl')
+        : `${t(activeTopic.title, lang)} · Reliable Owl`;
+  }, [isHome, isAbout, activeTopic, lang]);
 
   const sectionEls = useRef<Map<string, HTMLElement>>(new Map());
   const observer = useRef<IntersectionObserver | null>(null);
@@ -140,6 +147,11 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
+  const goAbout = useCallback(() => {
+    setView('about');
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, []);
+
   const openTopic = useCallback((topicId: string) => {
     const topic = topics.find((t) => t.id === topicId) ?? topics[0];
     setView(topicId);
@@ -169,7 +181,7 @@ export default function App() {
 
   return (
     <div
-      className={`layout ${isHome ? 'layout--home' : ''} ${!isHome && !sidebarOpen ? 'layout--collapsed' : ''
+      className={`layout ${isHome || isAbout ? 'layout--home' : ''} ${!isHome && !isAbout && !sidebarOpen ? 'layout--collapsed' : ''
         }`}
     >
       {/* Search + language + theme controls, fixed top-right on every view */}
@@ -182,7 +194,9 @@ export default function App() {
       />
 
       {isHome ? (
-        <Home onOpenTopic={openTopic} />
+        <Home onOpenTopic={openTopic} onOpenAbout={goAbout} />
+      ) : isAbout ? (
+        <AboutPage onHome={goHome} />
       ) : (
         <>
           <button
@@ -204,7 +218,7 @@ export default function App() {
             onHome={goHome}
             onCollapse={() => setSidebarOpen(false)}
           />
-          <Content topic={activeTopic} registerRef={registerRef} />
+          <Content topic={activeTopic} registerRef={registerRef} onOpenAbout={goAbout} onOpenTopic={openTopic} />
           <OnThisPage topic={activeTopic} activeSectionId={activeId} onSelect={scrollTo} />
         </>
       )}

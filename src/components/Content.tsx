@@ -1,9 +1,10 @@
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import type { Block, Section, Topic } from '../data/content';
+import { categories, topics, type Block, type Section, type Topic } from '../data/content';
 import { Diagram } from '../diagrams';
 import { SocialLinks } from './SocialLinks';
 import { highlight } from './highlight';
+import { formatDate } from '../formatDate';
 import { t, useLang, useUi, type Lang } from '../i18n';
 
 // Simple inline formatting: `code` -> <code>, **bold** -> strong,
@@ -44,11 +45,6 @@ function renderInline(text: string) {
 }
 
 // Format an ISO date (YYYY-MM-DD) as e.g. "Sep 29, 2026".
-function formatDate(iso: string): string {
-  const d = new Date(`${iso}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
 
 function BlockView({ block, lang }: { block: Block; lang: Lang }) {
   switch (block.type) {
@@ -65,10 +61,10 @@ function BlockView({ block, lang }: { block: Block; lang: Lang }) {
     case 'note':
       return (
         <div className={`note note--${block.tone}`}>
-          <span className="note__icon">
-            {block.tone === 'tip' ? '💡' : block.tone === 'warn' ? '⚠️' : 'ℹ️'}
+          <span className="note__label">
+            {t(NOTE_LABELS[block.tone] ?? NOTE_LABELS.info, lang)}
           </span>
-          <span>{renderInline(t(block.text, lang))}</span>
+          <span className="note__text">{renderInline(t(block.text, lang))}</span>
         </div>
       );
     case 'code':
@@ -104,16 +100,28 @@ function BlockView({ block, lang }: { block: Block; lang: Lang }) {
 interface SectionProps {
   topic: Topic;
   section: Section;
+  index: number;
   isFirstOfTopic: boolean;
   registerRef: (id: string, el: HTMLElement | null) => void;
 }
 
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+const NOTE_LABELS: Record<string, { ja: string; en: string }> = {
+  tip: { ja: 'ヒント', en: 'Tip' },
+  warn: { ja: '注意', en: 'Caution' },
+  info: { ja: 'メモ', en: 'Note' },
+};
+
+const NEXT_LABEL = { ja: '次の記事', en: 'Next' };
+
 const SectionView = forwardRef<HTMLElement, SectionProps>(function SectionView(
-  { topic, section, isFirstOfTopic, registerRef },
+  { topic, section, index, isFirstOfTopic, registerRef },
   _ref,
 ) {
   const { lang } = useLang();
-  const uiText = useUi();
+  // Eyebrow: the topic's category, e.g. "System Design".
+  const category = categories.find((c) => c.id === topic.category);
   return (
     <section
       id={section.id}
@@ -128,7 +136,9 @@ const SectionView = forwardRef<HTMLElement, SectionProps>(function SectionView(
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.5 }}
         >
-          <div className="topic-header__eyebrow">{uiText('topicEyebrow')}</div>
+          <div className="topic-header__eyebrow">
+            {category ? t(category.label, lang) : ''}
+          </div>
           <h1 className="topic-header__title">{t(topic.title, lang)}</h1>
           <p className="topic-header__tagline">{t(topic.tagline, lang)}</p>
           <p className="topic-header__dates">
@@ -145,7 +155,10 @@ const SectionView = forwardRef<HTMLElement, SectionProps>(function SectionView(
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="section__title">{t(section.title, lang)}</h2>
+        <h2 className="section__title">
+          <span className="section__num" aria-hidden="true">{pad2(index + 1)}</span>
+          {t(section.title, lang)}
+        </h2>
         {section.blocks.map((b, i) => (
           <BlockView key={i} block={b} lang={lang} />
         ))}
@@ -159,9 +172,16 @@ export const Content = forwardRef<
   {
     topic: Topic;
     registerRef: (id: string, el: HTMLElement | null) => void;
+    onOpenAbout: () => void;
+    onOpenTopic: (topicId: string) => void;
   }
->(function Content({ topic, registerRef }, ref) {
+>(function Content({ topic, registerRef, onOpenAbout, onOpenTopic }, ref) {
+  const { lang } = useLang();
   const uiText = useUi();
+  // Next article in reading order (same order as the home index).
+  const ordered = categories.flatMap((c) => topics.filter((tp) => tp.category === c.id));
+  const next = ordered[ordered.findIndex((tp) => tp.id === topic.id) + 1];
+  const nextCategory = next && categories.find((c) => c.id === next.category);
   return (
     <main className="content" ref={ref}>
       <div className="content__inner">
@@ -170,13 +190,32 @@ export const Content = forwardRef<
             key={section.id}
             topic={topic}
             section={section}
+            index={idx}
             isFirstOfTopic={idx === 0}
             registerRef={registerRef}
           />
         ))}
+        {next && (
+          <nav className="next-topic" aria-label={t(NEXT_LABEL, lang)}>
+            <div className="next-topic__label">{t(NEXT_LABEL, lang)}</div>
+            <button type="button" className="next-topic__row" onClick={() => onOpenTopic(next.id)}>
+              <span className="next-topic__main">
+                <span className="next-topic__eyebrow">{nextCategory ? t(nextCategory.label, lang) : ''}</span>
+                <span className="next-topic__title">{t(next.title, lang)}</span>
+                <span className="next-topic__desc">{t(next.tagline, lang)}</span>
+              </span>
+              <span className="next-topic__arrow" aria-hidden="true">→</span>
+            </button>
+          </nav>
+        )}
         <footer className="content__footer">
           <SocialLinks />
           <p>{uiText('footer')}</p>
+          <button type="button" className="about-link" onClick={onOpenAbout}>
+            Kanta Nakamura
+            <span className="about-link__sep"> · </span>
+            {uiText('viewProfile')} <span className="about-link__arrow">→</span>
+          </button>
         </footer>
       </div>
     </main>

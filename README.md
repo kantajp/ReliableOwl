@@ -7,6 +7,7 @@ the app supports light/dark themes and Japanese/English.
 
 ## Features
 
+- **Editorial design** — typography-first layout with a topic index on the home page; see the [design reference](docs/DESIGN.md)
 - **Three-column docs layout** — left topic nav, center content, right "on this page" TOC
 - **Animated diagrams** — request flows, Base62 key generation, cache hit/miss, and an interactive Token Bucket you can drain and refill
 - **Scroll-spy navigation** — the active section is highlighted as you scroll (via `IntersectionObserver`), and nav clicks smooth-scroll
@@ -43,6 +44,8 @@ npm run preview # preview the production build locally
 ## Project structure
 
 ```
+docs/
+  DESIGN.md                 # design reference (tokens, type, layout, components)
 src/
   main.tsx                  # entry; wraps <App/> in <LangProvider/>
   App.tsx                   # 3-column layout + scroll-spy (IntersectionObserver)
@@ -50,6 +53,8 @@ src/
   app.css                   # component styles (layout, sidebar, diagrams, toggles)
   i18n.tsx                  # Lang context, localized-string helper t(), UI dictionary
   useTheme.ts               # theme state hook (localStorage + OS preference)
+  formatDate.ts             # "2026-09-29" -> "Sep 29, 2026"
+  home.css                  # home page styles (editorial index)
   data/
     content.ts              # all content: topics -> sections -> blocks (the data model)
   components/
@@ -124,6 +129,14 @@ Keep in-diagram text bilingual by branching on `lang` from `useLang()`.
 - **Language:** `useLang()` (from `i18n.tsx`) exposes `lang`, `setLang`, and
   `toggle`. UI strings live in the `ui` dictionary in `i18n.tsx`; content strings
   live in `content.ts`.
+
+## Design
+
+The site follows a quiet, editorial design: typography and whitespace carry the
+page, thin rules separate things, and a single accent color marks interactive
+state. Colors, type scale, layouts, component patterns, and what to avoid are
+documented in the **[design reference](docs/DESIGN.md)**. Read it before
+changing styles or adding articles and diagrams.
 
 ## Scripts
 

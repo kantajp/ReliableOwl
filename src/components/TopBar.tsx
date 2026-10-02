@@ -3,7 +3,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { useUi } from '../i18n';
 import type { Theme } from '../useTheme';
 
-// Fixed language + theme controls in the top-right corner, shown on every view.
+// Fixed search + language + theme controls in the top-right corner, every view.
 export function TopBar({
   theme,
   onToggleTheme,

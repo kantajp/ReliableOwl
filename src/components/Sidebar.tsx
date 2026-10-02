@@ -113,6 +113,7 @@ export function Sidebar({
                   </svg>
                 </motion.span>
                 {t(cat.label, lang)}
+                <span className="nav-category__count">{catTopics.length}</span>
               </button>
               <AnimatePresence initial={false}>
                 {catOpen && (

@@ -54,6 +54,14 @@ export const ui = {
     ja: 'Built by Kanta Nakamura · Reliable Owl',
     en: 'Built by Kanta Nakamura · Reliable Owl',
   },
+  authorBackground: {
+    ja: '著者は AWS・Oracle での勤務経験があります',
+    en: 'The author has worked at AWS and Oracle',
+  },
+  viewProfile: {
+    ja: 'プロフィールを見る',
+    en: 'View profile',
+  },
   topicEyebrow: { ja: 'トピック', en: 'TOPIC' },
   home: { ja: 'ホーム', en: 'Home' },
   heroTagline: {
