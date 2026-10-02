@@ -3,25 +3,26 @@ import { Logo } from './Logo';
 import { SocialLinks } from './SocialLinks';
 import { useLang } from '../i18n';
 
-// Author profile / About page. DRAFT: the prose below is placeholder text —
-// replace the marked spots with the real, accurate wording. Bilingual via `ja`.
+// Author profile / About page. Bilingual via `ja`.
+// Oracle is listed as an upcoming role: once started, drop "(planned)" and
+// change the intro to "now work as a Site Reliability Engineer in Tokyo".
 export function AboutPage({ onHome }: { onHome: () => void }) {
   const { lang } = useLang();
   const ja = lang === 'ja';
   const tr = (j: string, e: string) => (ja ? j : e);
 
-  const skills = ['SRE', 'System Design', 'AWS', 'Oracle Cloud', 'TypeScript', 'React', 'Observability'];
-
   const timeline: { role: string; period: string; note?: string }[] = [
     {
-      role: tr('（下書き）Oracle — ソフトウェアエンジニア', '(draft) Oracle — Software Engineer'),
-      period: '20XX – 20XX',
-      note: tr('担当した仕事を1〜2行で。', 'One or two lines about what you did.'),
+      role: tr('Oracle（東京）— Site Reliability Engineer', 'Oracle (Tokyo) — Site Reliability Engineer'),
+      period: tr('2026 –（入社予定）', '2026 – (starting soon)'),
     },
     {
-      role: tr('（下書き）AWS — エンジニア', '(draft) AWS — Engineer'),
-      period: '20XX – 20XX',
-      note: tr('担当した仕事を1〜2行で。', 'One or two lines about what you did.'),
+      role: tr('Amazon Web Services（ダブリン）— Cloud Support Engineer', 'Amazon Web Services (Dublin) — Cloud Support Engineer'),
+      period: '2024 – 2026',
+    },
+    {
+      role: tr('台湾の大学 — コンピュータサイエンス', 'University in Taiwan — Computer Science'),
+      period: tr('– 2024', '– 2024'),
     },
   ];
 
@@ -58,8 +59,8 @@ export function AboutPage({ onHome }: { onHome: () => void }) {
         <motion.section className="about__block" {...fadeUp} transition={{ duration: 0.5 }}>
           <p className="about__lead">
             {tr(
-              '（下書き）信頼性の高いシステムをつくるのが好きなエンジニアです。学んだことを「動く図」で説明する学習ノート Reliable Owl を1人で作っています。将来は SRE のスペシャリストを目指しています。',
-              '(draft) I am an engineer who enjoys building reliable systems. I build Reliable Owl, a solo learning notebook that explains concepts with interactive diagrams. My goal is to become an SRE specialist.',
+              '台湾の大学でコンピュータサイエンスを学び、新卒でヨーロッパに渡ってエンジニアとして働きました。現在は日本に拠点を移し、Site Reliability Engineer としてのキャリアを始めるところです。大規模なシステムを「落ちないように」、そして「落ちても速く戻せるように」設計することに関心があります。',
+              "I studied computer science at a university in Taiwan, then moved to Europe to start my career as an engineer. I've since moved back to Japan and am starting my career as a Site Reliability Engineer. I'm interested in how large systems are designed to stay up, and to recover quickly when they don't.",
             )}
           </p>
         </motion.section>
@@ -78,23 +79,13 @@ export function AboutPage({ onHome }: { onHome: () => void }) {
           </ul>
         </motion.section>
 
-        {/* ===== Skills ===== */}
-        <motion.section className="about__block" {...fadeUp} transition={{ duration: 0.5 }}>
-          <h2 className="about__h2">{tr('扱う技術', 'Skills')}</h2>
-          <div className="about__chips">
-            {skills.map((s) => (
-              <span key={s} className="about__chip">{s}</span>
-            ))}
-          </div>
-        </motion.section>
-
         {/* ===== About this site ===== */}
         <motion.section className="about__block" {...fadeUp} transition={{ duration: 0.5 }}>
           <h2 className="about__h2">{tr('このサイトについて', 'About this site')}</h2>
           <p className="about__body">
             {tr(
-              'Reliable Owl は、システム設計と SRE を「読みながら、図を動かして」学べる学習ノートです。すべての図は依存ライブラリなしで手書きし、日本語・英語とダーク/ライトに対応しています。',
-              'Reliable Owl is a learning notebook for system design and SRE — read as you scroll and watch the diagrams move. Every diagram is hand-built with no chart libraries, and the site supports Japanese/English and light/dark themes.',
+              'このサイトは、私がシステム設計と SRE を学びながら、その内容を整理して書き残しているノートです。人に説明できる形にまとめることで、自分の理解も確かめています。3 つの国で、規模も文化も違うシステムと現場を見てきた経験も交えながら、文章と動く図でまとめています。学ぶたびに、記事も少しずつ増やし、更新していきます。内容は個人の見解で、所属組織とは関係ありません。',
+              "This site is my notebook: I write up system design and SRE as I learn them. Putting each topic into a form I could explain to someone else is how I check my own understanding. Along the way I draw on what I've seen of systems and teams of very different scale and culture across three countries, and explain it with writing and interactive diagrams. As I keep learning, I'll keep adding and updating articles. Views are my own and not those of any employer.",
             )}
           </p>
         </motion.section>
