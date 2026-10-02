@@ -33,7 +33,9 @@ export type DiagramId =
   | 'db-replication'
   | 'db-replica-lag'
   | 'db-sharding'
-  | 'db-consistent-hash';
+  | 'db-consistent-hash'
+  | 'sqli-concat'
+  | 'sqli-placeholder';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -49,7 +51,7 @@ export interface Section {
   blocks: Block[];
 }
 
-export type CategoryId = 'system-design' | 'sre';
+export type CategoryId = 'system-design' | 'sre' | 'security';
 
 export interface Category {
   id: CategoryId;
@@ -60,6 +62,7 @@ export interface Category {
 export const categories: Category[] = [
   { id: 'system-design', label: { ja: 'システム設計', en: 'System Design' } },
   { id: 'sre', label: { ja: 'SRE（サイト信頼性）', en: 'SRE' } },
+  { id: 'security', label: { ja: 'セキュリティ', en: 'Security' } },
 ];
 
 export interface Topic {
@@ -3419,6 +3422,288 @@ call(request):
                 en: 'Combine it with timeouts, retries and bulkheads, and monitor state changes with alerts',
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'sql-injection',
+    category: 'security',
+    publishedAt: '2026-10-02',
+    updatedAt: '2026-10-02',
+    title: { ja: 'SQL インジェクション', en: 'SQL Injection' },
+    tagline: {
+      ja: '入力が「値」ではなく「命令」として実行されてしまう脆弱性と、その防ぎ方。',
+      en: 'When user input runs as a command instead of a value, and how to prevent it.',
+    },
+    sections: [
+      {
+        id: 'sqli-intro',
+        title: { ja: '何が起きるのか', en: 'What goes wrong' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'SQL インジェクションは、**ユーザーの入力が「データ」ではなく「SQL の命令の一部」として実行されてしまう**脆弱性です。原因はほとんどの場合ひとつで、SQL 文を**文字列の連結**で組み立てていることです。',
+              en: 'SQL injection is a vulnerability where **user input runs as part of a SQL command instead of being treated as data**. It almost always has one cause: building SQL statements by **concatenating strings**.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '古くから知られている脆弱性ですが、今でも Web アプリの代表的な脆弱性のひとつです。ログイン画面や検索フォームのような、入力を受け取って DB に問い合わせる場所ならどこでも起こりえます。',
+              en: 'It has been known for decades, yet it remains one of the most common web vulnerabilities. It can happen anywhere input is taken and used to query a database: login screens, search boxes, filters.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'この記事は、仕組みを理解して**自分のシステムを守る**ためのものです。自分が管理していないシステムで試すことは、法律で禁止されている行為にあたります。',
+              en: 'This article is about understanding the mechanism so you can **protect your own systems**. Trying it against systems you do not own or have permission to test is illegal.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'sqli-how',
+        title: { ja: '入力が命令に化ける仕組み', en: 'How input turns into a command' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ログイン処理を、入力をそのまま SQL に埋め込んで書いたとします。',
+              en: 'Suppose a login handler builds its SQL by embedding the input directly.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: '危険: 入力を文字列で連結している', en: 'Unsafe: input concatenated into the string' },
+            code: `query = (
+    "SELECT * FROM users WHERE name = '" + name +
+    "' AND password = '" + password + "'"
+)
+cursor.execute(query)`,
+          },
+          {
+            type: 'p',
+            text: {
+              ja: "普通に `alice` と `s3cret` を入力すれば、入力は `' '` の中に収まり、ただの値として比べられます。ところがパスワード欄に `' OR '1'='1` と入れられると、入力の先頭の `'` が文字列を途中で閉じ、その後ろが SQL の命令として解釈されます。",
+              en: "With a normal input like `alice` and `s3cret`, the input stays inside the quotes and is compared as a plain value. But if someone types `' OR '1'='1` into the password field, the leading `'` closes the string early and everything after it is parsed as SQL.",
+            },
+          },
+          { type: 'diagram', id: 'sqli-concat' },
+          {
+            type: 'p',
+            text: {
+              ja: "`'1'='1'` は常に真なので、WHERE の条件全体が真になります。結果として全ユーザーの行が返り、アプリは先頭の行（多くの場合、最初に作られた管理者アカウント）としてログインさせてしまいます。",
+              en: "Since `'1'='1'` is always true, the whole WHERE clause becomes true. Every user row comes back, and the app logs the attacker in as the first one, which is often the first account created: an admin.",
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: 'なぜ name の条件まで無視されるのか', en: 'Why the name check gets ignored too' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '**SQL では AND が OR より先に評価されます**。なので組み立てられた条件は、次のように区切られます。',
+                  en: '**In SQL, AND binds more tightly than OR.** So the resulting condition groups like this:',
+                },
+              },
+              {
+                type: 'code',
+                code: `WHERE (name = 'alice' AND password = '')
+   OR '1'='1'`,
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '左側のかっこは偽でも、右側の OR 以降が常に真なので、行ごとに見て全部の行が条件を満たします。name に何を入れても結果は同じです。',
+                  en: 'Even when the left group is false, the right side after OR is always true, so every row satisfies the condition. Whatever goes into name makes no difference.',
+                },
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '例を単純にするためにパスワードを平文で比べていますが、実際のシステムではパスワードはハッシュで保存し、ハッシュ同士を比べます。それでも、連結で SQL を組み立てていれば同じように破られます。',
+              en: 'The example compares plain-text passwords to keep it simple. Real systems store and compare password hashes, but string-built SQL is just as breakable either way.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'sqli-impact',
+        title: { ja: '起こりうる被害', en: 'What an attacker can do' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ログインを破るのは入り口にすぎません。入力が命令になるということは、**その DB ユーザーにできることは何でもできてしまう**ということです。',
+              en: 'Bypassing login is only the start. If input can become a command, **an attacker can do anything the database user is allowed to do**.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**認証の回避**: パスワードを知らずに、他人や管理者としてログインする',
+                en: '**Authentication bypass**: logging in as another user, or as an admin, without the password',
+              },
+              {
+                ja: '**データの抜き取り**: `UNION` で別のテーブルの結果をつなげ、個人情報やパスワードハッシュを読み出す',
+                en: '**Data theft**: using `UNION` to append results from other tables and read personal data or password hashes',
+              },
+              {
+                ja: '**改ざん・削除**: `UPDATE` や `DELETE` を実行させて、データを書き換えたり消したりする',
+                en: '**Tampering and deletion**: getting `UPDATE` or `DELETE` statements to run',
+              },
+              {
+                ja: '**被害の拡大**: DB ユーザーの権限が強いと、サーバー上のファイルの読み書きや、別のシステムへの足がかりにまで広がる',
+                en: '**Escalation**: with a powerful database user, the damage can extend to reading or writing files on the server, or reaching other systems',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '画面に結果が表示されない場所でも安全とは限りません。エラーが出るかどうかや、応答にかかる時間の違いから、少しずつ中身を推測される手口（ブラインド SQL インジェクション）もあります。',
+              en: 'A query whose result never appears on screen is not safe either. Attackers can infer data bit by bit from whether an error occurs or how long a response takes (blind SQL injection).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'sqli-prevent',
+        title: { ja: '防ぎ方', en: 'How to prevent it' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '本質的な対策は、**プレースホルダ（パラメータ化クエリ）**を使うことです。SQL の「形」と「値」を分けて DB に渡します。',
+              en: 'The real fix is **placeholders (parameterized queries)**: send the shape of the SQL and the values to the database separately.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: '安全: 値はプレースホルダで渡す', en: 'Safe: values passed as parameters' },
+            code: `cursor.execute(
+    "SELECT * FROM users WHERE name = %s AND password_hash = %s",
+    (name, password_hash),
+)`,
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'DB はまず `?`（ドライバによっては `%s` や `$1`）を含む SQL を解析して、命令の形を確定させます。値はそのあとで別に届き、`?` の位置に**ただの文字列として**入るだけです。入力に `\'` が含まれていても、形はもう決まっているので命令にはなりません。',
+              en: 'The database first parses the SQL containing `?` (or `%s` or `$1`, depending on the driver) and fixes the shape of the command. The values arrive afterwards and only fill those slots **as plain strings**. Even if the input contains a `\'`, the shape is already set, so it cannot become a command.',
+            },
+          },
+          { type: 'diagram', id: 'sqli-placeholder' },
+          {
+            type: 'p',
+            text: {
+              ja: 'プレースホルダを基本にしたうえで、次の対策を重ねます。',
+              en: 'With placeholders as the foundation, layer these on top:',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**ORM やクエリビルダーを正しく使う**: 普通の書き方なら内部でプレースホルダを使ってくれます。ただし `raw()` のような生 SQL や、文字列を組み立てて渡した部分は同じように危険です',
+                en: '**Use your ORM or query builder properly**: the normal API uses placeholders internally. Raw SQL escapes such as `raw()`, or strings you build and pass in, are just as dangerous',
+              },
+              {
+                ja: '**識別子は許可リストで選ぶ**: テーブル名・列名・`ORDER BY` の向きはプレースホルダにできないので、決まった候補の中から選ばせる',
+                en: '**Pick identifiers from an allowlist**: table names, column names and sort direction cannot be placeholders, so choose them from a fixed set',
+              },
+              {
+                ja: '**DB ユーザーの権限を最小にする**: アプリ用のユーザーには必要なテーブルへの読み書きだけを許し、`DROP` や他のスキーマへのアクセスは与えない',
+                en: '**Give the database user the least privilege**: allow only the reads and writes the app needs, with no `DROP` or access to other schemas',
+              },
+              {
+                ja: '**入力チェックは補助として使う**: 数値のはずの値が数値かを確かめるのは有効です。ただし「危ない文字を消す」処理やエスケープだけに頼ると漏れが出るので、本命の対策にはしない',
+                en: '**Treat input validation as a backup**: checking that a number is a number helps, but stripping "dangerous" characters or escaping alone leaks, so never rely on it as the main defense',
+              },
+            ],
+          },
+          {
+            type: 'code',
+            label: { ja: '並び替えの列は許可リストから選ぶ', en: 'Choose the sort column from an allowlist' },
+            code: `SORTABLE = {"name": "name", "created": "created_at"}
+
+column = SORTABLE.get(sort_param, "created_at")  # unknown -> default
+cursor.execute(
+    f"SELECT * FROM users WHERE team_id = %s ORDER BY {column}",
+    (team_id,),
+)`,
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'この例で f-string に入るのは、コードに書いた候補の値だけです。ユーザーの入力そのものは決して SQL に入りません。値（`team_id`）はプレースホルダのままです。',
+              en: 'Here only a value written in your own code goes into the f-string; the user input itself never reaches the SQL. The actual value (`team_id`) still goes through a placeholder.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'sqli-ops',
+        title: { ja: '運用で被害を抑える', en: 'Limiting damage in operations' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'コードで防ぐのが第一ですが、どこか1か所の見落としで破られることもあります。SRE の視点では、**破られたときに早く気づき、被害を小さく保つ**仕組みも合わせて用意します。',
+              en: 'Preventing it in code comes first, but a single missed spot is enough. From an SRE point of view, you also want ways to **notice quickly and keep the blast radius small** if it does happen.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**エラーの詳細を返さない**: SQL のエラー文や構造をそのまま画面に出すと、攻撃のヒントになる。利用者には一般的なメッセージだけを返し、詳細はログに残す',
+                en: '**Hide error details**: raw SQL errors on screen give attackers hints. Show users a generic message and keep the details in your logs',
+              },
+              {
+                ja: '**ログとアラート**: DB エラー率の急増や、普段と違うクエリの形・量を監視すると、試行の段階で気づける',
+                en: '**Logs and alerts**: watching for spikes in database errors, or unusual query shapes and volumes, can catch probing early',
+              },
+              {
+                ja: '**WAF は追加の層として**: 典型的な攻撃文字列を止められるが、すり抜けもあるので、コードの対策の代わりにはしない',
+                en: '**A WAF as an extra layer**: it blocks common payloads but can be bypassed, so it never replaces fixing the code',
+              },
+              {
+                ja: '**静的解析とコードレビュー**: 文字列で SQL を組み立てている箇所は、ツールやレビューで機械的に見つけられる',
+                en: '**Static analysis and code review**: string-built SQL is easy to flag automatically with tools and in review',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'sqli-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '覚えておくことはひとつです。**SQL の形はコードが決め、入力は値としてしか渡さない。** これを守れば SQL インジェクションはほぼ防げます。権限の最小化と監視は、それでも何かあったときの保険です。',
+              en: 'One rule covers it: **your code decides the shape of the SQL, and input is only ever passed as a value.** Follow it and SQL injection is essentially prevented. Least privilege and monitoring are the insurance for when something slips through.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'さらに詳しくは、[OWASP の SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) がまとまっています。',
+              en: 'For more depth, the [OWASP SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) is the standard reference.',
+            },
           },
         ],
       },

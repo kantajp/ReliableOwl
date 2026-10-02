@@ -6,7 +6,8 @@
   transition: grid-template-columns 0.3s ease;
 }
 
-/* Collapsed: the nav column shrinks to 0 and the sidebar slides out. */
+/* Collapsed: the nav column shrinks to 0 and the sidebar slides out, so the
+   (max-width) article re-centers with even side margins. */
 .layout--collapsed {
   grid-template-columns: 0 minmax(0, 1fr) var(--toc-width);
 }
@@ -204,6 +205,12 @@
   color: #3fb08a;
   border-color: color-mix(in srgb, #3fb08a 42%, transparent);
   background: color-mix(in srgb, #3fb08a 14%, transparent);
+}
+
+.search-result__tag--security {
+  color: var(--amber);
+  border-color: color-mix(in srgb, var(--amber) 42%, transparent);
+  background: color-mix(in srgb, var(--amber) 14%, transparent);
 }
 
 .search-modal__empty {

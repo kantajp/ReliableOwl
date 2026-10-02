@@ -8,6 +8,7 @@ import { SloBudget, SloLadder, SloNines } from './SloDiagrams';
 import { BackoffLadder, RetryStorm } from './RetryDiagrams';
 import { DbReplicaLag, DbReplication, DbSharding } from './DatabaseScaleDiagrams';
 import { ConsistentHashRing } from './ConsistentHashDiagram';
+import { SqliConcat, SqliPlaceholder } from './SqlInjectionDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -40,6 +41,8 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'db-replica-lag': DbReplicaLag,
   'db-sharding': DbSharding,
   'db-consistent-hash': ConsistentHashRing,
+  'sqli-concat': SqliConcat,
+  'sqli-placeholder': SqliPlaceholder,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {
