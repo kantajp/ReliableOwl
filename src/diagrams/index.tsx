@@ -9,6 +9,7 @@ import { BackoffLadder, RetryStorm } from './RetryDiagrams';
 import { DbReplicaLag, DbReplication, DbSharding } from './DatabaseScaleDiagrams';
 import { ConsistentHashRing } from './ConsistentHashDiagram';
 import { SqliConcat, SqliPlaceholder } from './SqlInjectionDiagrams';
+import { PiChannels, PiIndirect } from './PromptInjectionDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -43,6 +44,8 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'db-consistent-hash': ConsistentHashRing,
   'sqli-concat': SqliConcat,
   'sqli-placeholder': SqliPlaceholder,
+  'pi-indirect': PiIndirect,
+  'pi-channels': PiChannels,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {

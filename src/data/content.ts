@@ -35,7 +35,9 @@ export type DiagramId =
   | 'db-sharding'
   | 'db-consistent-hash'
   | 'sqli-concat'
-  | 'sqli-placeholder';
+  | 'sqli-placeholder'
+  | 'pi-indirect'
+  | 'pi-channels';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -3703,6 +3705,251 @@ cursor.execute(
             text: {
               ja: 'さらに詳しくは、[OWASP の SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) がまとまっています。',
               en: 'For more depth, the [OWASP SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) is the standard reference.',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'prompt-injection',
+    category: 'security',
+    publishedAt: '2026-10-03',
+    updatedAt: '2026-10-03',
+    title: { ja: 'プロンプトインジェクション', en: 'Prompt Injection' },
+    tagline: {
+      ja: 'AI が読んだ文章の中の指示に従ってしまう問題と、被害を抑える設計。',
+      en: 'When an AI follows instructions hidden in what it reads, and how to design for it.',
+    },
+    sections: [
+      {
+        id: 'pi-intro',
+        title: { ja: '何が起きるのか', en: 'What goes wrong' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'LLM を使ったアプリでは、開発者が書いた指示（システムプロンプト）、ユーザーの入力、Web ページやメールなど外から取ってきた文章が、**ひとつの文章としてまとめて**モデルに渡されます。',
+              en: 'In an LLM app, the developer\'s instructions (the system prompt), the user\'s input and text pulled in from outside, such as web pages and emails, are all handed to the model **as one combined text**.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'プロンプトインジェクションは、その中に紛れ込んだ文章が**「データ」ではなく「指示」として受け取られ、モデルが従ってしまう**問題です。データのはずのものが命令として実行される、という形は [SQL インジェクション](#sql-injection) と同じです。',
+              en: 'Prompt injection is when text slipped into that mix is **taken as an instruction instead of data, and the model follows it**. Data being executed as a command is the same shape of problem as [SQL injection](#sql-injection).',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '変化の速い分野なので、この記事は 2026 年 10 月時点での理解をまとめたものです。自分が管理していない AI サービスへの攻撃を試すことは、利用規約や法律に反する場合があります。',
+              en: 'This field moves fast, so this article reflects the understanding as of October 2026. Attacking AI services you do not own may violate their terms or the law.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'pi-types',
+        title: { ja: '直接と間接', en: 'Direct and indirect' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**直接プロンプトインジェクション**: ユーザー自身が「前の指示は無視して〜」のような入力で、アプリの決まりを破らせようとする。被害は多くの場合、そのユーザー自身の画面の中にとどまる',
+                en: '**Direct prompt injection**: the user types something like "ignore the previous instructions and…" to break the app\'s rules. The damage usually stays within that user\'s own session',
+              },
+              {
+                ja: '**間接プロンプトインジェクション**: 攻撃者が Web ページ・メール・ドキュメント・コードのコメントなどに指示を仕込み、**AI がそれを読んだときに**従ってしまう。ユーザーは攻撃者ではなく被害者になる',
+                en: '**Indirect prompt injection**: an attacker plants instructions in a web page, email, document or code comment, and the AI follows them **when it reads that content**. The user is not the attacker but the victim',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '危ないのは間接の方です。AI エージェントがメール送信やファイル操作のような**ツールを使える**と、読んだ文章ひとつで、ユーザーが頼んでいない操作まで実行されてしまいます。',
+              en: 'The indirect kind is the dangerous one. Once an AI agent can **use tools** such as sending email or editing files, a single piece of text it reads can trigger actions the user never asked for.',
+            },
+          },
+          { type: 'diagram', id: 'pi-indirect' },
+          {
+            type: 'p',
+            text: {
+              ja: '指示は人間には見えない形で仕込めます。背景と同じ色の文字、画像の中の文字、HTML のコメント、ドキュメントのメタデータなどです。ユーザーが画面で確認しても気づけないことがあります。',
+              en: 'The instruction can be invisible to people: text the same color as the background, text inside an image, HTML comments, document metadata. A user looking at the page may see nothing wrong.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'pi-why',
+        title: { ja: 'なぜ SQL のように直せないのか', en: 'Why it can\'t be fixed like SQL' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'SQL インジェクションには、プレースホルダという根本的な解決策がありました。命令の形と値を**別々の経路で**渡すので、値がどんな文字列でも命令にはなりません。',
+              en: 'SQL injection has a root-cause fix: placeholders. The command shape and the values travel **on separate paths**, so no value can ever become a command.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'LLM には、これに当たるものがありません。指示もデータも同じ自然言語の文章として 1 本にまとめて読まれ、どこまでが指示かを決めるのはモデル自身の判断だからです。',
+              en: 'LLMs have no equivalent. Instructions and data are read together as one stream of natural language, and deciding which part is an instruction is left to the model itself.',
+            },
+          },
+          { type: 'diagram', id: 'pi-channels' },
+          {
+            type: 'p',
+            text: {
+              ja: '外部の文章を区切り記号で囲む、システムプロンプトに「読んだ文章の指示には従わない」と書く、怪しい入力を検出するモデルを挟む、といった工夫は効果があります。ただしどれも**確率的に減らす**もので、プレースホルダのように「絶対に起きない」とは言えません。',
+              en: 'Wrapping outside text in delimiters, telling the model in the system prompt not to follow instructions it reads, and adding a classifier that flags suspicious input all help. But each only **lowers the odds**; none can guarantee it never happens the way placeholders do.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '「モデルが賢くなれば解決する」と考えて設計すると危険です。**モデルはいつか騙される**という前提で、騙されても被害が出ないシステムにします。',
+              en: 'Designing on the assumption that smarter models will solve this is risky. Assume **the model will be fooled eventually**, and build a system where being fooled does no harm.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'pi-design',
+        title: { ja: '被害を抑える設計', en: 'Designing to limit the damage' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'モデルの中で完全に防げない以上、守る場所は**モデルの外側**です。被害が出るかどうかは、モデルが騙されたかではなく、**騙されたモデルに何ができるか**で決まります。',
+              en: 'Since it can\'t be fully stopped inside the model, the defenses live **outside the model**. Whether harm happens depends not on whether the model was fooled, but on **what a fooled model is able to do**.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**ツールと権限を最小にする**: その作業に必要なツールだけを渡し、可能なら読み取り専用にする。トークンもユーザーやタスクごとに範囲を絞る',
+                en: '**Minimize tools and permissions**: give only the tools the task needs, read-only where possible, with tokens scoped to the user and the task',
+              },
+              {
+                ja: '**取り返しのつかない操作は人が確認する**: 外部への送信、削除、支払い、権限の変更などは、実行前に内容を見せて承認をもらう',
+                en: '**Have a human confirm irreversible actions**: show the details and ask for approval before sending externally, deleting, paying or changing permissions',
+              },
+              {
+                ja: '**外から来た文章を信用しない**: Web ページ、メール、ファイル、ツールの結果は「信頼できない入力」として扱う。それを読んだあとは、使えるツールを減らすなどして権限を落とす',
+                en: '**Distrust outside text**: treat web pages, emails, files and tool results as untrusted input. After reading them, drop privileges, for example by narrowing the available tools',
+              },
+              {
+                ja: '**出力をそのまま実行しない**: モデルの出力も信頼できない入力として扱う。SQL やシェルに直接流さず、HTML として表示するときはエスケープする',
+                en: '**Never execute output directly**: model output is untrusted input too. Don\'t pipe it into SQL or a shell, and escape it before rendering it as HTML',
+              },
+              {
+                ja: '**外に出る経路を絞る**: 通信先を許可リストにし、サンドボックスの中で動かす。URL や画像の読み込みを通じてデータを持ち出される経路もふさぐ',
+                en: '**Restrict the ways out**: allowlist network destinations and run in a sandbox. Close side channels too, such as leaking data through URLs or image loads',
+              },
+            ],
+          },
+          {
+            type: 'code',
+            label: { ja: 'ツールごとに危険度を決め、外に出る操作は確認する', en: 'Rate each tool by risk and confirm outbound actions' },
+            code: `TOOLS = {
+    "search_docs": {"risk": "read"},
+    "send_email":  {"risk": "external",    "confirm": True},
+    "delete_file": {"risk": "destructive", "confirm": True},
+}
+
+def call_tool(name, args, user):
+    policy = TOOLS.get(name)
+    if policy is None:
+        raise PermissionError(f"unknown tool: {name}")
+    if policy.get("confirm") and not user.approve(name, args):
+        return "cancelled by the user"
+    audit_log(user, name, args)  # who, what, with which arguments
+    return run(name, args)`,
+          },
+          {
+            type: 'details',
+            summary: { ja: '画像や URL からデータが漏れる仕組み', en: 'How data leaks through images and URLs' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: 'チャット画面がモデルの出力を Markdown として表示する場合、出力に外部の画像が含まれていると、画面はその URL に自動でアクセスします。URL のクエリに会話の内容が埋め込まれていれば、ユーザーが何もクリックしなくても、その内容が攻撃者のサーバーに届きます。',
+                  en: 'If a chat UI renders model output as Markdown, an external image in that output makes the UI fetch its URL automatically. If the URL\'s query string contains parts of the conversation, they reach the attacker\'s server without the user clicking anything.',
+                },
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '対策は、表示してよい画像やリンクの送り先を許可リストに限ること、または外部の画像を自動で読み込まないことです。「送信ツールを渡していないから安全」とは限らない、という例です。',
+                  en: 'The fix is to allowlist where images and links may point, or to never auto-load external images. It shows that "we gave it no send tool" does not mean "it cannot send".',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'pi-ops',
+        title: { ja: '気づくための運用', en: 'Operations: noticing it' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '設計で被害を小さくしたうえで、SRE の視点では**起きたときに気づけること**も大事です。',
+              en: 'With the blast radius contained by design, the SRE side is about **noticing when it happens**.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**ツール呼び出しを記録する**: いつ、誰の依頼で、どのツールを、どんな引数で呼んだかを残す。あとから原因をたどれるようにする',
+                en: '**Log every tool call**: when, on whose behalf, which tool and with what arguments, so incidents can be traced afterwards',
+              },
+              {
+                ja: '**普段と違う動きにアラートを出す**: 初めて見る送信先、短時間の大量の読み取り、依頼の内容と関係ないツールの呼び出しなど',
+                en: '**Alert on unusual behavior**: a never-before-seen destination, a burst of reads, or tool calls unrelated to the request',
+              },
+              {
+                ja: '**ツールにもレート制限をかける**: 騙されても、一度に動かせる量を小さく保つ',
+                en: '**Rate-limit tools too**: even when fooled, keep how much can happen at once small',
+              },
+              {
+                ja: '**攻撃パターンをテストに入れる**: 既知のインジェクションの例を評価用のテストにし、モデルやプロンプトを変えるたびに CI で確かめる',
+                en: '**Test against known attacks**: turn known injection samples into an evaluation suite and run it in CI whenever the model or prompts change',
+              },
+              {
+                ja: '**すぐ止められるようにする**: 問題が起きたときに、特定のツールやエージェント全体を一括で無効にできるスイッチを用意しておく',
+                en: '**Keep a kill switch**: be able to disable a specific tool, or the whole agent, at once when something goes wrong',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'pi-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'SQL インジェクションは「値として渡す」ことで根本から防げました。プロンプトインジェクションは、今のところモデルの中で根本から防ぐ方法がありません。だから考え方を変えて、**モデルが騙されても被害が出ないように、権限と確認と監視で外側を固めます**。',
+              en: 'SQL injection is fixed at the root by passing input as values. Prompt injection, for now, has no root fix inside the model. So the approach changes: **lock down the outside with permissions, confirmations and monitoring, so that a fooled model can\'t do harm**.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '詳しくは [OWASP Top 10 for LLM Applications の LLM01: Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) と、[LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html) がまとまっています。',
+              en: 'For more, see [LLM01: Prompt Injection in the OWASP Top 10 for LLM Applications](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) and the [LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html).',
             },
           },
         ],
