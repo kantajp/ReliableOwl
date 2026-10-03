@@ -44,6 +44,8 @@ npm run preview # preview the production build locally
 ## Project structure
 
 ```
+agentDocs.ts                # build plugin: articles as Markdown, llms.txt, sitemap.xml,
+                            # and a static article index in index.html (readable without JS)
 docs/
   DESIGN.md                 # design reference (tokens, type, layout, components)
 src/

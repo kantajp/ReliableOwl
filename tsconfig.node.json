@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": [
-      "ES2023"
+      "ES2023",
+      "DOM"
     ],
     "module": "ESNext",
     "skipLibCheck": true,
@@ -12,9 +13,13 @@
     "composite": true,
     "emitDeclarationOnly": true,
     "outDir": "./node_modules/.tmp",
+    "jsx": "react-jsx",
     "strict": true
   },
   "include": [
-    "vite.config.ts"
+    "vite.config.ts",
+    "agentDocs.ts",
+    "src/data/content.ts",
+    "src/i18n.tsx"
   ]
 }
