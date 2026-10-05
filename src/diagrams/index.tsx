@@ -10,6 +10,7 @@ import { DbReplicaLag, DbReplication, DbSharding } from './DatabaseScaleDiagrams
 import { ConsistentHashRing } from './ConsistentHashDiagram';
 import { SqliConcat, SqliPlaceholder } from './SqlInjectionDiagrams';
 import { PiChannels, PiIndirect } from './PromptInjectionDiagrams';
+import { OAuthCodeFlow, OAuthPkce } from './OAuthDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -46,6 +47,8 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'sqli-placeholder': SqliPlaceholder,
   'pi-indirect': PiIndirect,
   'pi-channels': PiChannels,
+  'oauth-code-flow': OAuthCodeFlow,
+  'oauth-pkce': OAuthPkce,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {

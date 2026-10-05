@@ -37,7 +37,9 @@ export type DiagramId =
   | 'sqli-concat'
   | 'sqli-placeholder'
   | 'pi-indirect'
-  | 'pi-channels';
+  | 'pi-channels'
+  | 'oauth-code-flow'
+  | 'oauth-pkce';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -3950,6 +3952,451 @@ def call_tool(name, args, user):
             text: {
               ja: '詳しくは [OWASP Top 10 for LLM Applications の LLM01: Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) と、[LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html) がまとまっています。',
               en: 'For more, see [LLM01: Prompt Injection in the OWASP Top 10 for LLM Applications](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) and the [LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html).',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'oauth-oidc',
+    category: 'security',
+    publishedAt: '2026-10-03',
+    updatedAt: '2026-10-05',
+    title: { ja: '認証と認可（OAuth 2.0 / OpenID Connect）', en: 'Authentication & Authorization (OAuth 2.0 / OpenID Connect)' },
+    tagline: {
+      ja: '「誰か」と「何をしてよいか」を分けて考え、パスワードを渡さずに安全につなぐ。',
+      en: 'Separate "who you are" from "what you may do", and connect apps safely without sharing passwords.',
+    },
+    sections: [
+      {
+        id: 'oa-authn-authz',
+        title: { ja: '認証と認可の違い', en: 'Authentication vs. authorization' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**認証（Authentication, AuthN）**: 相手が**誰か**を確かめること。パスワード、パスキー、多要素認証など',
+                en: '**Authentication (AuthN)**: verifying **who** someone is, with passwords, passkeys, multi-factor and so on',
+              },
+              {
+                ja: '**認可（Authorization, AuthZ）**: その相手が**何をしてよいか**を決めること。「このユーザーはこの請求書を読めるが、消せない」など',
+                en: '**Authorization (AuthZ)**: deciding **what** that someone may do, e.g. "this user can read this invoice but not delete it"',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'ホテルにたとえると、フロントで身分証を見せるのが認証、渡されたカードキーで入れる部屋が決まっているのが認可です。順番は必ず認証が先で、誰かがわからなければ、何を許すかも決められません。',
+              en: 'Think of a hotel: showing your ID at the front desk is authentication; the key card that only opens your room is authorization. Authentication always comes first, since you cannot decide what to allow until you know who it is.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'HTTP のステータスコードもこの区別に沿っています。`401 Unauthorized` は「誰かわからない（認証が必要）」、`403 Forbidden` は「誰かはわかったが、その操作は許されていない」です。名前が紛らわしいですが、401 は実質「未認証」です。',
+              en: 'HTTP status codes follow the same split. `401 Unauthorized` means "I don\'t know who you are (authenticate first)", and `403 Forbidden` means "I know who you are, but you may not do this". Despite the name, 401 really means unauthenticated.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'oa-session-token',
+        title: { ja: 'ログイン状態をどう覚えるか', en: 'Remembering who is logged in' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '一度ログインしたあと、毎回パスワードを送るわけにはいきません。そこで「ログイン済み」の証明を持たせます。代表的なのは次の 2 つです。',
+              en: 'After logging in once, you don\'t want to send the password on every request. Instead the client carries proof that it is logged in. There are two common styles.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**セッション**: サーバーがログイン情報を保存し、ブラウザには推測できないセッション ID だけを Cookie で渡す。サーバー側で消せばすぐにログアウトさせられる',
+                en: '**Sessions**: the server stores the login state and gives the browser only an unguessable session ID in a cookie. Deleting it on the server logs the user out immediately',
+              },
+              {
+                ja: '**トークン（JWT など）**: ユーザー ID や有効期限を書き込み、署名したものを渡す。サーバーは保存しなくても署名を確かめるだけで信用できるが、期限が切れるまで取り消しにくい',
+                en: '**Tokens (e.g. JWT)**: the user ID and expiry are written into the token and signed. The server can trust it just by checking the signature, without storing anything, but it is hard to revoke before it expires',
+              },
+            ],
+          },
+          {
+            type: 'code',
+            label: { ja: 'JWT の中身（ヘッダー.ペイロード.署名）', en: 'Inside a JWT (header.payload.signature)' },
+            code: `// header
+{ "alg": "RS256", "kid": "2026-10-key" }
+// payload (claims)
+{ "sub": "user-123", "iss": "https://auth.example.com",
+  "aud": "my-app", "exp": 1791000000 }
+// signature = sign(header + "." + payload, private key)`,
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'JWT のペイロードは Base64 で**符号化されているだけで、暗号化はされていません**。誰でも中身を読めるので、秘密の情報は入れないこと。署名が守るのは「改ざんされていないこと」だけです。',
+              en: 'A JWT payload is only **Base64-encoded, not encrypted**. Anyone can read it, so never put secrets in it. The signature only guarantees it hasn\'t been tampered with.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'oa-why-oauth',
+        title: { ja: 'OAuth 2.0 が解く問題', en: 'The problem OAuth 2.0 solves' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'たとえば、写真の印刷サービスに、Google フォトの写真を読ませたいとします。昔は、印刷サービスに Google のパスワードそのものを渡すしかありませんでした。これでは印刷サービスがメールも含めて何でもできてしまい、やめさせるにはパスワードを変えるしかありません。',
+              en: 'Say a photo-printing service wants to read your Google Photos. In the old days the only way was to give it your actual Google password. Then the service could do anything, email included, and the only way to stop it was to change your password.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'OAuth 2.0 は、**パスワードを渡さずに、範囲と期限を限った権限だけを渡す**ための仕組みです。印刷サービスが受け取るのは「写真を読むことだけ」が許された**アクセストークン**で、ユーザーはいつでもその許可を取り消せます。許す範囲は**スコープ**（例: `photos.read`）で表します。',
+              en: 'OAuth 2.0 is a way to **hand over limited, expiring permission without sharing the password**. The printing service receives an **access token** that only allows reading photos, and the user can revoke it any time. The allowed range is expressed as **scopes** (e.g. `photos.read`).',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**リソースオーナー**: データの持ち主（ユーザー）',
+                en: '**Resource owner**: the person who owns the data (the user)',
+              },
+              {
+                ja: '**クライアント**: データを使いたいアプリ（印刷サービス）',
+                en: '**Client**: the app that wants to use the data (the printing service)',
+              },
+              {
+                ja: '**認可サーバー**: ユーザーを認証し、同意を取ってトークンを発行する（Google のアカウント画面）',
+                en: '**Authorization server**: authenticates the user, collects consent and issues tokens (Google\'s account screens)',
+              },
+              {
+                ja: '**リソースサーバー**: トークンを確かめてデータを返す API（Google フォトの API）',
+                en: '**Resource server**: the API that checks the token and returns data (the Google Photos API)',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'oa-code-flow',
+        title: { ja: '認可コードフロー', en: 'The authorization code flow' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'Web アプリでもスマホアプリでも、今の標準は**認可コードフロー（+ PKCE）**です。ポイントは、ブラウザを通る経路では短命の「認可コード」だけを渡し、本物のトークンはサーバー同士の通信で受け取ることです。',
+              en: 'For web and mobile apps alike, the standard today is the **authorization code flow (with PKCE)**. The key idea: only a short-lived "authorization code" travels through the browser, and the real tokens are fetched server to server.',
+            },
+          },
+          { type: 'diagram', id: 'oauth-code-flow' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**①〜②**: アプリはユーザーを認可サーバーへリダイレクトする。URL には欲しいスコープ、`state`（あとで照合する乱数）、`code_challenge`（PKCE 用）を付ける',
+                en: '**①–②**: the app redirects the user to the auth server, with the requested scopes, a `state` (a random value checked later) and a `code_challenge` (for PKCE) in the URL',
+              },
+              {
+                ja: '**③**: ユーザーは認可サーバーの画面でログインし、許可する範囲に同意する。パスワードを入力するのは認可サーバーだけで、アプリには渡らない',
+                en: '**③**: the user logs in on the auth server\'s own page and consents to the scopes. The password is entered only there and never reaches the app',
+              },
+              {
+                ja: '**④〜⑤**: 認可サーバーは認可コードを付けて、アプリのコールバック URL へブラウザを戻す。アプリは `state` が自分の送った値と一致するかを確かめる',
+                en: '**④–⑤**: the auth server sends the browser back to the app\'s callback URL with an authorization code. The app checks that `state` matches what it sent',
+              },
+              {
+                ja: '**⑥〜⑦**: アプリはサーバー同士の通信で、コードと `code_verifier` をトークンに交換する。ここで初めてアクセストークン（と ID トークン）を受け取る',
+                en: '**⑥–⑦**: over a server-to-server call, the app exchanges the code plus `code_verifier` for tokens. Only now does it receive the access token (and ID token)',
+              },
+              {
+                ja: '**⑧〜⑨**: アプリはアクセストークンを `Authorization: Bearer` ヘッダーに付けて API を呼ぶ。API はトークンの署名・期限・スコープを確かめて応える',
+                en: '**⑧–⑨**: the app calls the API with the access token in an `Authorization: Bearer` header. The API checks its signature, expiry and scopes before answering',
+              },
+            ],
+          },
+          {
+            type: 'details',
+            summary: { ja: 'PKCE は何を守っているのか', en: 'What PKCE protects against' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '認可コードはブラウザを通るので、ログやスマホ上の悪意あるアプリなどから盗み見られる可能性があります。PKCE（ピクシー）では、アプリが最初に乱数（`code_verifier`）を作り、そのハッシュ（`code_challenge`）だけを認可リクエストに付けます。コードを交換するときは元の乱数を見せる必要があるので、コードだけを盗んでもトークンには交換できません。',
+                  en: 'Because the authorization code passes through the browser, it can leak through logs or a malicious app on the device. With PKCE ("pixy"), the app first creates a random `code_verifier` and sends only its hash, the `code_challenge`, with the authorization request. Exchanging the code requires presenting the original value, so a stolen code alone cannot be turned into a token.',
+                },
+              },
+              { type: 'diagram', id: 'oauth-pkce' },
+              {
+                type: 'p',
+                text: {
+                  ja: 'もともとはスマホアプリのように秘密の鍵（クライアントシークレット）を安全に持てないアプリのための仕組みでしたが、今は**すべてのクライアントで使うこと**が推奨されています。',
+                  en: 'It was originally designed for apps like mobile clients that can\'t keep a client secret safe, but current guidance is to **use it for every client**.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'oa-oidc',
+        title: { ja: 'OpenID Connect：ログインのための仕組み', en: 'OpenID Connect: built for login' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'OAuth 2.0 は**認可**の仕組みです。アクセストークンは「この API を呼んでよい」という許可証で、「誰がログインしたか」を伝えるものではありません。アクセストークンをログインの証明として使うのは、よくある間違いです。',
+              en: 'OAuth 2.0 is about **authorization**. An access token is a permit to call an API; it does not say who logged in. Treating an access token as proof of login is a common mistake.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '**OpenID Connect（OIDC）**は、OAuth 2.0 の上に**認証**を足した仕組みです。「Google でログイン」のようなボタンは、たいていこれです。認可コードフローに `openid` スコープを付けると、アクセストークンと一緒に **ID トークン**（JWT）が返り、そこに「誰が、いつ、どのアプリのためにログインしたか」が書かれています。',
+              en: '**OpenID Connect (OIDC)** adds **authentication** on top of OAuth 2.0. Buttons like "Sign in with Google" are usually OIDC. Add the `openid` scope to the authorization code flow and you get an **ID token** (a JWT) alongside the access token, stating who logged in, when, and for which app.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: 'ID トークンのペイロードの例', en: 'Example ID token payload' },
+            code: `{
+  "iss": "https://accounts.google.com",  // who issued it
+  "sub": "1078...4512",                  // stable user ID
+  "aud": "my-app-client-id",             // which app it is for
+  "exp": 1791003600,                     // expiry
+  "iat": 1791000000,                     // issued at
+  "nonce": "n-0S6_WzA2Mj",               // ties it to this login
+  "email": "alice@example.com"
+}`,
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'ID トークンを受け取ったら、次をすべて確かめてからログインさせます。',
+              en: 'Before logging the user in, verify all of the following:',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**署名**: 認可サーバーが公開している鍵（JWKS）で検証する。`alg` が `none` のものは受け付けない',
+                en: '**Signature**: verify it with the keys the auth server publishes (JWKS), and reject any token with `alg` set to `none`',
+              },
+              {
+                ja: '**`iss` と `aud`**: 期待した発行元か、自分のアプリ宛てか',
+                en: '**`iss` and `aud`**: the expected issuer, addressed to your app',
+              },
+              {
+                ja: '**`exp`**: 期限が切れていないか',
+                en: '**`exp`**: it hasn\'t expired',
+              },
+              {
+                ja: '**`nonce`**: 自分が今回のログインで送った値と一致するか（使い回しを防ぐ）',
+                en: '**`nonce`**: it matches the value you sent for this login (prevents replay)',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '使い分けは「**ID トークンはアプリが自分で読むもの、アクセストークンは API に渡すもの**」と覚えると迷いません。ユーザーを識別するときは、メールアドレスではなく、変わらない `sub` を使います。',
+              en: 'A simple rule: **the ID token is for your app to read; the access token is for the API.** To identify a user, use the stable `sub`, not the email address, which can change.',
+            },
+          },
+          {
+            type: 'details',
+            summary: { ja: 'ID トークンとアクセストークンの期限は同じ？', en: 'Do the ID token and access token expire at the same time?' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '**同じとは限りません。** 期限は認可サーバーがそれぞれ別に決めます。両方とも約 1 時間で発行するサービスもありますが、それはたまたまそろっているだけです。そもそも、期限が意味するものが違います。',
+                  en: '**Not necessarily.** The auth server sets each lifetime separately. Some providers issue both for about an hour, but that is a coincidence. More importantly, the two expiries mean different things.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**ID トークンの期限**: 「このログインの証明がまだ新しいか」を表す。ログインの瞬間に一度検証すれば役目は終わりで、その後のログイン状態はアプリ自身のセッション（Cookie など）で管理する。なので **ID トークンが切れてもログアウトにはならない**',
+                    en: '**ID token expiry**: whether the proof of login is still fresh. You verify it once, at login; after that your app\'s own session (a cookie, for example) tracks who is logged in. So **an expired ID token does not log the user out**',
+                  },
+                  {
+                    ja: '**アクセストークンの期限**: その許可証で API を呼べる期間。API が呼び出しのたびに確かめるので、実際に効く。漏れたときの被害を小さくするため短く（数分〜1 時間）する',
+                    en: '**Access token expiry**: how long the permit can be used to call APIs. The API checks it on every call, so it actually matters. Keep it short (minutes to an hour) to limit the damage if it leaks',
+                  },
+                  {
+                    ja: '**リフレッシュトークン**: 切れたアクセストークンを取り直すためのもの。数日〜数か月と長めにすることが多い',
+                    en: '**Refresh token**: used to get a new access token once the old one expires. It usually lives much longer, from days to months',
+                  },
+                ],
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: 'ありがちな間違いは、ID トークンをセッションの代わりに持ち続けて、期限が来るたびにユーザーをログアウトさせてしまうことです。逆に、期限切れの ID トークンをログインの証明として受け付けるのも誤りです。**ID トークンはログイン時に一度だけ使い、その後は自分のセッションで管理する**と覚えておくと迷いません。',
+                  en: 'A common mistake is keeping the ID token around as the session and logging users out whenever it expires. Accepting an expired ID token as proof of login is wrong too. Remember: **use the ID token once at login, then manage login state with your own session.**',
+                },
+              },
+            ],
+          },
+          {
+            type: 'details',
+            summary: { ja: 'ログイン後はセッション？ トークン？', en: 'After login: session or token?' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '**アプリ次第です。** OIDC の仕様は、ID トークンを検証したあとにログイン状態をどう保つかを決めていません。アプリの形に合わせて選びます。',
+                  en: '**It\'s up to the app.** The OIDC spec doesn\'t say how to keep the user logged in after the ID token is verified, so you choose what fits your app.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**ブラウザで使う Web アプリ**: サーバー側のセッション + HttpOnly Cookie が定番。JavaScript から読めないので XSS で盗まれにくく、サーバーで消せばすぐにログアウトさせられる。SPA でも、裏にサーバー（BFF）を置いてこの形にするのがおすすめ',
+                    en: '**Web apps in the browser**: a server-side session with an HttpOnly cookie is the standard. JavaScript can\'t read it, so XSS can\'t steal it easily, and deleting it on the server logs the user out at once. For SPAs, putting a server (a BFF) behind them to get this setup is recommended',
+                  },
+                  {
+                    ja: '**スマホアプリや、複数の API をまたぐ構成**: アプリ自身が発行するトークン（JWT など）を使うことが多い。サーバーが状態を保存しなくて済み、台数を増やしやすい。ただし途中で取り消しにくいので、期限を短くしてリフレッシュで更新する',
+                    en: '**Mobile apps, or setups spanning many APIs**: tokens your own system issues (e.g. JWTs) are common. The server stores no state, which makes scaling out easy, but they are hard to revoke early, so keep them short-lived and renew them with refresh tokens',
+                  },
+                ],
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '考え方は前の「ログイン状態をどう覚えるか」と同じで、**すぐ取り消せるのがセッション、保存がいらず広げやすいのがトークン**です。',
+                  en: 'The trade-off is the same as in "Remembering who is logged in" above: **sessions are easy to revoke; tokens need no storage and scale out easily.**',
+                },
+              },
+              {
+                type: 'note',
+                tone: 'warn',
+                text: {
+                  ja: 'どちらを選んでも、**認可サーバーから受け取った ID トークンやアクセストークンを、そのまま自分のアプリのセッション代わりにしない**こと。ID トークンはログイン時に一度検証するためのもの、アクセストークンは認可サーバー側の API を呼ぶためのものです。自分のアプリのログイン状態には、自分のセッションか、自分で発行したトークンを使います。',
+                  en: 'Either way, **don\'t reuse the ID token or access token from the auth server as your own app\'s session.** The ID token is for verifying the login once; the access token is for calling the provider\'s APIs. Track your app\'s login state with your own session, or a token you issue yourself.',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'oa-pitfalls',
+        title: { ja: 'よくある落とし穴', en: 'Common pitfalls' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**古いフローを使う**: トークンを URL で直接受け取る Implicit フローや、アプリにパスワードを入力させる Password フローは、今は非推奨。認可コードフロー + PKCE を使う',
+                en: '**Using legacy flows**: the Implicit flow (tokens returned in the URL) and the Password flow (the app collects the password) are deprecated. Use the authorization code flow with PKCE',
+              },
+              {
+                ja: '**リダイレクト先を厳密に照合しない**: 登録したコールバック URL と完全一致で比べる。前方一致やワイルドカードにすると、コードを攻撃者のサイトへ送らされる',
+                en: '**Loose redirect URI matching**: compare against the registered callback URL exactly. Prefix or wildcard matching lets attackers have codes sent to their own site',
+              },
+              {
+                ja: '**`state` を確かめない**: 照合しないと、攻撃者のアカウントにログインさせられる CSRF が起こる',
+                en: '**Not checking `state`**: without it, a CSRF attack can log the victim into the attacker\'s account',
+              },
+              {
+                ja: '**トークンを `localStorage` に置く**: XSS があると JavaScript から読み出される。ブラウザでは HttpOnly Cookie と、トークンをサーバー側で持つ構成（BFF）が安全',
+                en: '**Storing tokens in `localStorage`**: any XSS can read them from JavaScript. In browsers, HttpOnly cookies with tokens held server-side (a BFF) are safer',
+              },
+              {
+                ja: '**権限と期限を大きくしすぎる**: スコープは必要なものだけ、アクセストークンは短命（数分〜1 時間）にし、長く使うときはリフレッシュトークンで更新する',
+                en: '**Too much scope, too long a lifetime**: request only the scopes you need, keep access tokens short-lived (minutes to an hour), and renew with refresh tokens',
+              },
+              {
+                ja: '**API 側で検証を省く**: API はトークンの署名・期限・`aud`・スコープを毎回確かめる。「アプリが確認したはず」は理由にならない',
+                en: '**Skipping checks in the API**: the API must verify signature, expiry, `aud` and scopes on every call. "The app already checked" is not a reason',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'oa-ops',
+        title: { ja: '運用で気をつけること', en: 'Operating it reliably' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'SRE の視点では、認可サーバーは**全員のログインが通る重要な依存先**です。ここが止まると、ほかが元気でもサービス全体が使えなくなります。',
+              en: 'From an SRE point of view, the auth server is a **critical dependency every login passes through**. If it goes down, the whole service is unusable even when everything else is healthy.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**公開鍵をキャッシュする**: JWT の検証に使う JWKS を毎回取りに行かず、キャッシュする。鍵の更新（ローテーション）に備えて、知らない `kid` が来たときだけ取り直す',
+                en: '**Cache the public keys**: don\'t fetch the JWKS on every request. Cache it, and refetch only when a token arrives with an unknown `kid`, so key rotation still works',
+              },
+              {
+                ja: '**時計のずれ**: `exp` の判定はサーバーの時計に頼るので、NTP で合わせ、数十秒の許容幅を持たせる',
+                en: '**Clock skew**: `exp` checks depend on server clocks, so keep them in sync with NTP and allow a small leeway of tens of seconds',
+              },
+              {
+                ja: '**更新の集中を避ける**: 全員のトークンが同じ時刻に切れると、リフレッシュが一斉に押し寄せる。期限にゆらぎを入れて分散させる',
+                en: '**Avoid refresh stampedes**: if everyone\'s tokens expire at the same moment, refreshes arrive all at once. Add jitter to lifetimes to spread them out',
+              },
+              {
+                ja: '**監視**: ログイン成功率、401 / 403 の急増、トークン発行の遅延を見る。401 の急増は鍵の更新ミスの兆候のことが多い',
+                en: '**Monitoring**: watch login success rate, spikes in 401/403, and token issuance latency. A sudden jump in 401s is often a botched key rotation',
+              },
+              {
+                ja: '**取り消しと監査**: 漏えいに備えて、トークンやセッションをまとめて無効にする手段と、誰がいつ何を許可したかの記録を用意する',
+                en: '**Revocation and audit**: have a way to invalidate tokens and sessions in bulk after a leak, and keep records of who granted what and when',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'oa-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**認証は「誰か」、認可は「何をしてよいか」**。いつも認証が先',
+                en: '**Authentication is "who", authorization is "what"**, and authentication always comes first',
+              },
+              {
+                ja: '**OAuth 2.0 は認可、OpenID Connect は認証**。ログインには ID トークンを使い、API にはアクセストークンを渡す',
+                en: '**OAuth 2.0 is authorization; OpenID Connect is authentication.** Log users in with the ID token and give the access token to APIs',
+              },
+              {
+                ja: '**認可コードフロー + PKCE が標準**。ブラウザにはコードだけを通し、トークンは裏側で受け取る',
+                en: '**Authorization code flow with PKCE is the standard.** Only the code goes through the browser; tokens come over the back channel',
+              },
+              {
+                ja: '**トークンは必ず検証し、短命・最小権限にする**',
+                en: '**Always verify tokens, and keep them short-lived and narrowly scoped**',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '仕様は [RFC 6749（OAuth 2.0）](https://datatracker.ietf.org/doc/html/rfc6749)、[RFC 7636（PKCE）](https://datatracker.ietf.org/doc/html/rfc7636)、[OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html) です。実装の注意点は [RFC 9700（OAuth 2.0 Security Best Current Practice）](https://datatracker.ietf.org/doc/html/rfc9700) と [OWASP の OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html) にまとまっています。',
+              en: 'The specs are [RFC 6749 (OAuth 2.0)](https://datatracker.ietf.org/doc/html/rfc6749), [RFC 7636 (PKCE)](https://datatracker.ietf.org/doc/html/rfc7636) and [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html). For implementation guidance, see [RFC 9700 (OAuth 2.0 Security Best Current Practice)](https://datatracker.ietf.org/doc/html/rfc9700) and the [OWASP OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html).',
             },
           },
         ],
