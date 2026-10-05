@@ -98,6 +98,10 @@ Next article title                             →
 
 Sections are numbered because they build on each other. **Articles are not numbered** anywhere: they are independent, and numbers would imply a reading order and shift whenever a new article is inserted.
 
+### Notes
+
+Personal, informal writing lives apart from the technical topics: `/notes` lists all notes and `/notes/<id>` shows one. Notes use the same index rows (title, summary, date) but have no category, no numbered sections, and no diagrams. On the home page they appear as a "Notes" section after the technical categories, showing the latest three, and the section is hidden until at least one note is published. Notes are defined in [`src/data/notes.ts`](../src/data/notes.ts); `draft: true` notes appear only in local dev.
+
 ## Components
 
 | Component | Pattern |

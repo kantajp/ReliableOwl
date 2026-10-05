@@ -43,6 +43,7 @@ export type DiagramId =
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
+  | { type: 'h'; text: LocalizedString }
   | { type: 'list'; items: LocalizedString[] }
   | { type: 'note'; tone: 'info' | 'tip' | 'warn'; text: LocalizedString }
   | { type: 'code'; code: string; label?: LocalizedString }

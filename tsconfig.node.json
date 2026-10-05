@@ -14,12 +14,15 @@
     "emitDeclarationOnly": true,
     "outDir": "./node_modules/.tmp",
     "jsx": "react-jsx",
-    "strict": true
+    "strict": true,
+    "types": ["node"]
   },
   "include": [
     "vite.config.ts",
     "agentDocs.ts",
     "src/data/content.ts",
+    "src/data/notes.ts",
+    "src/formatDate.ts",
     "src/i18n.tsx"
   ]
 }

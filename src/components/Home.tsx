@@ -3,6 +3,8 @@ import { categories, topics } from '../data/content';
 import { Logo } from './Logo';
 import { SocialLinks } from './SocialLinks';
 import { formatDate } from '../formatDate';
+import { visibleNotes } from '../visibleNotes';
+import { NoteRow } from './NotesPage';
 import { t, useLang, useUi } from '../i18n';
 import '../home.css';
 
@@ -72,6 +74,24 @@ export function Home({ onOpenTopic, onOpenAbout }: Props) {
             </section>
           );
         })}
+
+        {/* ===== Notes (personal writing; hidden until one is published) ===== */}
+        {visibleNotes.length > 0 && (
+          <section className="ed-section">
+            <h2 className="ed-section__head">
+              <span>Notes</span>
+              <span className="ed-section__count">{visibleNotes.length}</span>
+              <a className="ed-section__more" href="/notes">
+                {lang === 'ja' ? 'すべて見る' : 'View all'} →
+              </a>
+            </h2>
+            <ol className="ed-list">
+              {visibleNotes.slice(0, 3).map((n) => (
+                <NoteRow key={n.id} note={n} />
+              ))}
+            </ol>
+          </section>
+        )}
 
         {/* ===== About this site ===== */}
         <section className="ed-section">

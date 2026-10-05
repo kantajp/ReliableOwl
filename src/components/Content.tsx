@@ -5,10 +5,12 @@ import { Diagram } from '../diagrams';
 import { SocialLinks } from './SocialLinks';
 import { highlight } from './highlight';
 import { formatDate } from '../formatDate';
+import { contentHref } from '../router';
 import { t, useLang, useUi, type Lang } from '../i18n';
 
 // Simple inline formatting: `code` -> <code>, **bold** -> strong,
-// [label](https://url) -> external link (new tab), [label](#topic) -> internal link.
+// [label](https://url) -> external link (new tab), [label](#topic) or
+// [label](#topic/section) -> internal link to /topic or /topic#section.
 const LINK_RE = /\[([^\]]+)\]\((https?:\/\/[^)\s]+|#[\w/-]+)\)/;
 function renderInline(text: string) {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\((?:https?:\/\/[^)\s]+|#[\w/-]+)\))/g);
@@ -25,10 +27,10 @@ function renderInline(text: string) {
     }
     const link = part.match(LINK_RE);
     if (link && link[0] === part) {
-      const href = link[2];
-      // Internal links (#topic) navigate within the app via the hash router;
+      // Internal links (#topic) become paths and are routed in-app (see App.tsx);
       // external links open in a new tab.
-      const internal = href.startsWith('#');
+      const internal = link[2].startsWith('#');
+      const href = contentHref(link[2]);
       return (
         <a
           key={i}
@@ -46,10 +48,12 @@ function renderInline(text: string) {
 
 // Format an ISO date (YYYY-MM-DD) as e.g. "Sep 29, 2026".
 
-function BlockView({ block, lang }: { block: Block; lang: Lang }) {
+export function BlockView({ block, lang }: { block: Block; lang: Lang }) {
   switch (block.type) {
     case 'p':
       return <p className="prose-p">{renderInline(t(block.text, lang))}</p>;
+    case 'h':
+      return <h3 className="prose-h">{t(block.text, lang)}</h3>;
     case 'list':
       return (
         <ul className="prose-list">

@@ -6,36 +6,24 @@ import { OnThisPage } from './components/OnThisPage';
 import { Content } from './components/Content';
 import { Home } from './components/Home';
 import { AboutPage } from './components/AboutPage';
+import { NotesPage } from './components/NotesPage';
 import { TopBar } from './components/TopBar';
 import { SearchModal } from './components/SearchModal';
 import { useTheme } from './useTheme';
+import { navigate, routeFromPath, useRoute } from './router';
 import './app.css';
 
-// The main view is either the landing page ('home') or a specific topic id.
-type View = 'home' | string;
-
-// Parse the URL hash into a topic and optional section, e.g.
-// "#url-shortener" or "#url-shortener/capacity".
-function parseHash(): { topic: string; section: string | null } {
-  const raw = window.location.hash.replace(/^#/, '');
-  const [topic, section] = raw.split('/');
-  return { topic, section: section ?? null };
-}
-
-// Derive the initial view from the URL hash, so a reload or a shared link lands
-// on the same screen. Unknown/empty hash → home.
-function viewFromHash(): View {
-  const { topic } = parseHash();
-  if (topic === 'about') return 'about';
-  return topics.some((t) => t.id === topic) ? topic : 'home';
-}
-
 export default function App() {
-  const [view, setView] = useState<View>(viewFromHash);
+  const route = useRoute();
+  // 'home' | 'about' | 'notes' | <topicId>
+  const view = route.view === 'topic' ? route.topicId : route.view;
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const isHome = view === 'home';
   const isAbout = view === 'about';
+  const isNotes = view === 'notes';
+  // Pages without the docs sidebar/TOC layout.
+  const isPage = isHome || isAbout || isNotes;
 
   // Open the search palette with ⌘K / Ctrl+K from anywhere.
   useEffect(() => {
@@ -49,37 +37,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Keep the URL hash in sync with the current view. If the hash already points
-  // at the current topic (possibly with a #topic/section suffix), leave it be so
-  // section anchors survive.
-  useEffect(() => {
-    const currentTopic = parseHash().topic;
-    if (view === 'home') {
-      if (window.location.hash) window.history.replaceState(null, '', window.location.pathname);
-    } else if (currentTopic !== view) {
-      window.history.replaceState(null, '', `#${view}`);
-    }
-  }, [view]);
-
-  // Respond to back/forward navigation, manual hash edits and in-app anchor
-  // links. Switch to the target topic and, if a section was given, scroll to it.
-  useEffect(() => {
-    const onHashChange = () => {
-      const { topic, section } = parseHash();
-      setView(topic === 'about' ? 'about' : topics.some((t) => t.id === topic) ? topic : 'home');
-      if (section) {
-        // Wait for the new topic to render, then scroll to the section.
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            const el = sectionEls.current.get(section);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }),
-        );
-      }
-    };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
   const activeTopic = topics.find((t) => t.id === view) ?? topics[0];
   const [activeId, setActiveId] = useState(activeTopic.sections[0].id);
   const { theme, toggle } = useTheme();
@@ -88,6 +45,7 @@ export default function App() {
   // Keep the document title in sync with the current topic and language (helps
   // search results, browser history and bookmarks).
   useEffect(() => {
+    if (isNotes) return; // NotesPage sets its own title (list vs. post)
     const base =
       lang === 'ja'
         ? 'Reliable Owl — 図で学ぶシステム設計と SRE'
@@ -97,7 +55,7 @@ export default function App() {
       : isAbout
         ? (lang === 'ja' ? 'About · Reliable Owl' : 'About · Reliable Owl')
         : `${t(activeTopic.title, lang)} · Reliable Owl`;
-  }, [isHome, isAbout, activeTopic, lang]);
+  }, [isHome, isAbout, isNotes, activeTopic, lang]);
 
   const sectionEls = useRef<Map<string, HTMLElement>>(new Map());
   const observer = useRef<IntersectionObserver | null>(null);
@@ -142,37 +100,75 @@ export default function App() {
     }
   }, []);
 
+  // Scroll to a section once the target topic has rendered.
+  const scrollToSectionSoon = useCallback((id: string, behavior: ScrollBehavior = 'smooth') => {
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const el = sectionEls.current.get(id);
+        if (el) {
+          el.scrollIntoView({ behavior, block: 'start' });
+          setActiveId(id);
+        }
+      }),
+    );
+  }, []);
+
+  // A "#section" in the URL (deep link, back/forward) scrolls to that section.
+  useEffect(() => {
+    if (route.view !== 'topic') return;
+    const section = window.location.hash.slice(1);
+    if (section) scrollToSectionSoon(section, 'auto');
+  }, [route, scrollToSectionSoon]);
+
+  // Same-origin <a href="/..."> links (content, notes, footers) navigate in-app
+  // instead of reloading. Files (.md, .txt …), new tabs and modified clicks are left alone.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.('a');
+      if (!(a instanceof HTMLAnchorElement) || a.target === '_blank' || a.hasAttribute('download')) return;
+      const url = new URL(a.href, window.location.href);
+      if (url.origin !== window.location.origin || /\.\w+$/.test(url.pathname)) return;
+      if (!routeFromPath(url.pathname)) return;
+      e.preventDefault();
+      const samePage = url.pathname.replace(/\/+$/, '') === window.location.pathname.replace(/\/+$/, '');
+      if (samePage && url.hash) {
+        window.history.replaceState(null, '', url.pathname + url.hash);
+        scrollToSectionSoon(url.hash.slice(1));
+        return;
+      }
+      navigate(url.pathname + url.hash);
+      if (!url.hash) window.scrollTo({ top: 0, behavior: 'auto' });
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, [scrollToSectionSoon]);
+
   const goHome = useCallback(() => {
-    setView('home');
+    navigate('/');
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
   const goAbout = useCallback(() => {
-    setView('about');
+    navigate('/about');
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
   const openTopic = useCallback((topicId: string) => {
     const topic = topics.find((t) => t.id === topicId) ?? topics[0];
-    setView(topicId);
+    navigate(`/${topicId}`);
     setActiveId(topic.sections[0].id);
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
-  // Select a section from the nav, switching topics/views first if needed.
+  // Select a section from the nav or search, switching topics first if needed.
   const handleSelect = useCallback(
     (topicId: string, sectionId: string) => {
       if (view !== topicId) {
-        setView(topicId);
         setActiveId(sectionId);
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            const el = sectionEls.current.get(sectionId);
-            if (el) el.scrollIntoView({ behavior: 'auto', block: 'start' });
-            else window.scrollTo({ top: 0, behavior: 'auto' });
-          });
-        });
+        navigate(`/${topicId}#${sectionId}`);
       } else {
+        window.history.replaceState(null, '', `/${topicId}#${sectionId}`);
         scrollTo(sectionId);
       }
     },
@@ -181,7 +177,7 @@ export default function App() {
 
   return (
     <div
-      className={`layout ${isHome || isAbout ? 'layout--home' : ''} ${!isHome && !isAbout && !sidebarOpen ? 'layout--collapsed' : ''
+      className={`layout ${isPage ? 'layout--home' : ''} ${!isPage && !sidebarOpen ? 'layout--collapsed' : ''
         }`}
     >
       {/* Search + language + theme controls, fixed top-right on every view */}
@@ -197,6 +193,8 @@ export default function App() {
         <Home onOpenTopic={openTopic} onOpenAbout={goAbout} />
       ) : isAbout ? (
         <AboutPage onHome={goHome} />
+      ) : isNotes ? (
+        <NotesPage noteId={route.view === 'notes' ? route.noteId : null} onHome={goHome} onOpenAbout={goAbout} />
       ) : (
         <>
           <button

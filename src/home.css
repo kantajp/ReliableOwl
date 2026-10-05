@@ -1062,3 +1062,22 @@
     margin-top: 72px;
   }
 }
+
+/* Rows can also be links (Notes) */
+a.ed-row {
+  text-decoration: none;
+}
+
+.ed-section__more {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.ed-section__more:hover {
+  color: var(--accent);
+}

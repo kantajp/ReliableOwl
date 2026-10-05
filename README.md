@@ -44,8 +44,9 @@ npm run preview # preview the production build locally
 ## Project structure
 
 ```
-agentDocs.ts                # build plugin: articles as Markdown, llms.txt, sitemap.xml,
-                            # and a static article index in index.html (readable without JS)
+agentDocs.ts                # build plugin: pre-renders every route to HTML, plus Markdown
+                            # copies, llms.txt and sitemap.xml (readable without JS)
+vercel.json                 # cleanUrls (/x -> x.html) + fallback to index.html
 docs/
   DESIGN.md                 # design reference (tokens, type, layout, components)
 src/
@@ -55,6 +56,7 @@ src/
   app.css                   # component styles (layout, sidebar, diagrams, toggles)
   i18n.tsx                  # Lang context, localized-string helper t(), UI dictionary
   useTheme.ts               # theme state hook (localStorage + OS preference)
+  router.ts                 # path routing: /, /about, /notes(/<id>), /<topic>#<section>
   formatDate.ts             # "2026-09-29" -> "Sep 29, 2026"
   home.css                  # home page styles (editorial index)
   data/
@@ -123,6 +125,19 @@ theme automatically.
 4. Reference it from a section with a `{ type: 'diagram', id: '<your-id>' }` block.
 
 Keep in-diagram text bilingual by branching on `lang` from `useLang()`.
+
+## Routing and pre-rendering
+
+URLs are plain paths: `/`, `/about`, `/notes`, `/notes/<id>`, `/<topic>` and
+`/<topic>#<section>` (`src/router.ts`, History API). At build time
+`agentDocs.ts` writes an HTML file for every route with its own title,
+description, canonical URL and the full text, so search engines and AI agents
+can read each page without running JavaScript. On Vercel, `vercel.json` serves
+`/<page>` from `<page>.html` and falls back to `index.html`. Old hash links
+(`/#topic/section`) are redirected to the new paths on load.
+
+In content, write internal links as `#topic` or `#topic/section`; they are
+rendered as `/topic` and `/topic#section`.
 
 ## Theming and i18n
 
