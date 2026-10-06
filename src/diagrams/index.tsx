@@ -11,6 +11,7 @@ import { ConsistentHashRing } from './ConsistentHashDiagram';
 import { SqliConcat, SqliPlaceholder } from './SqlInjectionDiagrams';
 import { PiChannels, PiIndirect } from './PromptInjectionDiagrams';
 import { OAuthCodeFlow, OAuthPkce } from './OAuthDiagrams';
+import { ChaosExperiment, ChaosLoop } from './ChaosDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -49,6 +50,8 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'pi-channels': PiChannels,
   'oauth-code-flow': OAuthCodeFlow,
   'oauth-pkce': OAuthPkce,
+  'chaos-loop': ChaosLoop,
+  'chaos-experiment': ChaosExperiment,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {

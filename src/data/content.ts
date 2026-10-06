@@ -39,7 +39,9 @@ export type DiagramId =
   | 'pi-indirect'
   | 'pi-channels'
   | 'oauth-code-flow'
-  | 'oauth-pkce';
+  | 'oauth-pkce'
+  | 'chaos-loop'
+  | 'chaos-experiment';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -3427,6 +3429,313 @@ call(request):
                 en: 'Combine it with timeouts, retries and bulkheads, and monitor state changes with alerts',
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'chaos-engineering',
+    category: 'sre',
+    publishedAt: '2026-10-06',
+    updatedAt: '2026-10-06',
+    title: { ja: 'カオスエンジニアリング', en: 'Chaos Engineering' },
+    tagline: {
+      ja: 'わざと小さく壊して、障害への備えが本当に効くかを確かめる。',
+      en: 'Break things on purpose, in small ways, to prove your safeguards actually work.',
+    },
+    sections: [
+      {
+        id: 'ce-intro',
+        title: { ja: 'なぜ必要か', en: 'Why it matters' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'これまでの記事で、[リトライとタイムアウト](#retries)、[サーキットブレーカー](#circuit-breaker)、[レートリミッター](#rate-limiter) など、障害に備える仕組みを見てきました。でも、それが**本番で本当に効くか**は、実際に障害が起きるまでわかりません。タイムアウトの値が大きすぎた、ブレーカーの設定が誤っていた、フォールバックが一度も動いたことがなかった、と本番障害のさなかに気づくのは一番つらい形です。',
+              en: 'Earlier articles covered safeguards against failure: [retries and timeouts](#retries), [circuit breakers](#circuit-breaker), [rate limiters](#rate-limiter). But whether they **actually work in production** is unknown until something breaks. Finding out mid-incident that a timeout was too long, a breaker was misconfigured, or a fallback had never run is the worst way to learn.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'カオスエンジニアリングは、**障害をわざと、小さく、管理された形で起こして**、システムがどう振る舞うかを確かめる取り組みです。本番で起きる前に弱点を見つけ、直しておくことが目的です。',
+              en: 'Chaos engineering means **causing failures on purpose, in small and controlled ways**, to see how the system behaves. The goal is to find weaknesses and fix them before production finds them for you.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '単体テストや結合テストでは見つかりにくい弱点があります。実際のトラフィック量、ネットワークの遅延、サービス同士の依存の重なり、設定の食い違いなどは、本番に近い環境でしか表に出ません。',
+              en: 'Some weaknesses are hard to catch in unit or integration tests. Real traffic volume, network latency, layered dependencies between services and configuration drift only show up in production-like conditions.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '「本番でランダムにサーバーを落とす危ないこと」と思われがちですが、実際は**仮説を立てて、影響範囲を絞り、止める条件を決めて行う実験**です。Netflix がクラウド移行のときに広めた手法で、原則は [Principles of Chaos Engineering](https://principlesofchaos.org/) にまとまっています。',
+              en: 'It is often pictured as "randomly killing servers in production", but in practice it is **an experiment with a hypothesis, a limited blast radius and a defined stop condition**. Netflix popularized it during its move to the cloud, and the principles are summarized at [Principles of Chaos Engineering](https://principlesofchaos.org/).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ce-loop',
+        title: { ja: '実験の進め方', en: 'Running an experiment' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'カオスエンジニアリングは、科学の実験と同じ手順で進めます。',
+              en: 'A chaos experiment follows the same steps as a science experiment.',
+            },
+          },
+          { type: 'diagram', id: 'chaos-loop' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**定常状態を決める**: 「正常」とは何かを、ユーザーから見える指標で決める。CPU 使用率のような内部の値より、成功率や応答時間のような [SLI](#sli-slo-sla/slo-sli) が向いている',
+                en: '**Define the steady state**: decide what "normal" means using metrics users can feel. User-facing [SLIs](#sli-slo-sla/slo-sli) such as success rate and latency work better than internal values like CPU usage',
+              },
+              {
+                ja: '**仮説を立てる**: 「payments-api が 2 秒遅くなっても、商品ページの成功率は 99.9% を保つはずだ」のように、変わらないはずのことを書く',
+                en: '**Form a hypothesis**: write down what should not change, e.g. "even if payments-api slows down by 2 seconds, product pages stay at 99.9% success"',
+              },
+              {
+                ja: '**障害を注入する**: 遅延、エラー、停止など、現実に起きうる障害を、小さな範囲に起こす',
+                en: '**Inject a fault**: introduce something that really happens (latency, errors, outages) within a small scope',
+              },
+              {
+                ja: '**観察する**: 定常状態の指標を、注入していない比較対象と見比べる。中止条件に届いたらすぐ止める',
+                en: '**Observe**: compare the steady-state metrics against an untouched control group, and stop immediately if the abort condition is reached',
+              },
+              {
+                ja: '**学んで直す**: 仮説が外れたところが弱点。直したらもう一度確かめ、少しずつ範囲を広げる',
+                en: '**Learn and fix**: wherever the hypothesis failed is a weakness. Fix it, test again, and widen the scope little by little',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '**仮説が外れるのは失敗ではありません**。それこそが、本番障害になる前に見つけたかった弱点です。逆に、何も起きなかった実験も「備えが効いている」という確かな根拠になります。',
+              en: '**A failed hypothesis is not a failed experiment.** It is exactly the weakness you wanted to find before it became an incident. And an experiment where nothing happens is solid evidence that your safeguards work.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ce-example',
+        title: { ja: '実験の例：依存先が遅くなったら', en: 'Example: a slow dependency' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '[サーキットブレーカーの記事](#circuit-breaker/cb-cascade) と同じ例で考えます。checkout-svc が payments-api を呼んでいて、payments-api が遅くなると、スレッドが埋まって決済と関係ない商品ページまで返せなくなる、という話でした。ブレーカーを入れたなら、それが本当に効くかを確かめます。',
+              en: 'Take the same setup as the [circuit breaker article](#circuit-breaker/cb-cascade): checkout-svc calls payments-api, and when payments-api slows down, threads fill up until even product pages that never touch payments stop responding. Having added a breaker, you now check that it really works.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**定常状態**: 商品ページの成功率 99.95% 前後',
+                en: '**Steady state**: product page success rate around 99.95%',
+              },
+              {
+                ja: '**仮説**: payments-api に 2 秒の遅延を足しても、商品ページの成功率は SLO の 99.9% を保つ',
+                en: '**Hypothesis**: adding 2 seconds of latency to payments-api keeps product pages at the 99.9% SLO',
+              },
+              {
+                ja: '**注入**: payments-api への呼び出しの一部に、2 秒の遅延を 30 秒間入れる',
+                en: '**Injection**: add 2 seconds of latency to a portion of calls to payments-api for 30 seconds',
+              },
+              {
+                ja: '**中止条件**: 商品ページの成功率が 99.0% を下回ったら、注入を自動で止める',
+                en: '**Abort condition**: if the product page success rate drops below 99.0%, stop the injection automatically',
+              },
+            ],
+          },
+          { type: 'diagram', id: 'chaos-experiment' },
+          {
+            type: 'p',
+            text: {
+              ja: 'ブレーカーがない（または正しく効いていない）と、遅延がスレッドを埋めて成功率が落ち、中止ラインに届いた時点で実験は自動で止まります。これは「仮説が外れた」＝弱点が見つかった、という結果です。中止条件を決めておいたおかげで、影響は数秒・一部のユーザーにとどまります。ブレーカーが効いていれば、決済だけがすぐ失敗を返し、商品ページは SLO を保ったまま耐えます。',
+              en: 'Without a breaker (or with one that is not working), the latency fills up threads, the success rate falls, and the experiment stops itself as soon as it hits the abort line. The hypothesis failed: a weakness was found. Because the abort condition was set in advance, the impact stays at a few seconds and a few users. With a working breaker, only payments fail fast, and product pages hold the SLO.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ce-safety',
+        title: { ja: '安全に行うために', en: 'Doing it safely' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'カオスエンジニアリングで一番大事なのは、**実験そのものが障害にならない**ことです。',
+              en: 'The most important rule is that **the experiment itself must not become the incident**.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**影響範囲（ブラストラジアス）を小さく始める**: 1 台のインスタンス、1% のトラフィック、社内ユーザーだけ、のように絞る。結果を見てから少しずつ広げる',
+                en: '**Start with a small blast radius**: one instance, 1% of traffic, or internal users only. Widen it gradually once you have results',
+              },
+              {
+                ja: '**中止条件を先に決めて、自動で止める**: SLO や成功率に基準を置き、届いたら人を待たずに注入を止める',
+                en: '**Define abort conditions up front and automate them**: tie them to the SLO or success rate, and stop the injection without waiting for a person',
+              },
+              {
+                ja: '**すぐ止められるようにする**: 実験を一括で取り消すスイッチを用意し、全員が場所を知っている状態にする',
+                en: '**Be able to stop instantly**: have a single switch that cancels the experiment, and make sure everyone knows where it is',
+              },
+              {
+                ja: '**ステージングから始める**: まず本番に近い検証環境で試し、手順と中止の仕組みが動くことを確かめてから本番へ',
+                en: '**Start in staging**: try it in a production-like environment first, and move to production only after the procedure and abort mechanism are proven',
+              },
+              {
+                ja: '**エラーバジェットの範囲で行う**: [エラーバジェット](#sli-slo-sla/slo-budget) が残り少ないときは実験しない。実験もバジェットを使う',
+                en: '**Stay within the error budget**: don\'t experiment when the [error budget](#sli-slo-sla/slo-budget) is nearly spent. Experiments spend budget too',
+              },
+              {
+                ja: '**事前に知らせ、見ている人を置く**: 時間帯を選び、関係するチームに伝え、監視画面を見ている担当者がいる状態で行う',
+                en: '**Announce it and have someone watching**: pick a sensible time, tell the affected teams, and have someone watching the dashboards',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '監視やアラートが整っていない状態でのカオス実験は、ただの障害です。**先に「壊れたことに気づける」状態を作る**のが前提です。',
+              en: 'Running chaos experiments without good monitoring and alerting is just causing an outage. **Being able to notice when something breaks** comes first.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ce-faults',
+        title: { ja: '何を注入するか', en: 'What to inject' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '注入する障害は、**実際に起きたこと、起きうること**から選びます。過去の障害報告（ポストモーテム）は、実験のアイデアの宝庫です。',
+              en: 'Pick faults from **what has happened or realistically could**. Past incident reports (postmortems) are a great source of experiment ideas.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**遅延**: 依存先の応答を遅くする。タイムアウトとサーキットブレーカーの確認に向く。完全に落ちるより、遅くなる方が危ないことが多い',
+                en: '**Latency**: slow a dependency down. Good for testing timeouts and circuit breakers, and often more dangerous than a clean outage',
+              },
+              {
+                ja: '**エラー**: 一定の割合で 500 エラーや接続失敗を返させる。リトライとフォールバックの確認に向く',
+                en: '**Errors**: return 500s or connection failures for a share of requests. Good for testing retries and fallbacks',
+              },
+              {
+                ja: '**インスタンスやコンテナの停止**: 1 台が落ちても自動で入れ替わり、トラフィックが逃げるかを確かめる',
+                en: '**Killing instances or containers**: check that a lost node is replaced automatically and traffic moves away from it',
+              },
+              {
+                ja: '**依存先やゾーンの停止**: DB の切り替え、キャッシュの喪失、アベイラビリティゾーン単位の障害など',
+                en: '**Losing a dependency or zone**: database failover, a wiped cache, an entire availability zone going down',
+              },
+              {
+                ja: '**リソースの枯渇**: CPU、メモリ、ディスク、接続数を使い切らせる',
+                en: '**Resource exhaustion**: use up CPU, memory, disk or connections',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '道具としては、Netflix の [Chaos Monkey](https://netflix.github.io/chaosmonkey/) のようなオープンソースや、[AWS Fault Injection Service](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html) のようなクラウドのマネージドサービスがあります。ただし、最初はツールより**手順と中止条件を決めること**の方が大事です。',
+              en: 'Tools range from open source such as Netflix\'s [Chaos Monkey](https://netflix.github.io/chaosmonkey/) to managed cloud services such as [AWS Fault Injection Service](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html). At the start, though, **agreeing on the procedure and stop conditions** matters more than the tool.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ce-gameday',
+        title: { ja: 'ゲームデイ：人と手順を鍛える', en: 'Game days: training people and process' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ゲームデイは、チームで時間を決めて障害を起こし、**対応する練習**をする日です。システムだけでなく、人と手順の弱点も見つかります。',
+              en: 'A game day is a scheduled session where a team causes a failure and **practices responding to it**. It finds weaknesses in people and process, not just systems.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: 'アラートは鳴ったか。鳴るまでに何分かかったか',
+                en: 'Did the alert fire, and how many minutes did it take?',
+              },
+              {
+                ja: '担当者は手順書（ランブック）を見つけられたか。手順書は今のシステムに合っていたか',
+                en: 'Could the on-call engineer find the runbook, and did it match the current system?',
+              },
+              {
+                ja: '誰が判断し、誰に連絡するかは明確だったか',
+                en: 'Was it clear who decides and who gets contacted?',
+              },
+              {
+                ja: 'ダッシュボードだけで原因の見当がついたか',
+                en: 'Could the dashboards alone point toward the cause?',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '終わったら、本物の障害と同じように振り返りを書き、見つかった課題を直します。何度も練習しておくと、本番の障害で慌てずに動けるようになります。',
+              en: 'Afterwards, write a review just like for a real incident and fix what you found. Practicing repeatedly is what lets a team stay calm during a real outage.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ce-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**カオスエンジニアリングは実験**。定常状態、仮説、注入、観察、学ぶ、を繰り返す',
+                en: '**Chaos engineering is experimentation**: steady state, hypothesis, inject, observe, learn, repeated',
+              },
+              {
+                ja: '**障害への備えは、確かめて初めて信頼できる**。リトライ、タイムアウト、ブレーカーが本当に効くかを、本番で起きる前に見る',
+                en: '**Safeguards are only trustworthy once tested.** Check that retries, timeouts and breakers really work before production tests them for you',
+              },
+              {
+                ja: '**小さく始めて、中止条件を自動にする**。実験そのものを障害にしない',
+                en: '**Start small and automate the abort.** Never let the experiment become the incident',
+              },
+              {
+                ja: '**監視が先、エラーバジェットの範囲で**。気づけない状態や、バジェットが尽きかけているときは行わない',
+                en: '**Monitoring first, within the error budget.** Don\'t experiment if you can\'t see failures or the budget is nearly gone',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'さらに詳しくは、[Principles of Chaos Engineering](https://principlesofchaos.org/) と、Google の SRE 本の [Testing for Reliability](https://sre.google/sre-book/testing-reliability/) がまとまっています。',
+              en: 'For more, see [Principles of Chaos Engineering](https://principlesofchaos.org/) and the [Testing for Reliability](https://sre.google/sre-book/testing-reliability/) chapter of Google\'s SRE book.',
+            },
           },
         ],
       },
