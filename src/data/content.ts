@@ -41,7 +41,11 @@ export type DiagramId =
   | 'oauth-code-flow'
   | 'oauth-pkce'
   | 'chaos-loop'
-  | 'chaos-experiment';
+  | 'chaos-experiment'
+  | 'ua-timeline'
+  | 'ua-cascade'
+  | 'ua-dns-race'
+  | 'ua-congestion';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -3735,6 +3739,518 @@ call(request):
             text: {
               ja: 'さらに詳しくは、[Principles of Chaos Engineering](https://principlesofchaos.org/) と、Google の SRE 本の [Testing for Reliability](https://sre.google/sre-book/testing-reliability/) がまとまっています。',
               en: 'For more, see [Principles of Chaos Engineering](https://principlesofchaos.org/) and the [Testing for Reliability](https://sre.google/sre-book/testing-reliability/) chapter of Google\'s SRE book.',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'aws-us-east-1-2025',
+    category: 'sre',
+    publishedAt: '2026-10-08',
+    updatedAt: '2026-10-08',
+    title: { ja: '障害を読む: AWS us-east-1（2025年10月）', en: 'Reading an outage: AWS us-east-1 (October 2025)' },
+    tagline: {
+      ja: 'DNS の競合状態ひとつから、14 時間半の連鎖障害へ。きっかけを直しても戻らなかった理由を図で追う。',
+      en: 'From one DNS race condition to a 14½-hour cascade, and why fixing the trigger did not end it.',
+    },
+    sections: [
+      {
+        id: 'ua-intro',
+        title: { ja: '何が起きたか', en: 'What happened' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'この記事は、AWS が公開した障害報告 [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/) を読み解くものです。2025 年 10 月 19 日の夜から 20 日の午後にかけて、AWS の北バージニアリージョン（us-east-1）で大規模な障害が起きました。始まりは 19 日 23:48、終わりは 20 日 14:20（どちらも PDT）で、約 14 時間半続きました。',
+              en: 'This article walks through AWS\'s published incident report, [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/). From the night of October 19 to the afternoon of October 20, 2025, AWS\'s Northern Virginia Region (us-east-1) had a major outage. It began at 23:48 on the 19th and ended at 14:20 on the 20th (both PDT), lasting about 14½ hours.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'AWS の発表では、利用者への影響は大きく **3 つの時間帯**に分かれます。',
+              en: 'According to AWS, customer impact came in **three distinct periods**.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**DynamoDB（23:48〜02:40）**: API のエラー率が上がり、新しい接続を張れなくなった',
+                en: '**DynamoDB (23:48 to 02:40)**: elevated API error rates, and new connections could not be established',
+              },
+              {
+                ja: '**EC2（02:25〜10:36、通信の問題は 13:50 まで）**: 新しいインスタンスの起動が失敗した。10:37 から起動できるようになったが、一部は通信できない状態が続いた',
+                en: '**EC2 (02:25 to 10:36, connectivity issues until 13:50)**: new instance launches failed. Launches worked again from 10:37, but some new instances still had no connectivity',
+              },
+              {
+                ja: '**NLB（05:30〜14:09）**: 一部のロードバランサーで接続エラーが増えた',
+                en: '**NLB (05:30 to 14:09)**: some load balancers saw increased connection errors',
+              },
+            ],
+          },
+          { type: 'diagram', id: 'ua-timeline' },
+          {
+            type: 'p',
+            text: {
+              ja: '注目したいのは、**きっかけの DynamoDB は 02:40 には戻っていた**ことです。それなのに障害はそこから 11 時間以上続きました。きっかけを直した後に、別の仕組みが次々と詰まっていったからです。この記事では、その連鎖を順に追います。',
+              en: 'The striking part is that **DynamoDB, the trigger, was back by 02:40**, yet the outage went on for more than 11 more hours. After the trigger was fixed, one system after another got stuck. This article follows that chain step by step.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '事実関係は、冒頭の AWS の公開報告だけを根拠にしています。時刻は原文どおり PDT（太平洋夏時間）で、日本時間はこれに 16 時間を足します（始まりは 10 月 20 日 15:48 JST）。図は説明のために簡略化しています。',
+              en: 'All facts come solely from AWS\'s public report linked above. Times are PDT as in the original (UTC−7). The diagrams are simplified for explanation.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-chain',
+        title: { ja: '連鎖の全体像', en: 'The chain at a glance' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '細部に入る前に、何が何を引き起こしたかを並べます。上の段の問題の間に溜まった影響が下の段へ流れ込み、今度はそこが詰まる、という形が繰り返されています。',
+              en: 'Before the details, here is what caused what. The effects that built up while an upper stage was broken flowed into the stage below, which then got stuck in turn.',
+            },
+          },
+          { type: 'diagram', id: 'ua-cascade' },
+          {
+            type: 'p',
+            text: {
+              ja: 'もう 1 つ大事な点として、**すでに動いていた EC2 インスタンスは、障害の間ずっと正常**でした。EC2 で止まったのは、新しいインスタンスを起動し、ネットワークにつなぐ、という**変更の経路**です。',
+              en: 'Another key point: **EC2 instances that were already running stayed healthy throughout**. What broke in EC2 was the **path for change**: launching new instances and connecting them to the network.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-dns',
+        title: { ja: 'DynamoDB の DNS 管理の仕組み', en: 'How DynamoDB manages its DNS' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'DynamoDB のような大きなサービスは、**DNS を使って負荷を分散し、障害を切り離しています**。各リージョンには非常に多くのロードバランサーがあり、DNS レコードは数十万に上ります。容量の追加やハードウェア障害に合わせて、これを自動で更新し続けています。',
+              en: 'Large services like DynamoDB **rely on DNS to spread load and isolate failures**. Each Region runs a very large fleet of load balancers with hundreds of thousands of DNS records, and automation keeps updating them as capacity is added or hardware fails.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'この自動化は、可用性のために 2 つの独立した部品に分かれています。',
+              en: 'For availability, this automation is split into two independent components.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**DNS Planner**: ロードバランサーの状態と容量を見て、エンドポイントごとに「どのロードバランサーにどの重みで振るか」という**計画**を定期的に作る',
+                en: '**DNS Planner**: watches load balancer health and capacity, and periodically creates a **plan** for each endpoint: which load balancers, with what weights',
+              },
+              {
+                ja: '**DNS Enactor**: 計画を [Route 53](https://aws.amazon.com/route53/) に適用する。どんな状況でも復旧に使えるよう依存を最小限にしてあり、3 つのアベイラビリティゾーンで 1 つずつ、互いに独立して動く',
+                en: '**DNS Enactor**: applies plans to [Route 53](https://aws.amazon.com/route53/). It is built with minimal dependencies so it can help recover in any scenario, and runs redundantly and independently in three Availability Zones',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '各 Enactor は新しい計画を見つけると、Route 53 のトランザクションで現在の計画を新しい計画に置き換えます。複数の Enactor が同時に同じエンドポイントを更新しても、各エンドポイントには一貫した計画が入るようになっていました。',
+              en: 'When an Enactor finds a new plan, it replaces the current plan with it using a Route 53 transaction. Even if several Enactors update the same endpoint at once, each endpoint ends up with a consistent plan.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '計画を作る側と適用する側を分け、適用する側を 3 つの AZ で冗長化する。これ自体は**障害に強くするための、筋の良い設計**です。今回の問題は、この冗長な Enactor 同士の、まれなタイミングのずれから生まれました。',
+              en: 'Separating plan creation from plan application, with the applier redundant across three AZs, is **a sound design for resilience**. The problem came from a rare timing interaction between those redundant Enactors.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-race',
+        title: { ja: 'きっかけ: Enactor 同士の競合状態', en: 'The trigger: a race between Enactors' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'Enactor は、計画の適用を**始める前に一度だけ**、「この計画は前に適用した計画より新しいか」を確認します。その後、エンドポイントを 1 つずつ更新していきます。他の Enactor と同じエンドポイントでぶつかったら、成功するまでリトライします。',
+              en: 'Before it starts applying a plan, an Enactor checks **once** that the plan is newer than the one previously applied. It then works through the endpoints one by one, retrying any endpoint where it collides with another Enactor until it succeeds.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '障害の直前、1 つの Enactor でこのリトライがいつになく重なり、大きく遅れていました。そこから起きたことを、順に見てください。',
+              en: 'Right before the event, one Enactor hit unusually heavy retries and fell far behind. Step through what happened next.',
+            },
+          },
+          { type: 'diagram', id: 'ua-dns-race' },
+          {
+            type: 'p',
+            text: {
+              ja: '原因は、**確認してから実行するまでの間に、前提が変わってしまった**ことです。最初の「新しいか」の確認は、遅れている間に古くなっていました。さらに、別の Enactor のクリーンアップが「古い計画」として消したものが、実は今まさに使われている計画でした。',
+              en: 'The root problem is that **the assumption changed between checking and acting**. The initial "is it newer?" check had gone stale during the delay. On top of that, the "old plan" another Enactor\'s clean-up deleted was the very plan in effect.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'これは [レートリミッターの記事](#rate-limiter/distributed) で見た「読み取って、判断して、書き戻す」の間に割り込まれるレースコンディションと、同じ形の問題です。違うのは影響の大きさで、ここではリージョン全体の入口となるエンドポイントのレコードが空になりました。',
+              en: 'It has the same shape as the race in the [rate limiter article](#rate-limiter/distributed), where something slips in between read, decide and write back. The difference is the impact: here, the record for the endpoint that serves as the whole Region\'s front door went empty.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '空になっただけでなく、**適用中の計画が消えたせいで、どの Enactor も次の計画を適用できない状態**になりました。復旧のための自動化そのものが止まり、人の手で直す必要がありました。',
+              en: 'Beyond going empty, **deleting the active plan left the system unable to apply any later plan from any Enactor**. The automation meant for recovery was itself stuck, and it took manual intervention to fix.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-dynamodb',
+        title: { ja: 'DynamoDB の停止と復旧', en: 'DynamoDB goes dark, then returns' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '23:48、地域エンドポイント `dynamodb.us-east-1.amazonaws.com` の名前解決が失敗し始めました。影響を受けたのは顧客だけではありません。**AWS の社内サービスも同じ DynamoDB に依存している**ため、そこから先の連鎖が始まります。',
+              en: 'At 23:48, resolving the regional endpoint `dynamodb.us-east-1.amazonaws.com` started failing. Customers were not the only ones affected: **internal AWS services depend on the same DynamoDB**, and that is where the cascade began.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**00:38**: 原因を DynamoDB の DNS 状態と特定',
+                en: '**00:38**: DynamoDB\'s DNS state identified as the source',
+              },
+              {
+                ja: '**01:15**: 一時的な緩和策で、一部の社内サービスが DynamoDB につながり、復旧に必要な社内ツールが直る',
+                en: '**01:15**: temporary mitigations let some internal services reach DynamoDB and repaired key internal tooling',
+              },
+              {
+                ja: '**02:25**: DNS 情報がすべて復旧。02:32 にはグローバルテーブルのレプリカも追いつく',
+                en: '**02:25**: all DNS information restored; by 02:32, global table replicas had caught up',
+              },
+              {
+                ja: '**02:25〜02:40**: 各所にキャッシュされた古い DNS レコードの期限が切れた順に、接続が戻る',
+                en: '**02:25 to 02:40**: connections came back as cached DNS records expired',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '[グローバルテーブル](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html) を使っていた顧客は、他のリージョンのレプリカには問題なく読み書きできました。ただし us-east-1 との間の複製は大きく遅れました。[DB スケールの記事](#database-scaling/ds-lag) で見たレプリケーションラグが、リージョン単位で起きた形です。',
+              en: 'Customers using [global tables](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html) could still read and write their replicas in other Regions, but replication to and from us-east-1 lagged badly. It is the replication lag from the [database scaling article](#database-scaling/ds-lag), at the scale of a Region.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-ec2',
+        title: { ja: '直しても戻らない: EC2 の輻輳崩壊', en: 'Fixed, yet still broken: congestive collapse in EC2' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'DynamoDB が戻った後も、EC2 の新規起動は失敗し続けました。理由を知るには、EC2 の裏側にある 2 つの仕組みが必要です。',
+              en: 'Even after DynamoDB returned, new EC2 launches kept failing. Two systems behind EC2 explain why.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**DropletWorkflow Manager（DWFM）**: EC2 インスタンスを載せる物理サーバー（AWS は「ドロップレット」と呼ぶ）を管理する。ドロップレットごとに**リース**を持ち、数分おきに状態を確認してリースを保つ',
+                en: '**DropletWorkflow Manager (DWFM)**: manages the physical servers that host EC2 instances (AWS calls them "droplets"). It holds a **lease** on each droplet, and keeps it alive by checking in every few minutes',
+              },
+              {
+                ja: '**Network Manager**: 新しいインスタンスが VPC やインターネットと通信できるよう、ネットワークの設定を配って回る',
+                en: '**Network Manager**: propagates the network configuration that lets new instances talk to their VPC and the Internet',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'DWFM の状態確認は DynamoDB に依存していました。23:48 以降この確認が失敗し、リースが少しずつ切れていきます。動いているインスタンスには影響しませんが、**リースのないドロップレットは新しいインスタンスの置き場所の候補から外れます**。',
+              en: 'DWFM\'s state checks depended on DynamoDB. From 23:48 they failed, and leases slowly timed out. Running instances were unaffected, but **a droplet without a lease is not a candidate for new launches**.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '02:25 に DynamoDB が戻ると、DWFM はフリート全体でリースを張り直し始めました。ところがドロップレットの数が多すぎて、**1 つの張り直しが終わる前にタイムアウトしてしまう**。失敗した分は再試行としてキューに積まれ、キューはさらに長くなる。AWS はこれを**輻輳崩壊（congestive collapse）**と呼び、前に進めない状態に陥ったと説明しています。',
+              en: 'When DynamoDB returned at 02:25, DWFM began re-establishing leases across the whole fleet. But with so many droplets, **each attempt took long enough to time out before it finished**. Failed attempts were queued to retry, making the queue even longer. AWS describes this as **congestive collapse**: DWFM could make no forward progress.',
+            },
+          },
+          { type: 'diagram', id: 'ua-congestion' },
+          {
+            type: 'p',
+            text: {
+              ja: 'この状態には確立された復旧手順がなく、エンジニアは状況を悪化させないよう慎重に対応しました。いくつかの対策を試した後、04:14 に**流入する仕事を絞り、DWFM ホストを選んで再起動**します。再起動でキューが空になり、処理時間が短くなって、リースが張れるようになりました。05:28 には全ドロップレットのリースが戻ります。',
+              en: 'There was no established recovery procedure for this, so engineers moved carefully to avoid making it worse. After trying several mitigations, at 04:14 they **throttled incoming work and selectively restarted DWFM hosts**. Restarts cleared the queues, processing times dropped, and leases could be established. By 05:28 every droplet had a lease again.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '[リトライの記事](#retries/rt-storm) で見た「再送の雪崩」と同じ構図です。**仕事が遅れるほど再試行が増え、再試行が増えるほど仕事が遅れる**。いったんこのループに入ると、元の原因が消えても自然には抜け出せません。抜け出す方法も同じで、[流入を絞り](#retries/rt-server)、溜まった仕事を捨てることでした。',
+              en: 'It is the same picture as the [retry storm](#retries/rt-storm): **the slower the work, the more retries; the more retries, the slower the work**. Once in that loop, the system does not climb out on its own even after the original cause is gone. The way out was the same too: [shed incoming load](#retries/rt-server) and throw away the backlog.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'このように、きっかけが消えた後も悪い状態が自分を保ち続ける障害は、一般に**メタステーブル障害**とも呼ばれます。AWS の発表ではこの言葉は使われておらず、ここでは考え方を紹介するために挙げています。',
+              en: 'Failures that sustain themselves after the trigger is gone are often called **metastable failures** in general. AWS\'s summary does not use that term; it is mentioned here only to name the idea.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-network',
+        title: { ja: '次の段: Network Manager のバックログ', en: 'Next stage: the Network Manager backlog' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'DWFM が戻った 05:28、今度は Network Manager の番です。DWFM の問題で止まっていた**ネットワーク設定の反映が、大量に溜まっていました**。06:21 から反映に時間がかかるようになり、インスタンスは起動できても、ネットワークの設定が届かず通信できない、という状態になります。',
+              en: 'Once DWFM recovered at 05:28, it was Network Manager\'s turn. **Network state changes delayed by the DWFM issue had piled up into a large backlog**. From 06:21 propagation slowed, so instances could launch but had no connectivity until their configuration arrived.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'エンジニアは Network Manager の負荷を下げ、10:36 に反映時間が正常に戻りました。その後 11:23 から、各所の負荷を守るために入れていた EC2 のリクエスト制限を少しずつ緩め、13:50 に EC2 は完全に復旧します。',
+              en: 'Engineers reduced the load on Network Manager, and propagation times were back to normal by 10:36. From 11:23 they gradually relaxed the EC2 request throttles that had been protecting the subsystems, and EC2 fully recovered at 13:50.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '制限を**一気に外さず、少しずつ緩めている**点に注目してください。溜まった需要が一度に戻ると、直したばかりの仕組みをもう一度詰まらせかねません。',
+              en: 'Notice that the throttles were **relaxed gradually rather than removed at once**. Letting all the pent-up demand back in together could have jammed the systems that had just been fixed.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-nlb',
+        title: { ja: 'NLB: ヘルスチェックが容量を削る', en: 'NLB: health checks that removed capacity' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'Network Manager の遅れは、Network Load Balancer（NLB）にも波及しました。NLB には、ノードを定期的に検査して、不健全なものをサービスから外すヘルスチェックの仕組みがあります。',
+              en: 'Network Manager\'s delays also hit Network Load Balancer (NLB). NLB has a health check subsystem that regularly checks every node and removes unhealthy ones from service.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**健全なのに失敗する**: ヘルスチェックの仕組みが、ネットワーク設定がまだ届いていない新しい EC2 インスタンスをサービスに入れた。そのため、ノードもバックエンドも健全なのに検査が失敗することがあった',
+                en: '**Failing while healthy**: the health checker brought new EC2 instances into service before their network state had propagated, so checks sometimes failed even though the nodes and targets were fine',
+              },
+              {
+                ja: '**外れては戻る**: 検査結果が失敗と成功を行き来し、ノードが DNS から外されては、次の成功で戻された',
+                en: '**Out, then back in**: results flipped between failing and healthy, so nodes were pulled from DNS and then returned on the next success',
+              },
+              {
+                ja: '**検査の仕組み自体が弱る**: 行き来のせいでヘルスチェックの仕組みの負荷が上がり、検査が遅れ、AZ 単位の DNS 自動フェイルオーバーが働いた。複数 AZ にまたがるロードバランサーでは容量がサービスから外れ、残った容量で負荷を支えきれないアプリでは接続エラーが増えた',
+                en: '**The checker itself degrades**: the flapping overloaded the health check subsystem, checks were delayed, and automatic AZ DNS failover kicked in. For multi-AZ load balancers this took capacity out of service, and applications whose remaining capacity could not carry the load saw connection errors',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '06:52 に監視が検知し、09:36 にエンジニアが**NLB の自動ヘルスチェックフェイルオーバーを無効化**しました。これで健全なノードがすべてサービスに戻り、接続エラーは解消します。EC2 の復旧後、14:09 に自動フェイルオーバーを再び有効にしました。',
+              en: 'Monitoring caught it at 06:52, and at 09:36 engineers **disabled automatic health check failover for NLB**, bringing all healthy nodes back into service and resolving the connection errors. After EC2 recovered, they re-enabled automatic failover at 14:09.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '守るための仕組みが、条件次第で害になる例です。[サーキットブレーカーの記事](#circuit-breaker/cb-cascade) のように、自動の切り離しは普段は障害を局所化しますが、**検査そのものが信用できないときは、健全な容量まで削ってしまいます**。07:04 からは NLB のヘルスチェック失敗がインスタンスの終了も引き起こし、Lambda の内部システムの一部が容量不足になりました。',
+              en: 'This is a safeguard turning harmful under the wrong conditions. As in the [circuit breaker article](#circuit-breaker/cb-cascade), automatic isolation usually contains failures, but **when the check itself is unreliable, it removes healthy capacity too**. From 07:04, NLB health check failures also triggered instance terminations that left a subset of Lambda\'s internal systems under-scaled.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-others',
+        title: { ja: '他のサービスへの広がり', en: 'How it spread to other services' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'DynamoDB、EC2 の起動、NLB は多くのサービスの土台です。そのため影響は、それぞれの段に合わせた形で広がりました。',
+              en: 'DynamoDB, EC2 launches and NLB sit underneath many services, so the impact spread in shapes that matched each stage.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**Lambda（23:51〜14:15）**: 最初は DynamoDB の影響で関数の作成や SQS・Kinesis のイベント処理が遅れた。SQS をポーリングする内部の仕組みは自動で戻らず、04:40 に手で復旧。07:04 以降は NLB の影響で容量が不足し、同期呼び出しを優先するため非同期の処理を絞った',
+                en: '**Lambda (23:51 to 14:15)**: DynamoDB issues first blocked function changes and delayed SQS and Kinesis event processing. The internal SQS polling subsystem did not recover on its own and was restored at 04:40. From 07:04, NLB issues left it under-scaled, so asynchronous work was throttled to prioritize synchronous invocations',
+              },
+              {
+                ja: '**STS（23:51〜09:59）**: DynamoDB の復旧で 01:19 に一度戻ったが、08:31 から NLB の影響で再びエラーが増えた。**原因が違う 2 回目の波**があった',
+                en: '**STS (23:51 to 09:59)**: recovered at 01:19 with DynamoDB, then errors rose again from 08:31 because of NLB. **A second wave with a different cause**',
+              },
+              {
+                ja: '**IAM のサインイン（23:51〜01:25）**: IAM ユーザーでのコンソールへのサインインが失敗した',
+                en: '**IAM sign-in (23:51 to 01:25)**: console sign-in with IAM users failed',
+              },
+              {
+                ja: '**Redshift**: クエリは 02:21 に戻ったが、認証情報が切れたクラスターのノードを入れ替える処理が EC2 の起動障害で止まり、一部のクラスターの完全な復旧は 21 日 04:05 までかかった',
+                en: '**Redshift**: queries resumed by 02:21, but workflows replacing nodes with expired credentials were blocked by the EC2 launch failures, and some clusters were not fully restored until 04:05 on October 21',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'ほかにも ECS、EKS、Fargate、Amazon Connect、サポートセンターなどが影響を受けました。全体の一覧は、元の発表から AWS のイベント履歴をたどれます。',
+              en: 'ECS, EKS, Fargate, Amazon Connect, the Support Center and others were affected too. The original summary points to AWS\'s event history for the full list.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-fixes',
+        title: { ja: 'AWS が挙げた再発防止策', en: 'What AWS is changing' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '発表では、次の対策が挙げられています。',
+              en: 'The summary lists the following changes.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**DNS 自動化**: DynamoDB の DNS Planner と DNS Enactor の自動化を全世界で停止済み。再開の前に、競合状態を修正し、誤った計画が適用されるのを防ぐ保護を追加する',
+                en: '**DNS automation**: the DynamoDB DNS Planner and Enactor automation has been disabled worldwide. Before re-enabling it, the race condition will be fixed and protections added against applying incorrect plans',
+              },
+              {
+                ja: '**NLB**: ヘルスチェックの失敗で AZ フェイルオーバーが起きたとき、1 つの NLB が外せる容量を制限する仕組み（velocity control）を追加する',
+                en: '**NLB**: a velocity control mechanism to limit how much capacity a single NLB can remove when health check failures cause AZ failover',
+              },
+              {
+                ja: '**EC2**: 既存のスケールテストに加え、DWFM の復旧の流れを実際に動かすテストを作り、将来の後退を見つけられるようにする',
+                en: '**EC2**: an additional test suite, on top of existing scale tests, that exercises the DWFM recovery workflow to catch future regressions',
+              },
+              {
+                ja: '**EC2 のデータ反映**: 待ち行列の長さに応じて、入ってくる仕事を制限するよう、スロットリングの仕組みを改善する',
+                en: '**EC2 data propagation**: improved throttling that rate-limits incoming work based on the size of the waiting queue',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'ua-lessons',
+        title: { ja: '自分のシステムに持ち帰る教訓', en: 'Lessons to take home' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ここからは AWS の発表ではなく、この記事としての読み解きです。規模は違っても、同じ形の弱点はどのシステムにもありえます。',
+              en: 'From here on, this is this article\'s reading, not AWS\'s statement. The scale is different, but weaknesses of the same shape can exist in any system.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**確認は、書き込む瞬間にもう一度**: 「始める前に一度確認」は、処理が遅れるほど古くなる。バージョン付きの条件付き書き込みのように、確認と書き込みを 1 つの操作にできないかを考える',
+                en: '**Check again at the moment you write**: a one-time check before starting goes stale as processing slows. See whether the check and the write can be one operation, such as a conditional write on a version',
+              },
+              {
+                ja: '**消す処理は、使用中のものを消せないように**: クリーンアップのような「掃除」は、今使われているものを絶対に消さない、という保護を持たせる',
+                en: '**Clean-up must never delete what is in use**: give housekeeping jobs a hard guard against removing anything currently active',
+              },
+              {
+                ja: '**キューには上限と、捨てる判断を**: タイムアウトした仕事を無制限に再投入すると、回復を自分で妨げる。[リトライの回数を制限](#retries/rt-budget) し、待ち行列の長さで流入を絞る',
+                en: '**Bound your queues, and be willing to drop work**: requeueing timed-out work without limit blocks your own recovery. [Cap retries](#retries/rt-budget) and throttle intake based on queue length',
+              },
+              {
+                ja: '**全台が一斉に戻る場面を試す**: 障害からの復旧は、普段は起きない規模の仕事を一度に生む。復旧の流れそのものを、本番に近い規模で [試しておく](#chaos-engineering/ce-gameday)',
+                en: '**Test the moment everything comes back at once**: recovery creates a burst of work far beyond normal. [Exercise the recovery path itself](#chaos-engineering/ce-gameday) at realistic scale',
+              },
+              {
+                ja: '**自動の切り離しに速度制限を**: ヘルスチェックが信用できないときに容量を削りすぎないよう、一度に外せる量に上限を置く。手で止められるスイッチも用意する',
+                en: '**Rate-limit automatic removal**: cap how much capacity can be pulled at once, so an unreliable health check cannot strip too much. Keep a manual switch to turn it off',
+              },
+              {
+                ja: '**見えない依存を洗い出す**: EC2 の起動が DynamoDB に依存していたように、土台のサービスにも依存がある。自分のサービスが止まるとき、何が一緒に止まるかを把握しておく',
+                en: '**Map the hidden dependencies**: just as EC2 launches depended on DynamoDB, foundations have foundations. Know what else goes down when your service does',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '[SLO の記事](#sli-slo-sla/slo-nines) で見たとおり、99.9% の月間の許容停止時間は約 43 分です。依存しているリージョンの土台が半日不安定になると、影響を受けた機能はそれだけでその月の予算を何倍も超えます。自分のサービスがどの程度の停止に耐える必要があるのか、リージョンをまたぐ構成が必要かは、SLO から逆算して決めます。',
+              en: 'As in the [SLO article](#sli-slo-sla/slo-nines), 99.9% allows about 43 minutes of downtime a month. If the foundations of the Region you depend on are unstable for half a day, any affected feature blows through that budget many times over. How much disruption your service must survive, and whether you need a multi-Region setup, should be worked backward from your SLO.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'ua-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**きっかけは、まれな競合状態**。確認してから書くまでの間に前提が変わり、使用中の計画が消えて DynamoDB の入口が空になった',
+                en: '**The trigger was a rare race.** The assumption changed between check and write, the active plan was deleted, and DynamoDB\'s front door went empty',
+              },
+              {
+                ja: '**きっかけを直しても終わらなかった**。DWFM は再試行の積み重ねで輻輳崩壊し、流入制限と再起動でようやく抜け出した',
+                en: '**Fixing the trigger did not end it.** DWFM fell into congestive collapse from piled-up retries and only escaped through throttling and restarts',
+              },
+              {
+                ja: '**影響は次の段へ移っていった**。Network Manager のバックログ、NLB のヘルスチェックと、溜まった仕事が順に詰まらせた',
+                en: '**The impact kept moving down a stage.** Backlogs jammed Network Manager, then NLB health checks, in turn',
+              },
+              {
+                ja: '**守る仕組みも、条件次第で害になる**。ヘルスチェックによる自動の切り離しが、健全な容量まで削った',
+                en: '**Safeguards can hurt under the wrong conditions.** Automatic health-check removal pulled healthy capacity out of service',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '一次資料は AWS の [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/) です。過負荷からの回復については、Google の SRE 本の [Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) もあわせて読むと理解が深まります。',
+              en: 'The primary source is AWS\'s [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/). For recovering from overload, the [Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) chapter of Google\'s SRE book is a good companion.',
             },
           },
         ],

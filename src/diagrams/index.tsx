@@ -12,6 +12,7 @@ import { SqliConcat, SqliPlaceholder } from './SqlInjectionDiagrams';
 import { PiChannels, PiIndirect } from './PromptInjectionDiagrams';
 import { OAuthCodeFlow, OAuthPkce } from './OAuthDiagrams';
 import { ChaosExperiment, ChaosLoop } from './ChaosDiagrams';
+import { UaCascade, UaCongestion, UaDnsRace, UaTimeline } from './AwsOutageDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -52,6 +53,10 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'oauth-pkce': OAuthPkce,
   'chaos-loop': ChaosLoop,
   'chaos-experiment': ChaosExperiment,
+  'ua-timeline': UaTimeline,
+  'ua-cascade': UaCascade,
+  'ua-dns-race': UaDnsRace,
+  'ua-congestion': UaCongestion,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {
