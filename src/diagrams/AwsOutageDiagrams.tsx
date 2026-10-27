@@ -194,28 +194,28 @@ export function UaDnsRace() {
     {
       title: tr('1. Enactor A が遅れる', '1. Enactor A falls behind'),
       body: tr(
-        'Enactor A は計画 v1 を取り、「前に適用した計画より新しい」と一度だけ確認して適用を始めます。ところが更新が他の Enactor とぶつかり、エンドポイントごとにリトライを重ねて、いつになく遅れています。',
+        'Enactor A は計画 v1 を取り、「前に適用した計画より新しい」と一度だけ確認して適用を始める。ところが更新が他の Enactor とぶつかり、エンドポイントごとにリトライを重ねて、いつになく遅れている。',
         'Enactor A picks up plan v1, checks once that it is newer than the plan already applied, and starts applying it. Its updates keep colliding with other Enactors, so it retries endpoint after endpoint and falls unusually far behind.',
       ),
     },
     {
       title: tr('2. Enactor B が最新の計画を適用', '2. Enactor B applies the newest plan'),
       body: tr(
-        'その間も Planner は新しい計画を何世代も作り続けます。Enactor B は最新の v9 を取り、すべてのエンドポイントへ素早く適用し終えます。',
+        'その間も Planner は新しい計画を何世代も作り続ける。Enactor B は最新の v9 を取り、すべてのエンドポイントへ素早く適用し終える。',
         'Meanwhile the Planner keeps producing newer generations. Enactor B picks up the newest, v9, and quickly applies it to every endpoint.',
       ),
     },
     {
       title: tr('3. 古い計画が上書きする', '3. The old plan overwrites the new one'),
       body: tr(
-        'B は適用を終えて、古い計画を消すクリーンアップを始めます。ちょうど同じとき、A が古い v1 を地域エンドポイントに適用し、v9 を上書きします。A の「新しいか」の確認は、遅れのせいでもう古くなっていました。',
+        'B は適用を終えて、古い計画を消すクリーンアップを始める。ちょうど同じとき、A が古い v1 を地域エンドポイントに適用し、v9 を上書きする。A の「新しいか」の確認は、遅れのせいでもう古くなっていた。',
         'B finishes and starts its clean-up of old plans. At that same moment, A applies its old v1 to the regional endpoint, overwriting v9. A\'s "is it newer?" check was stale by now because of the delays.',
       ),
     },
     {
       title: tr('4. 適用中の計画が削除される', '4. The active plan is deleted'),
       body: tr(
-        'B のクリーンアップは、v9 よりずっと古い v1 を削除します。それが今まさに適用されている計画だったため、エンドポイントの IP アドレスがすべて消えました。',
+        'B のクリーンアップは、v9 よりずっと古い v1 を削除する。それが今まさに適用されている計画だったため、エンドポイントの IP アドレスがすべて消えた。',
         'B\'s clean-up deletes v1 for being many generations older than v9. But v1 was the plan in effect, so every IP address for the endpoint disappeared at once.',
       ),
     },

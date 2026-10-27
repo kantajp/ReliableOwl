@@ -116,7 +116,7 @@ export const topics: Topic[] = [
           {
             type: 'p',
             text: {
-              ja: 'システム設計では「この操作は速いのか遅いのか」を**桁で捉える**ことが重要です。時間の単位は、1つ小さくなるごとに1000分の1になります。',
+              ja: 'システム設計では「この操作は速いのか遅いのか」を**桁で捉える**ことが重要。時間の単位は、1つ小さくなるごとに1000分の1になる。',
               en: 'In system design, what matters is grasping whether an operation is fast or slow **by order of magnitude**. Each smaller unit of time is 1/1000 of the previous.',
             },
           },
@@ -132,7 +132,7 @@ export const topics: Topic[] = [
           {
             type: 'p',
             text: {
-              ja: 'ポイントは「メモリは ns、ディスクや SSD は μs、ネットワーク往復は ms」というように、**装置ごとに桁が違う**こと。同じ処理でも、メモリで済むかネットワークを越えるかで100万倍近く変わります。',
+              ja: 'ポイントは「メモリは ns、ディスクや SSD は μs、ネットワーク往復は ms」というように、**装置ごとに桁が違う**こと。同じ処理でも、メモリで済むかネットワークを越えるかで100万倍近く変わる。',
               en: 'The key insight: different layers live at **different orders of magnitude** — memory in ns, SSD/disk in μs, network round trips in ms. The same logical step can vary by nearly a million times depending on whether it stays in memory or crosses the network.',
             },
           },
@@ -140,7 +140,7 @@ export const topics: Topic[] = [
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'だから設計では「メモリ(キャッシュ)で返せるか、ネットワークやディスクを越えるか」を意識します。レイテンシ予算（例: p99 < 100ms）は、これらの積み重ねで決まります。代表的な数字は [Latency Numbers Every Programmer Should Know](https://gist.github.com/jboner/2841832) や [インタラクティブ版](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html) が定番です。',
+              ja: 'だから設計では「メモリ(キャッシュ)で返せるか、ネットワークやディスクを越えるか」を意識する。レイテンシ予算（例: p99 < 100ms）は、これらの積み重ねで決まる。代表的な数字は [Latency Numbers Every Programmer Should Know](https://gist.github.com/jboner/2841832) や [インタラクティブ版](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html) が定番。',
               en: 'This is why design focuses on whether you can serve from memory (cache) versus crossing the network or disk. A latency budget (e.g. p99 < 100ms) is the sum of these costs. The classic references are [Latency Numbers Every Programmer Should Know](https://gist.github.com/jboner/2841832) and its [interactive version](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html).',
             },
           },
@@ -153,7 +153,7 @@ export const topics: Topic[] = [
           {
             type: 'p',
             text: {
-              ja: 'データ量も時間と同じく桁で捉えます。こちらは1段上がるごとに約1000倍です。「1文字 ≈ 1バイト(B)」を出発点にすると見積もりが楽になります。',
+              ja: 'データ量も時間と同じく桁で捉える。こちらは1段上がるごとに約1000倍。「1文字 ≈ 1バイト(B)」を出発点にすると見積もりが楽になる。',
               en: 'Data size is also about orders of magnitude — here each step up is about 1000×. Starting from "1 character ≈ 1 byte (B)" makes estimation easy.',
             },
           },
@@ -171,7 +171,7 @@ export const topics: Topic[] = [
             type: 'note',
             tone: 'info',
             text: {
-              ja: '正確には「2進(1024)」と「10進(1000)」の2系統があります。KiB/MiB は1024倍(2進)、KB/MB は1000倍(10進)。設計の"概算"では1000倍で計算して十分です（桁が合えばよい）。詳しくは [Binary prefix (Wikipedia)](https://en.wikipedia.org/wiki/Binary_prefix) を参照。',
+              ja: '正確には「2進(1024)」と「10進(1000)」の2系統がある。KiB/MiB は1024倍(2進)、KB/MB は1000倍(10進)。設計の"概算"では1000倍で計算して十分（桁が合えばよい）。詳しくは [Binary prefix (Wikipedia)](https://en.wikipedia.org/wiki/Binary_prefix) を参照。',
               en: 'Strictly, there are two systems: binary (1024) and decimal (1000). KiB/MiB are 1024× (binary); KB/MB are 1000× (decimal). For back-of-the-envelope estimates, using 1000× is fine — you only need the right order of magnitude. See [Binary prefix (Wikipedia)](https://en.wikipedia.org/wiki/Binary_prefix) for details.',
             },
           },
@@ -182,7 +182,7 @@ export const topics: Topic[] = [
               {
                 type: 'p',
                 text: {
-                  ja: '見積もりは「1件のサイズ × 件数」「QPS × 1件のサイズ」「日次 × 保持年数」という掛け算に分解します。1件のサイズをざっくり置くのがコツです。',
+                  ja: '見積もりは「1件のサイズ × 件数」「QPS × 1件のサイズ」「日次 × 保持年数」という掛け算に分解する。1件のサイズをざっくり置くのがコツ。',
                   en: 'Estimates break down into multiplications: size-per-item × count, QPS × size-per-item, daily × retention-years. The trick is to roughly fix the size of one item.',
                 },
               },
@@ -199,7 +199,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: '秒に直すときは「1日 ≈ 86,400秒 ≈ 約10万秒」と覚えると暗算が速いです。1日100万件なら 100万 ÷ 10万 = 約12/秒、とすぐ出せます。',
+                  ja: '秒に直すときは「1日 ≈ 86,400秒 ≈ 約10万秒」と覚えておくと暗算が速い。1日100万件なら 100万 ÷ 10万 = 約12/秒、とすぐ出せる。',
                   en: 'To convert to per-second, remember "1 day ≈ 86,400 s ≈ ~100k s." So 1M/day ÷ 100k ≈ ~12/s, computed in your head instantly.',
                 },
               },
@@ -227,14 +227,14 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: 'システムデザイン面接は、正解を1つ当てるテストではありません。曖昧な課題を、**要件確認 → 見積もり → 設計 → 深掘り**、という順で構造的に進め、判断とトレードオフを声に出して説明する力を見られます。',
+              ja: 'システムデザイン面接は、正解を1つ当てるテストではない。曖昧な課題を、**要件確認 → 見積もり → 設計 → 深掘り**、という順で構造的に進め、判断とトレードオフを声に出して説明する力を見られる。',
               en: 'A system design interview is not a test with one right answer. You are assessed on how you take a vague problem and work through it structurally — clarify, estimate, design, deep dive — while narrating your decisions and trade-offs out loud.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '最大の失敗は「いきなり設計図を描き始める」こと。まず型（ステップ）に沿って進めると、抜け漏れなく、面接官にも考えが伝わります。下は45分の時間配分の目安です。',
+              ja: '最大の失敗は「いきなり設計図を描き始める」こと。まず型（ステップ）に沿って進めると、抜け漏れなく、面接官にも考えが伝わる。下は45分の時間配分の目安。',
               en: 'The biggest mistake is jumping straight into drawing boxes. Following the steps keeps you thorough and makes your thinking legible to the interviewer. Below is a rough 45-minute budget.',
             },
           },
@@ -258,7 +258,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: '課題はわざと曖昧に出されます。いきなり作らず、質問でスコープを絞ります。**「何を作らないか」を決める**のも同じくらい重要です。',
+              ja: '課題はわざと曖昧に出される。いきなり作らず、質問でスコープを絞る。**「何を作らないか」を決める**のも同じくらい重要。',
               en: 'The prompt is intentionally vague. Do not start building — narrow the scope with questions. **Deciding what NOT to build** matters just as much.',
             },
           },
@@ -274,7 +274,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: '例（URL短縮）: 「カスタムエイリアスは必要?」「分析機能は要る?」「リンクに期限は?」と確認し、まずは “短縮とリダイレクト” にスコープを絞る。読み取りが書き込みより圧倒的に多い、という前提もここで握ります。',
+              ja: '例（URL短縮）: 「カスタムエイリアスは必要?」「分析機能は要る?」「リンクに期限は?」と確認し、まずは “短縮とリダイレクト” にスコープを絞る。読み取りが書き込みより圧倒的に多い、という前提もここで握る。',
               en: 'Example (URL shortener): ask "Do we need custom aliases?", "Any analytics?", "Do links expire?" and scope down to just shorten + redirect. This is also where you establish that reads far outnumber writes.',
             },
           },
@@ -282,7 +282,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '「読み取りと書き込みの比率は?」「想定ユーザー数は?」など、後の見積もりに効く質問を優先しましょう。',
+              ja: '「読み取りと書き込みの比率は?」「想定ユーザー数は?」など、後の見積もりに効く質問を優先する。',
               en: 'Prioritize questions that feed later estimates: "What is the read/write ratio?", "How many users?"',
             },
           },
@@ -295,7 +295,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: '見積もりは「桁感」を掴むため。正確さより、設計判断の根拠になる数字を素早く出します。QPS・ストレージ・帯域が定番です。',
+              ja: '見積もりは「桁感」を掴むため。正確さより、設計判断の根拠になる数字を素早く出す。QPS・ストレージ・帯域が定番。',
               en: 'Estimation is about order of magnitude. Speed over precision — produce numbers that justify design choices. QPS, storage and bandwidth are the usual ones.',
             },
           },
@@ -310,7 +310,7 @@ storage   = 1.8B × 500B ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: '例（URL短縮）: 1日100万件の書き込みと仮定すると、次のように桁を出せます。',
+              ja: '例（URL短縮）: 1日100万件の書き込みと仮定すると、次のように桁を出せる。',
               en: 'Example (URL shortener): assuming 1M writes per day, you can produce the orders of magnitude like this.',
             },
           },
@@ -324,7 +324,7 @@ storage(5y) = 1M × 500B × 365 × 5 ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: 'この「読み取りが桁違いに多い」という結果が、後の “キャッシュとレプリカ” という設計判断に直結します。',
+              ja: 'この「読み取りが桁違いに多い」という結果が、後の “キャッシュとレプリカ” という設計判断に直結する。',
               en: 'The takeaway "reads dominate" directly drives the later design choice of caching and replicas.',
             },
           },
@@ -337,7 +337,7 @@ storage(5y) = 1M × 500B × 365 × 5 ≈ 0.9 TB`,
           {
             type: 'p',
             text: {
-              ja: '主要な操作を API として定義すると、システムの境界がはっきりします。あわせて、保存するデータの形（スキーマ）を簡単に示します。',
+              ja: '主要な操作を API として定義すると、システムの境界がはっきりする。あわせて、保存するデータの形（スキーマ）を簡単に示す。',
               en: 'Defining the key operations as an API makes the system boundary concrete. Sketch the shape of the stored data (schema) alongside it.',
             },
           },
@@ -365,7 +365,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
           {
             type: 'p',
             text: {
-              ja: 'まず「正しく動く最小構成」を、主要コンポーネント（クライアント・LB・サービス・DB・キャッシュ等）を箱と線で描きます。ここで完璧を目指さず、動く土台を作るのが目的です。',
+              ja: 'まず「正しく動く最小構成」を、主要コンポーネント（クライアント・LB・サービス・DB・キャッシュ等）を箱と線で描く。ここで完璧を目指さず、動く土台を作るのが目的。',
               en: 'Start with a minimal design that works: draw the main components (client, LB, service, DB, cache) as boxes and lines. Aim for a working baseline, not perfection.',
             },
           },
@@ -373,7 +373,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: '例（URL短縮）: Client → API Gateway → App Server → Database、という最小構成をまず描く。読み取りは「キーで引いてリダイレクト」、書き込みは「キーを発行して保存」。この時点ではキャッシュも入れず、まず正しく動く形を示します。',
+              ja: '例（URL短縮）: Client → API Gateway → App Server → Database、という最小構成をまず描く。読み取りは「キーで引いてリダイレクト」、書き込みは「キーを発行して保存」。この時点ではキャッシュも入れず、まず正しく動く形を示す。',
               en: 'Example (URL shortener): first draw the minimal path Client → API Gateway → App Server → Database. Read = look up by key and redirect; write = issue a key and store. No cache yet — just show a correct baseline.',
             },
           },
@@ -381,7 +381,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'リクエストが端から端までどう流れるかを1本、口で追って説明すると、設計の妥当性が伝わります。',
+              ja: 'リクエストが端から端までどう流れるかを1本、口で追って説明すると、設計の妥当性が伝わる。',
               en: 'Trace one request end to end out loud — it demonstrates that the design actually holds together.',
             },
           },
@@ -394,7 +394,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
           {
             type: 'p',
             text: {
-              ja: '最小構成のボトルネックを見つけ、順に潰します。ここが差のつく本番。各改善は必ず**トレードオフとセットで語ります**。',
+              ja: '最小構成のボトルネックを見つけ、順に潰す。ここが差のつく本番。各改善は必ず**トレードオフとセットで語る**。',
               en: 'Find the bottlenecks in the baseline and address them one by one. This is where you stand out — always **pair each improvement with its trade-off**.',
             },
           },
@@ -411,7 +411,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: '例（URL短縮）: 「読み取りが多い」→ API と DB の間に Redis キャッシュを挟む（トレードオフ: 一貫性）。次に「キー採番が複数サーバーで衝突する」→ KGS で範囲を配る。このように、見つけたボトルネックを1つずつトレードオフ付きで潰します。',
+              ja: '例（URL短縮）: 「読み取りが多い」→ API と DB の間に Redis キャッシュを挟む（トレードオフ: 一貫性）。次に「キー採番が複数サーバーで衝突する」→ KGS で範囲を配る。このように、見つけたボトルネックを1つずつトレードオフ付きで潰す。',
               en: 'Example (URL shortener): "reads dominate" → add a Redis cache between API and DB (trade-off: consistency). Then "key issuance collides across servers" → hand out ranges via a KGS. Address each bottleneck one at a time, with its trade-off.',
             },
           },
@@ -433,7 +433,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: '迷ったら「要件に立ち返る」。すべての判断は要件（規模・一貫性・レイテンシ）から導けます。',
+                  ja: '迷ったら「要件に立ち返る」。すべての判断は要件（規模・一貫性・レイテンシ）から導ける。',
                   en: 'When in doubt, return to the requirements. Every decision should trace back to them (scale, consistency, latency).',
                 },
               },
@@ -461,14 +461,14 @@ table urls (key PK, long_url, created_at, expires_at?)`,
           {
             type: 'p',
             text: {
-              ja: 'URL短縮サービスは、`https://example.com/very/long/path?...` のような長いURLを `sho.rt/aX9k2` のような短いURLに変換し、アクセスされたら元のURLへリダイレクトする仕組みです。TinyURL や Bitly が代表例です。',
+              ja: 'URL短縮サービスは、`https://example.com/very/long/path?...` のような長いURLを `sho.rt/aX9k2` のような短いURLに変換し、アクセスされたら元のURLへリダイレクトする仕組み。TinyURL や Bitly が代表例。',
               en: 'A URL shortener turns a long URL like `https://example.com/very/long/path?...` into a short one like `sho.rt/aX9k2`, and redirects to the original when visited. TinyURL and Bitly are well-known examples.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '一見シンプルですが、「短いキーをどう発行するか」「膨大な読み取りをどう捌くか」というスケールの論点が詰まっていて、システム設計の入門にちょうど良い題材です。',
+              ja: '一見シンプルだが、「短いキーをどう発行するか」「膨大な読み取りをどう捌くか」というスケールの論点が詰まっていて、システム設計の入門にちょうど良い題材。',
               en: 'It looks simple, but it packs real scaling questions: how to issue short keys, and how to serve a huge volume of reads. That makes it a great intro to system design.',
             },
           },
@@ -493,7 +493,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: '読み取りが書き込みの100倍以上になることも珍しくありません。この「Read-heavy」という性質が、後半のキャッシュ設計につながります。',
+              ja: '読み取りが書き込みの100倍以上になることも珍しくない。この「Read-heavy」という性質が、後半のキャッシュ設計につながる。',
               en: 'Reads often exceed writes by 100x or more. This read-heavy nature drives the caching design later on.',
             },
           },
@@ -506,7 +506,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
           {
             type: 'p',
             text: {
-              ja: '設計に入る前に、ざっくりした数字を置きます。細かい正確さより「桁感」が大事です。ここでは新規URLを1日100万件、読み取りは書き込みの約100倍と仮定します。',
+              ja: '設計に入る前に、ざっくりした数字を置く。細かい正確さより「桁感」が大事。ここでは新規URLを1日100万件、読み取りは書き込みの約100倍と仮定する。',
               en: 'Before designing, pin down rough numbers. The order of magnitude matters more than precision. Assume 1M new URLs per day, with reads about 100x writes.',
             },
           },
@@ -532,7 +532,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'この見積もりが後の判断を決めます。「読み取りが桁違いに多い」→ キャッシュとレプリカが要る。「書き込みは秒10程度」→ 単一DBで余裕だが、採番の衝突対策は依然として要る。',
+              ja: 'この見積もりが後の判断を決める。「読み取りが桁違いに多い」→ キャッシュとレプリカが要る。「書き込みは秒10程度」→ 単一DBで余裕だが、採番の衝突対策は依然として要る。',
               en: 'These numbers drive later choices. "Reads dominate" → you need caching and replicas. "Writes are ~10/s" → a single DB handles it easily, but key generation still needs collision handling.',
             },
           },
@@ -545,7 +545,7 @@ table urls (key PK, long_url, created_at, expires_at?)`,
           {
             type: 'p',
             text: {
-              ja: '外部に見せるインターフェースは2つだけです。短縮する（書き込み）と、解決してリダイレクトする（読み取り）。',
+              ja: '外部に見せるインターフェースは2つだけ。短縮する（書き込み）と、解決してリダイレクトする（読み取り）。',
               en: 'The public interface is just two operations: shorten (write) and resolve-then-redirect (read).',
             },
           },
@@ -593,7 +593,7 @@ Location: https://example.com/very/long/path`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: '301 vs 302 は面接での定番の掘りどころです。「速度（キャッシュ）を取るか、計測を取るか」というトレードオフを言えると良いです。詳細は MDN の [301 Moved Permanently](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301) と [302 Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302) を参照。',
+              ja: '301 vs 302 は面接での定番の掘りどころ。「速度（キャッシュ）を取るか、計測を取るか」というトレードオフを言えると良い。詳細は MDN の [301 Moved Permanently](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301) と [302 Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302) を参照。',
               en: 'The 301-vs-302 choice is a classic interview follow-up. Be ready to frame it as a trade-off: caching speed versus click analytics. See MDN on [301 Moved Permanently](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301) and [302 Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302).',
             },
           },
@@ -606,7 +606,7 @@ Location: https://example.com/very/long/path`,
           {
             type: 'p',
             text: {
-              ja: 'まずは最小構成のリクエストの流れを見てみましょう。クライアントからのリクエストが、APIサーバーを経由してデータベースにたどり着き、結果が返ってくる。下の図の「再生」を押すと、リクエストが流れる様子が見えます。',
+              ja: 'まずは最小構成のリクエストの流れ。クライアントからのリクエストが、APIサーバーを経由してデータベースにたどり着き、結果が返ってくる。下の図の「再生」で、リクエストが流れる様子が見える。',
               en: 'Start with the minimal request flow. A client request reaches the database via an API server, and the result comes back. Press "Replay" below to watch the request travel.',
             },
           },
@@ -614,7 +614,7 @@ Location: https://example.com/very/long/path`,
           {
             type: 'p',
             text: {
-              ja: 'この構成はシンプルで正しく動きますが、アクセスが増えると毎回データベースに問い合わせるのがボトルネックになります。そこを後で改善します。',
+              ja: 'この構成はシンプルで正しく動くが、アクセスが増えると毎回データベースに問い合わせるのがボトルネックになる。そこを後で改善する。',
               en: 'This setup is simple and correct, but hitting the database on every request becomes a bottleneck as traffic grows. We fix that later.',
             },
           },
@@ -627,7 +627,7 @@ Location: https://example.com/very/long/path`,
           {
             type: 'p',
             text: {
-              ja: '設計のキモが「短いキーの発行方法」です。代表的なのは、連番のIDを Base62（0-9, a-z, A-Z の62文字）に変換する方法です。数値が短い文字列に圧縮されます。',
+              ja: '設計のキモが「短いキーの発行方法」。代表的なのは、連番のIDを Base62（0-9, a-z, A-Z の62文字）に変換する方法。数値が短い文字列に圧縮される。',
               en: 'The core design choice is how to issue short keys. A common approach converts a sequential ID into Base62 (the 62 characters 0-9, a-z, A-Z), compressing a number into a short string.',
             },
           },
@@ -682,7 +682,7 @@ function toBase62(n) {
           {
             type: 'p',
             text: {
-              ja: 'サーバーが1台なら連番で採番すれば自明に一意です。問題は複数台に増えたとき。各サーバーが独立に連番を振ると、同じIDを別のURLに割り当ててしまい衝突します。ここが分散設計の勘所です。',
+              ja: 'サーバーが1台なら連番で採番すれば自明に一意。問題は複数台に増えたとき。各サーバーが独立に連番を振ると、同じIDを別のURLに割り当ててしまい衝突する。ここが分散設計の勘所。',
               en: 'With a single server, a sequential counter is trivially unique. The problem appears with multiple servers: if each increments its own counter, two servers can assign the same ID to different URLs. This is the crux of the distributed design.',
             },
           },
@@ -708,7 +708,7 @@ function toBase62(n) {
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'カスタムエイリアスは別枠で扱います。ユーザー指定のキーは自動採番と衝突しうるので、書き込み時に一意制約でチェックし、重複なら 409 を返します。',
+              ja: 'カスタムエイリアスは別枠で扱う。ユーザー指定のキーは自動採番と衝突しうるので、書き込み時に一意制約でチェックし、重複なら 409 を返す。',
               en: 'Custom aliases are handled separately. A user-chosen key can clash with auto-generated ones, so check the UNIQUE constraint on write and return 409 on a duplicate.',
             },
           },
@@ -716,7 +716,7 @@ function toBase62(n) {
             type: 'note',
             tone: 'info',
             text: {
-              ja: '面接では「単一サーバーなら連番で自明」→「複数台で衝突」→「KGSで範囲を配れば衝突せずスケールもする」という筋道で話すと、問題の本質を理解していることが伝わります。',
+              ja: '面接では「単一サーバーなら連番で自明」→「複数台で衝突」→「KGSで範囲を配れば衝突せずスケールもする」という筋道で話すと、問題の本質を理解していることが伝わる。',
               en: 'In an interview, walk the path: "single server → trivial", "multiple servers → collisions", "a KGS hands out ranges → no collisions and it scales." It shows you grasp the core problem.',
             },
           },
@@ -727,7 +727,7 @@ function toBase62(n) {
               {
                 type: 'p',
                 text: {
-                  ja: 'KGS は自分自身が1つのカウンター（next）を持ち、それを「1個ずつ」ではなく「ブロック（塊）」で切り出して配ります。頼まれるたびに、現在の next から一定個数ぶんの範囲を返し、next をその先へ進めます。',
+                  ja: 'KGS は自分自身が1つのカウンター（next）を持ち、それを「1個ずつ」ではなく「ブロック（塊）」で切り出して配る。頼まれるたびに、現在の next から一定個数ぶんの範囲を返し、next をその先へ進める。',
                   en: 'The KGS keeps a single counter (next) and hands it out in blocks, not one at a time. On each request it returns a fixed-size range starting at the current next, then advances next past it.',
                 },
               },
@@ -765,14 +765,14 @@ function toBase62(n) {
               {
                 type: 'p',
                 text: {
-                  ja: '通りません。ユーザーの短縮リクエストは Client → API → DB で完結し、API は「手元（メモリ）に配られた範囲」から次の番号を使うだけです。KGS への問い合わせは発生しません。',
+                  ja: '通らない。ユーザーの短縮リクエストは Client → API → DB で完結し、API は「手元（メモリ）に配られた範囲」から次の番号を使うだけ。KGS への問い合わせは発生しない。',
                   en: 'No. A shorten request completes as Client → API → DB, and the API just uses the next number from the range it already holds in memory. It does not call the KGS.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: 'KGS が呼ばれるのは「手元の範囲を使い切りそうになったとき」だけ。範囲が1000個なら、およそ1000リクエストに1回の補充だけです。',
+                  ja: 'KGS が呼ばれるのは「手元の範囲を使い切りそうになったとき」だけ。範囲が1000個なら、およそ1000リクエストに1回の補充だけ。',
                   en: 'The KGS is called only when a server is about to exhaust its range. With a range of 1000, that is roughly one refill per 1000 requests.',
                 },
               },
@@ -780,7 +780,7 @@ function toBase62(n) {
                 type: 'note',
                 tone: 'info',
                 text: {
-                  ja: 'だから KGS はホットパス（毎回の経路）に居ません。中央採番（毎回1個ずつ中央に聞く方式）と違い、KGS がボトルネックや単一障害点になりにくいのが利点です。',
+                  ja: 'だから KGS はホットパス（毎回の経路）に居ない。中央採番（毎回1個ずつ中央に聞く方式）と違い、KGS がボトルネックや単一障害点になりにくいのが利点。',
                   en: 'So the KGS is off the hot path. Unlike a central counter (asking one place per request), the KGS is far less likely to be a bottleneck or single point of failure.',
                 },
               },
@@ -800,7 +800,7 @@ function toBase62(n) {
               {
                 type: 'p',
                 text: {
-                  ja: '止まるとき: 配られた範囲を使い切らずに消えると、その範囲に「穴」があきます（連番が飛ぶ）。ただし誰もその番号を使わないだけなので、一意性は壊れません。',
+                  ja: '止まるとき: 配られた範囲を使い切らずに消えると、その範囲に「穴」があく（連番が飛ぶ）。ただし誰もその番号を使わないだけなので、一意性は壊れない。',
                   en: 'Scaling down: if a server dies before using its whole range, that range becomes a gap (numbers are skipped). But nobody reuses those numbers, so uniqueness is never broken.',
                 },
               },
@@ -832,7 +832,7 @@ function toBase62(n) {
           {
             type: 'p',
             text: {
-              ja: '書き込み（Write path）と読み取り（Read path）は流れが違います。書き込みはキーを発行して保存、読み取りはキーから元URLを引く。分けて見ると理解しやすいです。',
+              ja: '書き込み（Write path）と読み取り（Read path）は流れが違う。書き込みはキーを発行して保存、読み取りはキーから元URLを引く。分けて見ると理解しやすい。',
               en: 'The write path and read path differ. Writes issue a key and store it; reads look up the original URL from a key. Viewing them separately makes it clearer.',
             },
           },
@@ -840,7 +840,7 @@ function toBase62(n) {
           {
             type: 'p',
             text: {
-              ja: '読み取りは「引くだけ」なので速いはずですが、アクセスが集中すると毎回のDB問い合わせが積み重なって遅くなります。次でキャッシュを入れて改善します。',
+              ja: '読み取りは「引くだけ」なので速いはずだが、アクセスが集中すると毎回のDB問い合わせが積み重なって遅くなる。次でキャッシュを入れて改善する。',
               en: 'Reads are just lookups, so they should be fast, but under heavy traffic the repeated DB queries add up. Next we add a cache to improve it.',
             },
           },
@@ -853,7 +853,7 @@ function toBase62(n) {
           {
             type: 'p',
             text: {
-              ja: 'このサービスのデータアクセスは驚くほど単純です。「キーで1件引く」「1件書く」だけ。テーブル間の結合も複雑なトランザクションもありません。この形は Key-Value ストアや NoSQL と非常に相性が良いです。',
+              ja: 'このサービスのデータアクセスは驚くほど単純。「キーで1件引く」「1件書く」だけ。テーブル間の結合も複雑なトランザクションもない。この形は Key-Value ストアや NoSQL と非常に相性が良い。',
               en: 'The data access here is remarkably simple: look up one record by key, and write one record. No joins across tables, no complex transactions. That shape fits key-value stores and NoSQL very well.',
             },
           },
@@ -886,7 +886,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: 'もう一つの判断軸が「一貫性の強さ」、つまり ACID をどこまで求めるかです。ここが SQL と NoSQL の思想の違いに直結します。',
+              ja: 'もう一つの判断軸が「一貫性の強さ」、つまり ACID をどこまで求めるか。ここが SQL と NoSQL の思想の違いに直結する。',
               en: 'Another axis is how strong you need consistency to be — that is, how much ACID you require. This maps directly onto the philosophical split between SQL and NoSQL.',
             },
           },
@@ -918,14 +918,14 @@ owner_id   VARCHAR    NULL         // optional`,
               {
                 type: 'p',
                 text: {
-                  ja: 'SQL（RDB）は伝統的に ACID を強く保証します。トランザクションや一意制約が堅いので、「絶対に重複させたくない」「複数行を一括で正しく更新したい」ケースに向きます。',
+                  ja: 'SQL（RDB）は伝統的に ACID を強く保証する。トランザクションや一意制約が堅いので、「絶対に重複させたくない」「複数行を一括で正しく更新したい」ケースに向く。',
                   en: 'SQL (RDBMS) traditionally offers strong ACID guarantees. Transactions and unique constraints are solid, which suits cases where you must never allow duplicates or must update multiple rows correctly together.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: '多くの NoSQL は可用性・スケールを優先し、ACID を緩めた BASE（Basically Available, Soft state, Eventual consistency）に寄ります。書き込み直後に全レプリカへ反映されず、少し遅れて揃う「結果整合」が典型です。近年は DynamoDB のように条件付き書き込みや項目単位トランザクションを持つものも増えています。',
+                  ja: '多くの NoSQL は可用性・スケールを優先し、ACID を緩めた BASE（Basically Available, Soft state, Eventual consistency）に寄る。書き込み直後に全レプリカへ反映されず、少し遅れて揃う「結果整合」が典型。近年は DynamoDB のように条件付き書き込みや項目単位トランザクションを持つものも増えている。',
                   en: 'Many NoSQL stores prioritize availability and scale, leaning toward BASE (Basically Available, Soft state, Eventual consistency) with relaxed ACID. Writes are typically eventually consistent — replicas converge shortly after, not instantly. That said, modern stores like DynamoDB add conditional writes and per-item transactions.',
                 },
               },
@@ -933,14 +933,14 @@ owner_id   VARCHAR    NULL         // optional`,
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'URL短縮での判断: 保存はほぼ「1件書いて1件読む」だけなので、強い ACID は必須ではありません。読み取りが結果整合でも、作成直後のごく短時間に古い値を返しうる程度で実害は小さい。ただし「キー（特にカスタムエイリアス）の一意性」だけは強く守りたいので、そこは一意制約や条件付き書き込みで保証します。',
+                  ja: 'URL短縮での判断: 保存はほぼ「1件書いて1件読む」だけなので、強い ACID は必須ではない。読み取りが結果整合でも、作成直後のごく短時間に古い値を返しうる程度で実害は小さい。ただし「キー（特にカスタムエイリアス）の一意性」だけは強く守りたいので、そこは一意制約や条件付き書き込みで保証する。',
                   en: 'For a URL shortener: storage is basically "write one, read one," so strong ACID is not required. Eventual consistency on reads only risks a stale value for a brief moment right after creation — low impact. The one thing you do want to guarantee is key uniqueness (especially custom aliases), enforced with a unique constraint or conditional write.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: '「NoSQL は一意性が弱いのでは?」という疑問はよくありますが、正確には「主キーの一意性は保証される。主キー以外の一意性は自動では効かない」です。NoSQL でも短縮キーを主キー（パーティションキー）にすれば一意性は守れ、[条件付き書き込み](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html)（存在しなければ書く = attribute_not_exists）で上書き事故も防げます。',
+                  ja: '「NoSQL は一意性が弱いのでは?」という疑問はよくあるが、正確には「主キーの一意性は保証される。主キー以外の一意性は自動では効かない」。NoSQL でも短縮キーを主キー（パーティションキー）にすれば一意性は守れ、[条件付き書き込み](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html)（存在しなければ書く = attribute_not_exists）で上書き事故も防げる。',
                   en: 'A common worry is "isn\'t uniqueness weak in NoSQL?" More precisely: the primary key is guaranteed unique, but uniqueness on non-key fields is not automatic. In NoSQL you still get uniqueness by making the short key the primary (partition) key, and a [conditional write](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html) (write if not exists, via attribute_not_exists) prevents accidental overwrites.',
                 },
               },
@@ -948,7 +948,7 @@ owner_id   VARCHAR    NULL         // optional`,
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'URL短縮で一意にしたいのは実質「短縮キー」だけで、それは主キーで守れます。だから基本要件なら NoSQL で問題ありません。SQL が欲しくなるのは「long_url を一意にしたい（主キー以外の一意性）」「ユーザー別に集計・検索したい」など要件が増えたときです。',
+                  ja: 'URL短縮で一意にしたいのは実質「短縮キー」だけで、それは主キーで守れる。だから基本要件なら NoSQL で問題ない。SQL が欲しくなるのは「long_url を一意にしたい（主キー以外の一意性）」「ユーザー別に集計・検索したい」など要件が増えたとき。',
                   en: 'The only thing a URL shortener really needs unique is the short key, which the primary key covers. So for the base requirements, NoSQL is fine. You reach for SQL when requirements grow — e.g. making long_url unique (a non-key uniqueness) or rich per-user aggregation and search.',
                 },
               },
@@ -958,7 +958,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '面接では「単純なキー引きなので NoSQL が自然。ただしカスタムエイリアスの一意性保証やユーザー別集計が要件に入るなら SQL も検討」と、要件と結びつけて答えると強いです。',
+              ja: '面接では「単純なキー引きなので NoSQL が自然。ただしカスタムエイリアスの一意性保証やユーザー別集計が要件に入るなら SQL も検討」と、要件と結びつけて答えると強い。',
               en: 'In an interview, tie it to requirements: "Simple key lookups make NoSQL a natural fit, but if unique custom aliases or per-user analytics are required, SQL is worth considering."',
             },
           },
@@ -971,7 +971,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: 'Read-heavy なサービスの定石は「よく読まれるデータをキャッシュに載せる」ことです。APIサーバーとDBの間にキャッシュ（Redisなど）を挟みます。下の図で、キャッシュ有り/無しを切り替えて流れの違いを見てください。',
+              ja: 'Read-heavy なサービスの定石は「よく読まれるデータをキャッシュに載せる」こと。APIサーバーとDBの間にキャッシュ（Redisなど）を挟む。下の図でキャッシュ有り/無しを切り替えると、流れの違いがわかる。',
               en: 'The standard move for a read-heavy service is caching frequently read data. Put a cache (like Redis) between the API server and the DB. Toggle cache on/off below to compare the flows.',
             },
           },
@@ -997,7 +997,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'キャッシュには「元データと食い違う」リスクが付きもの。URL短縮は一度作ると変わらないデータが多いので相性が良いですが、更新があるデータでは無効化戦略が重要になります。',
+              ja: 'キャッシュには「元データと食い違う」リスクが付きもの。URL短縮は一度作ると変わらないデータが多いので相性が良いが、更新があるデータでは無効化戦略が重要になる。',
               en: 'Caches carry the risk of going stale versus the source. URL shorteners suit caching well since entries rarely change, but for mutable data an invalidation strategy is crucial.',
             },
           },
@@ -1010,7 +1010,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: 'キャッシュの容量は有限です。埋まったら、新しいデータを入れるために何かを追い出す（eviction）必要があります。「何を捨てるか」を決めるのが追い出しアルゴリズムです。下の図は最も一般的な LRU の動きです。',
+              ja: 'キャッシュの容量は有限。埋まったら、新しいデータを入れるために何かを追い出す（eviction）必要がある。「何を捨てるか」を決めるのが追い出しアルゴリズム。下の図は最も一般的な LRU の動き。',
               en: 'Cache capacity is finite. When it fills up, something must be evicted to make room. The eviction algorithm decides what to drop. The diagram below shows the most common one, LRU.',
             },
           },
@@ -1040,7 +1040,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'Redis は [maxmemory-policy](https://redis.io/docs/latest/develop/reference/eviction/) でこれらを選べます（allkeys-lru, allkeys-lfu, volatile-ttl など）。URL短縮では「人気リンクを残したい」ので LRU か LFU が基本、期限付きなら TTL を併用します。',
+              ja: 'Redis は [maxmemory-policy](https://redis.io/docs/latest/develop/reference/eviction/) でこれらを選べる（allkeys-lru, allkeys-lfu, volatile-ttl など）。URL短縮では「人気リンクを残したい」ので LRU か LFU が基本、期限付きなら TTL を併用する。',
               en: 'Redis lets you pick via [maxmemory-policy](https://redis.io/docs/latest/develop/reference/eviction/) (allkeys-lru, allkeys-lfu, volatile-ttl, etc.). For a URL shortener you want to keep popular links, so LRU or LFU is the default, combined with TTL for expiring links.',
             },
           },
@@ -1053,7 +1053,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: 'ここまでの部品を1枚にまとめると、URL短縮サービスの全体像はこうなります。読み取りが圧倒的に多いので、キャッシュ優先で読み、DB はミス時だけ。キーの一意性は KGS の範囲配布で担保します。',
+              ja: 'ここまでの部品を1枚にまとめると、URL短縮サービスの全体像はこうなる。読み取りが圧倒的に多いので、キャッシュ優先で読み、DB はミス時だけ。キーの一意性は KGS の範囲配布で担保する。',
               en: 'Combining everything so far, here is the full picture of the URL shortener. Reads dominate, so we read cache-first and hit the DB only on a miss. Key uniqueness comes from the KGS handing out ranges.',
             },
           },
@@ -1087,7 +1087,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '面接では、この全体図を描きながら「読み取りが多いのでキャッシュとレプリカ、キー衝突を KGS で回避、DB はキー引きに最適な選択」と各判断の理由を要件に結びつけて説明できると強いです。',
+              ja: '面接では、この全体図を描きながら「読み取りが多いのでキャッシュとレプリカ、キー衝突を KGS で回避、DB はキー引きに最適な選択」と各判断の理由を要件に結びつけて説明できると強い。',
               en: 'In an interview, sketch this diagram and tie each choice to requirements: "reads dominate → cache and replicas, KGS avoids key collisions, DB chosen to fit key lookups." Explaining the why is what stands out.',
             },
           },
@@ -1113,7 +1113,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: 'Rate Limiter（レート制限）は、一定時間内に受け付けるリクエスト数に上限を設ける仕組みです。特定のクライアントが大量にリクエストを送ってきても、システム全体が巻き込まれないように守ります。',
+              ja: 'Rate Limiter（レート制限）は、一定時間内に受け付けるリクエスト数に上限を設ける仕組み。特定のクライアントが大量にリクエストを送ってきても、システム全体が巻き込まれないように守る。',
               en: 'A rate limiter caps how many requests are accepted in a given time window. It shields the whole system even when one client floods it with requests.',
             },
           },
@@ -1144,7 +1144,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: 'レートリミッターの特徴は「全リクエストに対して判定が走る」こと。つまり判定のスループットは、そのサービスの総トラフィックとほぼ同じになります。ここではピーク 10,000 req/s を仮定します。',
+              ja: 'レートリミッターの特徴は「全リクエストに対して判定が走る」こと。つまり判定のスループットは、そのサービスの総トラフィックとほぼ同じになる。ここではピーク 10,000 req/s を仮定する。',
               en: 'The defining trait of a rate limiter is that a check runs on every request. So its decision throughput is essentially the total traffic of the service. Here we assume a peak of 10,000 req/s.',
             },
           },
@@ -1170,7 +1170,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '判定はホットパス上にあるので、レイテンシ予算は 1ms 未満が目安。だから永続DBではなくインメモリの Redis を使い、原子的な1コマンドで済ませます。「全トラフィックが通るが、インメモリなら軽く捌ける」と言えると良いです。',
+              ja: '判定はホットパス上にあるので、レイテンシ予算は 1ms 未満が目安。だから永続DBではなくインメモリの Redis を使い、原子的な1コマンドで済ませる。「全トラフィックが通るが、インメモリなら軽く捌ける」と言えると良い。',
               en: 'The check sits on the hot path, so budget well under 1ms per decision. That is why you use in-memory Redis (not a persistent DB) and a single atomic command. Frame it as: "all traffic flows through it, but in-memory handling makes it cheap."',
             },
           },
@@ -1183,7 +1183,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: 'レートリミッターは複数の層に置けます。原則は「なるべく上流（エッジ）で弾く」こと。早い段階で不要なリクエストを落とせば、その先のサービスは無駄な処理をせずに済みます。',
+              ja: 'レートリミッターは複数の層に置ける。原則は「なるべく上流（エッジ）で弾く」こと。早い段階で不要なリクエストを落とせば、その先のサービスは無駄な処理をせずに済む。',
               en: 'A rate limiter can live at several layers. The principle: reject as early (as close to the edge) as possible. Dropping unwanted requests early means downstream services never waste work on them.',
             },
           },
@@ -1213,7 +1213,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '多くの実システムは「API Gateway に共通の制限」＋「必要なサービスだけ内部で追加制限」の二段構えにします。',
+              ja: '多くの実システムは「API Gateway に共通の制限」＋「必要なサービスだけ内部で追加制限」の二段構え。',
               en: 'Many real systems use two tiers: shared limits at the API gateway, plus extra per-service limits inside the services that need them.',
             },
           },
@@ -1226,7 +1226,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: '「1分間に100回まで」の"誰の"回数か、を決めるのが識別子（キー）です。何を基準にカウントするかで、公平性と副作用が変わります。',
+              ja: '「1分間に100回まで」の"誰の"回数か、を決めるのが識別子（キー）。何を基準にカウントするかで、公平性と副作用が変わる。',
               en: 'The identifier (key) decides whose count "100 per minute" applies to. What you count by changes both fairness and side effects.',
             },
           },
@@ -1255,7 +1255,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'IPだけに頼ると「共有IPの巻き込み」と「IPを変えれば回避できる」という両方の弱点があります。認証があるならユーザーID/APIキーを主に、IPは補助にするのが定石です。',
+              ja: 'IPだけに頼ると「共有IPの巻き込み」と「IPを変えれば回避できる」という両方の弱点がある。認証があるならユーザーID/APIキーを主に、IPは補助にするのが定石。',
               en: 'Relying on IP alone has two weaknesses: it collaterally blocks shared IPs, and attackers can rotate IPs to evade it. When you have auth, key on user ID / API key primarily and use IP as a supplement.',
             },
           },
@@ -1268,7 +1268,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: '最も広く使われるのが Token Bucket です。「バケツ（バケット）に一定のペースでトークンが補充され、リクエストが来るたびにトークンを1つ消費する。トークンが無ければ拒否する」というモデルです。',
+              ja: '最も広く使われるのが Token Bucket。「バケツ（バケット）に一定のペースでトークンが補充され、リクエストが来るたびにトークンを1つ消費する。トークンが無ければ拒否する」というモデル。',
               en: 'The most widely used approach is the Token Bucket. Tokens refill into a bucket at a steady rate; each request consumes one token, and if none are left the request is rejected.',
             },
           },
@@ -1294,7 +1294,7 @@ owner_id   VARCHAR    NULL         // optional`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'Token Bucket の強みは「バースト（一時的な集中）を容量まで許容しつつ、平均レートは補充ペースに抑えられる」点です。',
+              ja: 'Token Bucket の強みは「バースト（一時的な集中）を容量まで許容しつつ、平均レートは補充ペースに抑えられる」点。',
               en: "The Token Bucket's strength: it allows bursts up to the capacity while keeping the average rate bounded by the refill pace.",
             },
           },
@@ -1307,7 +1307,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: '実際にリクエストが連続で来たとき、どれが通ってどれが弾かれるのかを見てみましょう。緑が許可、赤が拒否です。トークンが尽きた瞬間から拒否に変わります。',
+              ja: '実際にリクエストが連続で来たとき、どれが通ってどれが弾かれるのか。緑が許可、赤が拒否。トークンが尽きた瞬間から拒否に変わる。',
               en: 'Watch which requests pass and which get blocked when they arrive in a burst. Green is allowed, red is rejected. The moment tokens run out, requests start getting rejected.',
             },
           },
@@ -1315,7 +1315,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: '拒否されたリクエストには、HTTP 429 (Too Many Requests) を返すのが一般的です。あわせて「いつ再試行できるか」を示す Retry-After ヘッダを返すと親切です。',
+              ja: '拒否されたリクエストには、HTTP 429 (Too Many Requests) を返すのが一般的。あわせて「いつ再試行できるか」を示す Retry-After ヘッダを返すと親切。',
               en: 'Rejected requests typically get HTTP 429 (Too Many Requests). Adding a Retry-After header to indicate when to try again is a nice touch.',
             },
           },
@@ -1328,7 +1328,7 @@ owner_id   VARCHAR    NULL         // optional`,
           {
             type: 'p',
             text: {
-              ja: '制限に達したリクエストには [HTTP 429 (Too Many Requests)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429) を返すのが標準です。さらに「いつ再試行できるか」「残り何回か」をヘッダで伝えると、クライアントが賢く振る舞えます。',
+              ja: '制限に達したリクエストには [HTTP 429 (Too Many Requests)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429) を返すのが標準。さらに「いつ再試行できるか」「残り何回か」をヘッダで伝えると、クライアントが賢く振る舞える。',
               en: 'When a request hits the limit, the standard response is [HTTP 429 (Too Many Requests)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429). Adding headers for "when to retry" and "how many remain" lets clients behave intelligently.',
             },
           },
@@ -1358,7 +1358,7 @@ X-RateLimit-Reset: 1712345678`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '超過分の扱いには2通りあります。「即エラーで落とす（shed）」か「キューで待たせて後で処理する（throttle）」。APIは前者、バッチ的な処理は後者が向くことが多いです。',
+              ja: '超過分の扱いは2通り。「即エラーで落とす（shed）」か「キューで待たせて後で処理する（throttle）」。APIは前者、バッチ的な処理は後者が向くことが多い。',
               en: 'There are two ways to handle excess: reject immediately (shed) or queue and process later (throttle). APIs usually prefer shedding; batch-like workloads often prefer throttling.',
             },
           },
@@ -1371,7 +1371,7 @@ X-RateLimit-Reset: 1712345678`,
           {
             type: 'p',
             text: {
-              ja: 'Token Bucket 以外にも方式があります。それぞれ「時間の区切り方」が違います。',
+              ja: 'Token Bucket 以外にも方式がある。それぞれ「時間の区切り方」が違う。',
               en: 'There are other approaches besides Token Bucket. Each divides up time differently.',
             },
           },
@@ -1400,14 +1400,14 @@ X-RateLimit-Reset: 1712345678`,
               {
                 type: 'p',
                 text: {
-                  ja: 'Fixed Window（例: 毎分100回まで）は実装が簡単ですが、窓の「境目」で上限の2倍が通ってしまう弱点があります。',
+                  ja: 'Fixed Window（例: 毎分100回まで）は実装が簡単だが、窓の「境目」で上限の2倍が通ってしまう弱点がある。',
                   en: 'Fixed Window (e.g. 100/min) is simple to implement, but it can let through twice the limit right at the window boundary.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: '例: 「12:00:59 に100回」＋「12:01:00 に100回」。それぞれ別の窓なので両方とも許可されますが、実質1秒間に200回通っています。上限は100/分のはずなのに、境界をまたぐと守れていません。',
+                  ja: '例: 「12:00:59 に100回」＋「12:01:00 に100回」。それぞれ別の窓なので両方とも許可されるが、実質1秒間に200回通っている。上限は100/分のはずなのに、境界をまたぐと守れていない。',
                   en: 'Example: 100 calls at 12:00:59 and 100 more at 12:01:00. Each falls in a different window, so both are allowed — yet 200 calls went through in ~1 second. The 100/min cap is violated across the boundary.',
                 },
               },
@@ -1415,21 +1415,21 @@ X-RateLimit-Reset: 1712345678`,
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'Sliding Window（直近N秒を滑らせて数える）はこの境界問題を緩和します。Sliding Window Log は全リクエスト時刻を保持して厳密、Sliding Window Counter は前後の窓を加重平均して近似し、メモリを節約します。',
+                  ja: 'Sliding Window（直近N秒を滑らせて数える）はこの境界問題を緩和する。Sliding Window Log は全リクエスト時刻を保持して厳密、Sliding Window Counter は前後の窓を加重平均して近似し、メモリを節約する。',
                   en: 'Sliding Window (counting over a moving last-N-seconds range) mitigates this. A Sliding Window Log keeps every request timestamp for exactness; a Sliding Window Counter approximates by weighting the current and previous windows, saving memory.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: 'では「直近」をどう数えるのか。Log 方式はシンプルで、リクエストのたびに時刻を記録し、N秒より古いものを捨てて残った件数を数えます（Redis なら Sorted Set + ZREMRANGEBYSCORE + ZCARD）。正確ですが全時刻を持つのでメモリを食います。',
+                  ja: 'では「直近」をどう数えるのか。Log 方式はシンプルで、リクエストのたびに時刻を記録し、N秒より古いものを捨てて残った件数を数える（Redis なら Sorted Set + ZREMRANGEBYSCORE + ZCARD）。正確だが全時刻を持つのでメモリを食う。',
                   en: 'So how do you count "recent"? The Log approach is straightforward: record each request time, drop anything older than N seconds, and count what remains (in Redis: a Sorted Set with ZREMRANGEBYSCORE + ZCARD). Accurate, but it holds every timestamp, so it uses more memory.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: 'Counter 方式は、時刻を全部持つ代わりに「固定窓のカウンタ2つ（現在の窓＋1つ前の窓）」だけを保持し、現在窓が前窓にどれだけ重なっているかの割合で前窓を加重して足します。',
+                  ja: 'Counter 方式は、時刻を全部持つ代わりに「固定窓のカウンタ2つ（現在の窓＋1つ前の窓）」だけを保持し、現在窓が前窓にどれだけ重なっているかの割合で前窓を加重して足す。',
                   en: 'The Counter approach keeps just two fixed-window counters (the current window and the previous one) instead of all timestamps, then weights the previous window by how much the current window still overlaps it.',
                 },
               },
@@ -1449,7 +1449,7 @@ estimate = current + previous * overlap
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'Counter は「トラフィックが窓内で均等」と仮定した近似ですが、実用上は十分正確で、メモリはカウンタ2つだけ。だから実務では Counter 方式が最もよく使われます。',
+                  ja: 'Counter は「トラフィックが窓内で均等」と仮定した近似だが、実用上は十分正確で、メモリはカウンタ2つだけ。だから実務では Counter 方式が最もよく使われる。',
                   en: 'The Counter assumes traffic is spread evenly within a window — an approximation — but it is accurate enough in practice and costs only two counters. That is why it is the most commonly used approach in production.',
                 },
               },
@@ -1464,7 +1464,7 @@ estimate = current + previous * overlap
           {
             type: 'p',
             text: {
-              ja: 'サーバーが1台なら簡単ですが、複数台に増えると「カウンタをどこで管理するか」が問題になります。各サーバーが個別にカウントすると、全体の上限を超えてしまいます。',
+              ja: 'サーバーが1台なら簡単だが、複数台に増えると「カウンタをどこで管理するか」が問題になる。各サーバーが個別にカウントすると、全体の上限を超えてしまう。',
               en: 'With one server it is easy, but across many servers the question becomes where to keep the counter. If each server counts on its own, the overall limit gets exceeded.',
             },
           },
@@ -1472,7 +1472,7 @@ estimate = current + previous * overlap
           {
             type: 'p',
             text: {
-              ja: '解決策は、Redis などの共有ストアにカウンタを置き、全サーバーがそこを参照することです。これで全体で1つの上限を守れます。ただしストアへのアクセスがボトルネックや単一障害点にならないよう配慮が必要です。',
+              ja: '解決策は、Redis などの共有ストアにカウンタを置き、全サーバーがそこを参照すること。これで全体で1つの上限を守れる。ただしストアへのアクセスがボトルネックや単一障害点にならないよう配慮が必要。',
               en: 'The fix is to keep the counter in a shared store like Redis that all servers consult, enforcing a single global limit. Just be careful the store does not become a bottleneck or single point of failure.',
             },
           },
@@ -1480,7 +1480,7 @@ estimate = current + previous * overlap
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '共有ストアへの往復はレイテンシを生みます。厳密さと速度はトレードオフ。用途によっては各サーバーで概算し、緩めに制限する設計も選ばれます。',
+              ja: '共有ストアへの往復はレイテンシを生む。厳密さと速度はトレードオフ。用途によっては各サーバーで概算し、緩めに制限する設計も選ばれる。',
               en: 'A round trip to the shared store adds latency. Accuracy versus speed is a trade-off; some designs approximate per server and limit more loosely.',
             },
           },
@@ -1491,7 +1491,7 @@ estimate = current + previous * overlap
               {
                 type: 'p',
                 text: {
-                  ja: '複数サーバーが同じカウンタを触るので、「読み取って+1して書き戻す」を素朴にやるとレースコンディションが起きます。2台が同時に「99」を読み、両方「100」に書くと、実際は101回目なのに通してしまう、といった取りこぼしです。',
+                  ja: '複数サーバーが同じカウンタを触るので、「読み取って+1して書き戻す」を素朴にやるとレースコンディションが起きる。2台が同時に「99」を読み、両方「100」に書くと、実際は101回目なのに通してしまう、といった取りこぼし。',
                   en: 'Since many servers touch the same counter, a naive "read, add 1, write back" causes race conditions. Two servers read "99" at once and both write "100" — the 101st call slips through when it should have been blocked.',
                 },
               },
@@ -1499,7 +1499,7 @@ estimate = current + previous * overlap
               {
                 type: 'p',
                 text: {
-                  ja: '解決は「読み取りと更新を分けない = 原子的（atomic）に行う」こと。Redis の [INCR](https://redis.io/docs/latest/commands/incr/) は1コマンドで加算するので原子的です。ウィンドウの初回だけ EXPIRE で有効期限を付けます。',
+                  ja: '解決は「読み取りと更新を分けない = 原子的（atomic）に行う」こと。Redis の [INCR](https://redis.io/docs/latest/commands/incr/) は1コマンドで加算するので原子的。ウィンドウの初回だけ EXPIRE で有効期限を付ける。',
                   en: 'The fix is to make read-and-update atomic — not two steps. Redis [INCR](https://redis.io/docs/latest/commands/incr/) increments in a single atomic command; set an EXPIRE on the first hit of the window.',
                 },
               },
@@ -1517,7 +1517,7 @@ if count > LIMIT:
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'INCR + EXPIRE の間に落ちる隙間や、より複雑なロジック（Token Bucket の補充計算など）を厳密に原子化したいときは、[Lua スクリプト](https://redis.io/docs/latest/develop/programmability/eval-intro/)で複数コマンドを1つの原子的な単位として実行します。',
+                  ja: 'INCR + EXPIRE の間に落ちる隙間や、より複雑なロジック（Token Bucket の補充計算など）を厳密に原子化したいときは、[Lua スクリプト](https://redis.io/docs/latest/develop/programmability/eval-intro/)で複数コマンドを1つの原子的な単位として実行する。',
                   en: 'To close the tiny gap between INCR and EXPIRE, or to make more complex logic (like Token Bucket refill math) strictly atomic, run the commands as one atomic unit via a [Lua script](https://redis.io/docs/latest/develop/programmability/eval-intro/).',
                 },
               },
@@ -1532,7 +1532,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: 'レートリミッターが保存するデータは、主に「カウンタ（＝いま何回来たか）」という状態です。このデータには2つの強い特性があります: リクエストのたびに読み書きされる超高頻度なこと、そして一定時間で消える一時的なものであること。',
+              ja: 'レートリミッターが保存するデータは、主に「カウンタ（＝いま何回来たか）」という状態。このデータには2つの強い特性がある: リクエストのたびに読み書きされる超高頻度なこと、そして一定時間で消える一時的なものであること。',
               en: 'The data a rate limiter stores is mostly state: the counters (how many hits so far). This data has two strong traits — it is read and written on every request (very high frequency), and it is transient (it expires after a time window).',
             },
           },
@@ -1557,7 +1557,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'SQL などの永続DBはカウンタ保存には不向きです。毎リクエストでディスクI/Oが発生し、レート制限の判定自体がボトルネックになります。レート制限は「速く判定する」ことが目的なので、そこが遅いと本末転倒です。',
+              ja: 'SQL などの永続DBはカウンタ保存には不向き。毎リクエストでディスクI/Oが発生し、レート制限の判定自体がボトルネックになる。レート制限は「速く判定する」ことが目的なので、そこが遅いと本末転倒。',
               en: 'A persistent SQL database is a poor fit for the counters: disk I/O on every request makes the rate-limit check itself a bottleneck. The whole point of a limiter is a fast decision, so a slow store defeats the purpose.',
             },
           },
@@ -1568,7 +1568,7 @@ if count > LIMIT:
               {
                 type: 'p',
                 text: {
-                  ja: 'カウンタ（状態）とは別に、「誰が・どのエンドポイントで・何回まで」というルール設定も保存します。これは変更頻度が低く、消えては困る永続データなので、通常のDBや設定ストアに置き、起動時に読み込んでメモリにキャッシュするのが定石です。状態は Redis、設定は永続DB、と役割を分けます。',
+                  ja: 'カウンタ（状態）とは別に、「誰が・どのエンドポイントで・何回まで」というルール設定も保存する。これは変更頻度が低く、消えては困る永続データなので、通常のDBや設定ストアに置き、起動時に読み込んでメモリにキャッシュするのが定石。状態は Redis、設定は永続DB、と役割を分ける。',
                   en: 'Separate from the counters (state), you also store the rules: who, on which endpoint, up to how many. Rules change rarely and must not be lost, so they live in a regular database or config store, loaded at startup and cached in memory. Split the roles: state in Redis, rules in a persistent DB.',
                 },
               },
@@ -1576,7 +1576,7 @@ if count > LIMIT:
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'カウンタが消えても実害は小さい: Redis が再起動してカウンタを失っても、一時的に制限が緩むだけで、致命的なデータ損失にはなりません。だから永続性より速度を優先できます。厳密さが要るなら AOF/レプリカで補強します。',
+                  ja: 'カウンタが消えても実害は小さい: Redis が再起動してカウンタを失っても、一時的に制限が緩むだけで、致命的なデータ損失にはならない。だから永続性より速度を優先できる。厳密さが要るなら AOF/レプリカで補強する。',
                   en: 'Losing counters is low-impact: if Redis restarts and loses them, limits just loosen briefly — not a critical data loss. So you can favor speed over durability, and add AOF/replicas if you need more strictness.',
                 },
               },
@@ -1591,7 +1591,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: 'これまでの要素をまとめると、レートリミッターの全体像はこうなります。リクエストは API Gateway で受け、共有カウンタ（Redis）を原子的に更新して判定。許可なら Service へ通し、超過なら 429 で即座に弾きます。',
+              ja: 'これまでの要素をまとめると、レートリミッターの全体像はこうなる。リクエストは API Gateway で受け、共有カウンタ（Redis）を原子的に更新して判定。許可なら Service へ通し、超過なら 429 で即座に弾く。',
               en: 'Combining everything, here is the full picture of the rate limiter. Requests arrive at the API Gateway, which atomically updates a shared counter (Redis) to decide: allow through to the Service, or reject immediately with 429.',
             },
           },
@@ -1625,7 +1625,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '面接では「どこで・何を基準に・どのアルゴリズムで・分散でどう一貫性を保ち・超過時に何を返すか」の5点を全体図の上で一貫して説明できると、設計を俯瞰できていることが伝わります。',
+              ja: '面接では「どこで・何を基準に・どのアルゴリズムで・分散でどう一貫性を保ち・超過時に何を返すか」の5点を全体図の上で一貫して説明できると、設計を俯瞰できていることが伝わる。',
               en: 'In an interview, walk this diagram covering five points coherently — where, keyed on what, which algorithm, how consistency holds across nodes, and what you return on excess — to show you can see the whole design.',
             },
           },
@@ -1651,14 +1651,14 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '「YouTube は絶対に止まってはいけない」と言いたくなりますが、**100% の信頼性は目指すべき目標ではありません**。視聴者のスマホの回線や Wi-Fi のほうが、よほど頻繁に途切れます。その差は誰にも気づかれないのに、99.99% を 99.999% にするには、費用も手間も桁違いにかかります。',
+              ja: '「YouTube は絶対に止まってはいけない」と言いたくなるが、**100% の信頼性は目指すべき目標ではない**。視聴者のスマホの回線や Wi-Fi のほうが、よほど頻繁に途切れる。その差は誰にも気づかれないのに、99.99% を 99.999% にするには、費用も手間も桁違いにかかる。',
               en: 'It is tempting to say "YouTube must never go down", but **100% reliability is the wrong target**. A viewer\'s phone network or Wi-Fi drops far more often than that. Nobody would notice the difference, yet going from 99.99% to 99.999% costs an order of magnitude more money and effort.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'しかも信頼性を上げるほど、新機能を出すスピードは落ちます。変更はいつも障害のきっかけになるからです。そこで「どこまで信頼できれば十分か」を数字で決めて、開発と運用で合意します。その道具が SLI・SLO・SLA です。',
+              ja: 'しかも信頼性を上げるほど、新機能を出すスピードは落ちる。変更はいつも障害のきっかけになるから。そこで「どこまで信頼できれば十分か」を数字で決めて、開発と運用で合意する。その道具が SLI・SLO・SLA。',
               en: 'On top of that, the more reliability you demand, the slower you can ship features, because every change is a chance to break something. So you decide in numbers how reliable is "reliable enough", and agree on it across development and operations. SLIs, SLOs and SLAs are the tools for that.',
             },
           },
@@ -1666,7 +1666,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'この記事の数字は、説明のための仮の値です。YouTube の実際の SLO は公開されていません。',
+              ja: 'この記事の数字は、説明のための仮の値。YouTube の実際の SLO は公開されていない。',
               en: 'The numbers in this article are illustrative. YouTube\'s real SLOs are not public.',
             },
           },
@@ -1697,7 +1697,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '大事なのは並び順です。**SLA は SLO より緩く**しておきます。SLO を守るよう運用していれば、SLA 違反の手前で異変に気づいて手を打てるからです。SLO と SLA を同じ値にすると、目標を外した瞬間に返金が発生してしまいます。',
+              ja: '大事なのは並び順。**SLA は SLO より緩く**しておく。SLO を守るよう運用していれば、SLA 違反の手前で異変に気づいて手を打てるから。SLO と SLA を同じ値にすると、目標を外した瞬間に返金が発生してしまう。',
               en: 'The order is what matters. **Keep the SLA looser than the SLO.** If you operate to the SLO, you notice trouble and act before you get anywhere near an SLA breach. If the SLO and SLA are the same number, missing your target means paying refunds on the spot.',
             },
           },
@@ -1705,7 +1705,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '無料で見ている視聴者との間に、ふつう SLA はありません。SLA が登場するのは、動画配信の仕組みを企業に有料で提供する場合のように、契約がある場面です。一方 SLI と SLO は、契約がなくても社内の信頼性の管理に使います。',
+              ja: '無料で見ている視聴者との間に、ふつう SLA はない。SLA が登場するのは、動画配信の仕組みを企業に有料で提供する場合のように、契約がある場面。一方 SLI と SLO は、契約がなくても社内の信頼性の管理に使う。',
               en: 'There is usually no SLA with viewers who watch for free. SLAs appear where there is a paid contract, for example when a company buys video delivery as a service. SLIs and SLOs, on the other hand, are used internally to manage reliability whether or not a contract exists.',
             },
           },
@@ -1718,14 +1718,14 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: 'SLI は**ユーザーが感じることを測る**のが原則です。基本の形は「良いイベント ÷ 全イベント」の割合です。割合にしておくと 0〜100% にそろい、サービスや時間帯が違っても比べやすくなります。',
+              ja: 'SLI は**ユーザーが感じることを測る**のが原則。基本の形は「良いイベント ÷ 全イベント」の割合。割合にしておくと 0〜100% にそろい、サービスや時間帯が違っても比べやすい。',
               en: 'The rule for SLIs is to **measure what users actually feel**. The basic shape is a ratio: good events ÷ all events. As a ratio it always falls between 0 and 100%, which makes it easy to compare across services and times of day.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'YouTube なら、ユーザーの行動（ユーザージャーニー）ごとに SLI を立てます。',
+              ja: 'YouTube なら、ユーザーの行動（ユーザージャーニー）ごとに SLI を立てる。',
               en: 'For YouTube, you set SLIs per user journey.',
             },
           },
@@ -1753,7 +1753,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '目標はジャーニーごとに変えてかまいません。再生開始は一番大事なので厳しく、コメントの表示などはもう少し緩くてもよい、という具合です。',
+              ja: '目標はジャーニーごとに変えてかまわない。再生開始は一番大事なので厳しく、コメントの表示などはもう少し緩くてもよい、という具合。',
               en: 'Targets can differ per journey. Playback starting is the most important, so it gets the strictest target; something like loading comments can be a bit looser.',
             },
           },
@@ -1761,7 +1761,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'CPU 使用率やメモリ使用量は SLI に向きません。CPU が 90% でも動画が問題なく再生されていればユーザーは困りませんし、逆に CPU が低くても再生が失敗していることがあります。こうした値は、原因を調べるための指標として別に見ます。',
+              ja: 'CPU 使用率やメモリ使用量は SLI に向かない。CPU が 90% でも動画が問題なく再生されていればユーザーは困らないし、逆に CPU が低くても再生が失敗していることがある。こうした値は、原因を調べるための指標として別に見る。',
               en: 'CPU and memory usage make poor SLIs. Users are fine if CPU is at 90% and videos still play, and playback can fail while CPU is low. Watch those numbers separately, as tools for finding causes.',
             },
           },
@@ -1774,7 +1774,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '同じ「再生開始の成功率」でも、どこで測るかで見えるものが変わります。',
+              ja: '同じ「再生開始の成功率」でも、どこで測るかで見えるものが変わる。',
               en: 'Even for the same "playback start success" SLI, where you measure it changes what you can see.',
             },
           },
@@ -1803,7 +1803,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'ユーザーに近いほど正確で、サーバーに近いほど手軽です。最初はロードバランサーで測り始めて、余力ができたらプレイヤー側の計測を足す、という順番が現実的です。',
+              ja: 'ユーザーに近いほど正確で、サーバーに近いほど手軽。最初はロードバランサーで測り始めて、余力ができたらプレイヤー側の計測を足す、という順番が現実的。',
               en: 'The closer to the user, the more accurate; the closer to the server, the easier. A realistic path is to start at the load balancer and add player-side telemetry once you have the capacity.',
             },
           },
@@ -1838,7 +1838,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '最初から高すぎる目標にしないこと。守れない SLO は誰も気にしなくなり、意味を失います。**緩めに始めて、少しずつ締める**ほうがうまくいきます。',
+              ja: '最初から高すぎる目標にしないこと。守れない SLO は誰も気にしなくなり、意味を失う。**緩めに始めて、少しずつ締める**ほうがうまくいく。',
               en: 'Do not start with a target that is too high. An SLO nobody can meet is soon ignored and loses its meaning. **Start loose and tighten gradually.**',
             },
           },
@@ -1851,7 +1851,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '可用性は「99.9%（スリーナイン）」のように 9 の数で呼ばれます。数字の差は小さく見えますが、**9 が1つ増えるごとに、許される停止時間は 1/10 になります**。下の計算機で目標を切り替えてみてください。',
+              ja: '可用性は「99.9%（スリーナイン）」のように 9 の数で呼ぶ。数字の差は小さく見えるが、**9 が1つ増えるごとに、許される停止時間は 1/10 になる**。下の計算機で目標を切り替えて確認できる。',
               en: 'Availability is often described by its count of nines, as in "99.9% (three nines)". The numbers look close together, but **each extra nine cuts the allowed downtime to a tenth**. Try switching targets in the calculator below.',
             },
           },
@@ -1876,7 +1876,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: 'もう1つ大事なのが、**依存先の可用性は掛け算になる**ことです。再生には認証・動画情報・配信（CDN）の 3 つが必要で、それぞれが 99.9% なら、全体は `0.999 × 0.999 × 0.999 ≈ 99.7%` まで下がります。全体の SLO は、依存先の SLO より高くできません。',
+              ja: 'もう1つ大事なのが、**依存先の可用性は掛け算になる**こと。再生には認証・動画情報・配信（CDN）の 3 つが必要で、それぞれが 99.9% なら、全体は `0.999 × 0.999 × 0.999 ≈ 99.7%` まで下がる。全体の SLO は、依存先の SLO より高くできない。',
               en: 'One more key point: **the availability of dependencies multiplies**. If playback needs auth, video metadata and delivery (CDN), each at 99.9%, the whole drops to `0.999 × 0.999 × 0.999 ≈ 99.7%`. Your overall SLO cannot be higher than what your dependencies provide.',
             },
           },
@@ -1889,14 +1889,14 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '`100% − SLO` が、失敗してよい量になります。これを**エラーバジェット（失敗の予算）**と呼びます。SLO 99.9% なら予算は 0.1% で、30 日間なら 43.2 分ぶんの停止にあたります。',
+              ja: '`100% − SLO` が、失敗してよい量になる。これが**エラーバジェット（失敗の予算）**。SLO 99.9% なら予算は 0.1% で、30 日間なら 43.2 分ぶんの停止にあたる。',
               en: '`100% − SLO` is the amount of failure you are allowed. This is the **error budget**. With an SLO of 99.9% the budget is 0.1%, which over 30 days is worth 43.2 minutes of downtime.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '予算は「使ってよいもの」です。残っているうちは新機能のリリースや実験に使い、使い切ったら信頼性の改善を優先します。こうすると「早く出したい開発」と「止めたくない運用」の言い争いが、**残りの予算という1つの数字の話**に変わります。',
+              ja: '予算は「使ってよいもの」。残っているうちは新機能のリリースや実験に使い、使い切ったら信頼性の改善を優先する。こうすると「早く出したい開発」と「止めたくない運用」の言い争いが、**残りの予算という1つの数字の話**に変わる。',
               en: 'The budget is meant to be spent. While some is left, spend it on feature releases and experiments; once it runs out, put reliability work first. This turns the argument between "developers who want to ship" and "operators who want stability" into **a conversation about one number: the budget left**.',
             },
           },
@@ -1904,7 +1904,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '図の「大きな障害あり」では、12 日目に 30 分ほど再生開始が失敗し、1 回で予算の約 7 割を使っています。残りの日数で予算が尽きると、リリースを止めて信頼性の作業に切り替える判断になります。',
+              ja: '図の「大きな障害あり」では、12 日目に 30 分ほど再生開始が失敗し、1 回で予算の約 7 割を使っている。残りの日数で予算が尽きると、リリースを止めて信頼性の作業に切り替える判断になる。',
               en: 'In the "with a major outage" scenario, playback starts fail for about 30 minutes on day 12, using roughly 70% of the budget in one go. When the budget runs out before the window ends, the call is to stop releases and switch to reliability work.',
             },
           },
@@ -1912,7 +1912,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '予算が尽きたときに何をするかは、事前に文書で決めておきます（エラーバジェットポリシー）。例は [SRE Workbook の Error Budget Policy](https://sre.google/workbook/error-budget-policy/) にあります。',
+              ja: '予算が尽きたときに何をするかは、事前に文書で決めておく（エラーバジェットポリシー）。例は [SRE Workbook の Error Budget Policy](https://sre.google/workbook/error-budget-policy/) にある。',
               en: 'Decide in writing ahead of time what happens when the budget runs out (an error budget policy). There is an example in [the SRE Workbook\'s Error Budget Policy](https://sre.google/workbook/error-budget-policy/).',
             },
           },
@@ -1926,14 +1926,14 @@ if count > LIMIT:
               {
                 type: 'p',
                 text: {
-                  ja: 'エラーバジェットポリシーは、「予算が尽きたら何をするか」を障害が起きる前に合意しておく短い文書です。狙いは2つ。SLO 違反の繰り返しから顧客を守ることと、信頼性と機能開発のバランスを取る動機づけです。**罰ではありません**。「今は機能より信頼性が大事」とデータが示したときに、堂々と信頼性に集中してよいという許可証です。',
+                  ja: 'エラーバジェットポリシーは、「予算が尽きたら何をするか」を障害が起きる前に合意しておく短い文書。狙いは2つ。SLO 違反の繰り返しから顧客を守ることと、信頼性と機能開発のバランスを取る動機づけ。**罰ではない**。「今は機能より信頼性が大事」とデータが示したときに、堂々と信頼性に集中してよいという許可証。',
                   en: 'An error budget policy is a short document that agrees, before any incident, on what happens when the budget runs out. It has two goals: protect customers from repeated SLO misses, and create an incentive to balance reliability against feature work. **It is not a punishment.** It is permission to focus on reliability without guilt when the data says reliability now matters more than features.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: '基本のルールはシンプルです。',
+                  ja: '基本のルールはシンプル。',
                   en: 'The core rule is simple.',
                 },
               },
@@ -1953,7 +1953,7 @@ if count > LIMIT:
               {
                 type: 'p',
                 text: {
-                  ja: 'ただし、予算を使い切った原因によって対応は変わります。',
+                  ja: 'ただし、予算を使い切った原因によって対応は変わる。',
                   en: 'What the team does next, though, depends on why the budget was spent.',
                 },
               },
@@ -1973,7 +1973,7 @@ if count > LIMIT:
               {
                 type: 'p',
                 text: {
-                  ja: '大きな障害には、追加のルールを決めておきます。',
+                  ja: '大きな障害には、追加のルールを決めておく。',
                   en: 'Larger incidents get extra rules.',
                 },
               },
@@ -1994,7 +1994,7 @@ if count > LIMIT:
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: '予算の計算やルールの適用でもめたとき、誰が最終判断をするか（例: CTO にエスカレーション）も先に決めておくと、障害対応中の言い争いを避けられます。',
+                  ja: '予算の計算やルールの適用でもめたとき、誰が最終判断をするか（例: CTO にエスカレーション）も先に決めておくと、障害対応中の言い争いを避けられる。',
                   en: 'Decide in advance who makes the final call when people disagree about the budget math or the policy (for example, escalate to the CTO). It avoids arguments in the middle of an incident.',
                 },
               },
@@ -2009,7 +2009,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: '「エラー率が 1% を超えたら通知」のような決め方だと、一瞬の山で夜中に起こされたり、逆に低いエラー率が何日も続いて予算を使い切るのを見逃したりします。そこで、**予算を消費する速さ（バーンレート）**で通知します。',
+              ja: '「エラー率が 1% を超えたら通知」のような決め方だと、一瞬の山で夜中に起こされたり、逆に低いエラー率が何日も続いて予算を使い切るのを見逃したりする。そこで、**予算を消費する速さ（バーンレート）**で通知する。',
               en: 'A rule like "alert when the error rate goes over 1%" either wakes people up for a brief spike, or misses a low error rate that quietly burns the whole budget over several days. So you alert on **how fast the budget is being spent (the burn rate)** instead.',
             },
           },
@@ -2037,7 +2037,7 @@ if count > LIMIT:
           {
             type: 'p',
             text: {
-              ja: 'さらに、長い窓（1 時間）と短い窓（5 分）の両方で条件を満たしたときだけ通知すると、すでに収まった障害で鳴り続けるのを防げます。これを**マルチウィンドウ・マルチバーンレート**のアラートと呼びます。',
+              ja: 'さらに、長い窓（1 時間）と短い窓（5 分）の両方で条件を満たしたときだけ通知すると、すでに収まった障害で鳴り続けるのを防げる。これが**マルチウィンドウ・マルチバーンレート**のアラート。',
               en: 'On top of that, alerting only when both a long window (1 hour) and a short window (5 minutes) meet the condition stops alerts from firing for an incident that is already over. This is called **multiwindow, multi-burn-rate** alerting.',
             },
           },
@@ -2045,7 +2045,7 @@ if count > LIMIT:
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'ここで使った数値は [SRE Workbook の Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/) が勧める出発点です。',
+              ja: 'ここで使った数値は [SRE Workbook の Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/) が勧める出発点。',
               en: 'The numbers here are the starting points recommended in [Alerting on SLOs from the SRE Workbook](https://sre.google/workbook/alerting-on-slos/).',
             },
           },
@@ -2059,14 +2059,14 @@ if count > LIMIT:
               {
                 type: 'p',
                 text: {
-                  ja: '1つのバーンレートだけで通知すると、必ずどこかで困ります。速いバーンレートだけを見ると、低いエラー率がじわじわ予算を食う障害を見逃します。逆に遅いバーンレートだけを見ると、障害がもう収まっているのにアラートが鳴り続けます（リセットが遅い）。そこで**速さの違う複数のルールを並べ**、さらに各ルールを**長い窓と短い窓の AND**にします。',
+                  ja: '1つのバーンレートだけで通知すると、必ずどこかで困る。速いバーンレートだけを見ると、低いエラー率がじわじわ予算を食う障害を見逃す。逆に遅いバーンレートだけを見ると、障害がもう収まっているのにアラートが鳴り続ける（リセットが遅い）。そこで**速さの違う複数のルールを並べ**、さらに各ルールを**長い窓と短い窓の AND**にする。',
                   en: 'Alerting on a single burn rate always hurts somewhere. Watch only a fast burn rate and you miss a low error rate that quietly eats the budget. Watch only a slow one and the alert keeps firing long after the incident is over (slow to reset). So you **run several rules at different speeds**, and make each rule an **AND of a long window and a short window**.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: '99.9% の SLO での出発点として、SRE Workbook はこの3段を勧めています。',
+                  ja: '99.9% の SLO での出発点として、SRE Workbook はこの3段を勧めている。',
                   en: 'As a starting point for a 99.9% SLO, the SRE Workbook recommends these three tiers.',
                 },
               },
@@ -2099,7 +2099,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
               {
                 type: 'p',
                 text: {
-                  ja: '短い窓は、長い窓のだいたい **1/12** にします。短い窓の役割は「まだ燃えているか」の確認です。障害が収まると短い窓の値が先に下がるので、アラートが数分で自動的に解除されます。長い窓だけだと、解除まで 1 時間待つことになります。',
+                  ja: '短い窓は、長い窓のだいたい **1/12** にする。短い窓の役割は「まだ燃えているか」の確認。障害が収まると短い窓の値が先に下がるので、アラートが数分で自動的に解除される。長い窓だけだと、解除まで 1 時間待つことになる。',
                   en: 'Make the short window about **1/12** of the long one. Its job is to check "is it still burning?" When the incident ends, the short window drops first, so the alert clears itself within minutes. With only the long window, you would wait an hour for it to reset.',
                 },
               },
@@ -2107,7 +2107,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
                 type: 'note',
                 tone: 'warn',
                 text: {
-                  ja: '低トラフィックのサービスでは、この方式が暴れます。1 時間に 10 リクエストしかないと、1 回の失敗で瞬間エラー率が 10% になり、巨大なバーンレートとして即ページしてしまいます。対策は、合成トラフィックで下駄を履かせる、小さなサービスをまとめて監視する、1 回の失敗の重みを下げる、などです。',
+                  ja: '低トラフィックのサービスでは、この方式が暴れる。1 時間に 10 リクエストしかないと、1 回の失敗で瞬間エラー率が 10% になり、巨大なバーンレートとして即ページしてしまう。対策は、合成トラフィックで下駄を履かせる、小さなサービスをまとめて監視する、1 回の失敗の重みを下げる、など。',
                   en: 'On low-traffic services this approach misbehaves. At 10 requests per hour, a single failure makes the instantaneous error rate 10%, which looks like a huge burn rate and pages immediately. Remedies include adding synthetic traffic, grouping small services together for monitoring, or reducing the weight of a single failure.',
                 },
               },
@@ -2179,7 +2179,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: '基本となる考え方は Google SRE 本の [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) と [Embracing Risk](https://sre.google/sre-book/embracing-risk/)、実践の手順は [SRE Workbook の Implementing SLOs](https://sre.google/workbook/implementing-slos/) にまとまっています。',
+              ja: '基本となる考え方は Google SRE 本の [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) と [Embracing Risk](https://sre.google/sre-book/embracing-risk/)、実践の手順は [SRE Workbook の Implementing SLOs](https://sre.google/workbook/implementing-slos/) にまとまっている。',
               en: 'The core ideas are in the Google SRE book chapters [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/) and [Embracing Risk](https://sre.google/sre-book/embracing-risk/); the practical steps are in [Implementing SLOs from the SRE Workbook](https://sre.google/workbook/implementing-slos/).',
             },
           },
@@ -2205,14 +2205,14 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'どんなサービスも、最初は **DB 1台** で十分です。フィード型アプリも、ユーザーが数千人のうちは1台で投稿もタイムライン取得もさばけます。問題はユーザーが増えてから。ある日、1台では受けきれなくなります。',
+              ja: 'どんなサービスも、最初は **DB 1台** で十分。フィード型アプリも、ユーザーが数千人のうちは1台で投稿もタイムライン取得もさばける。問題はユーザーが増えてから。ある日、1台では受けきれなくなる。',
               en: 'Every service starts with **one database**, and that is fine. A feed app can serve posts and timelines from a single box while it has a few thousand users. The trouble starts as it grows: one day, one box can no longer keep up.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'まず「何が」限界なのかを見極めます。闇雲に分散させるのは、複雑さを一気に増やすので最後の手段です。',
+              ja: 'まず「何が」限界なのかを見極める。闇雲に分散させるのは、複雑さを一気に増やすので最後の手段。',
               en: 'First, pin down **what** is actually hitting its limit. Jumping straight to a distributed setup adds a lot of complexity, so it is a last resort.',
             },
           },
@@ -2241,7 +2241,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'まず計測し、インデックスやクエリの見直し、[キャッシュ](#url-shortener/cache-scale)で済むなら、そのほうが安くて簡単です。スケールの手段は、順に試すのが鉄則です。',
+              ja: 'まず計測し、インデックスやクエリの見直し、[キャッシュ](#url-shortener/cache-scale)で済むなら、そのほうが安くて簡単。スケールの手段は、順に試すのが鉄則。',
               en: 'Measure first. If better indexes, query tuning, or [caching](#url-shortener/cache-scale) solve it, that is cheaper and simpler. Reach for scaling techniques in order, not all at once.',
             },
           },
@@ -2254,7 +2254,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: '一番簡単なのは、サーバーを**大きくする**ことです。CPU・メモリ・ディスクを増やす。コードもデータの持ち方も変えずに済むので、最初の一手として優秀です。多くのサービスは、これだけでかなり長く戦えます。',
+              ja: '一番簡単なのは、サーバーを**大きくする**こと。CPU・メモリ・ディスクを増やす。コードもデータの持ち方も変えずに済むので、最初の一手として優秀。多くのサービスは、これだけでかなり長く戦える。',
               en: 'The simplest move is to make the server **bigger**: more CPU, memory and disk. It needs no change to your code or data layout, which makes it an excellent first step. Many services get surprisingly far on this alone.',
             },
           },
@@ -2278,7 +2278,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'この「限界」「可用性」の2点が、次の**水平スケール（台数を増やす）**に進む理由になります。',
+              ja: 'この「限界」「可用性」の2点が、次の**水平スケール（台数を増やす）**に進む理由になる。',
               en: 'Those two issues — the ceiling and availability — are what push you toward **scaling out (adding machines)** next.',
             },
           },
@@ -2291,7 +2291,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'フィード型アプリは、投稿（書き込み）よりタイムライン取得（読み取り）が圧倒的に多い **read-heavy** です。この場合の定石が**レプリケーション**。書き込みを受ける1台の**リーダー（primary）**と、その複製を持つ複数の**レプリカ（follower）**を用意し、読み取りをレプリカに分散します。',
+              ja: 'フィード型アプリは、投稿（書き込み）よりタイムライン取得（読み取り）が圧倒的に多い **read-heavy**。この場合の定石が**レプリケーション**。書き込みを受ける1台の**リーダー（primary）**と、その複製を持つ複数の**レプリカ（follower）**を用意し、読み取りをレプリカに分散する。',
               en: 'A feed app is **read-heavy**: fetching timelines (reads) vastly outnumbers posting (writes). The standard answer here is **replication**: one **leader (primary)** takes the writes, and several **replicas (followers)** hold copies, so reads are spread across the replicas.',
             },
           },
@@ -2317,7 +2317,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'これは読み取りの対策です。**書き込みはリーダー1台のまま**なので、書き込みが増えすぎると別の手（後述のシャーディング）が要ります。PostgreSQL のレプリケーションは [High Availability のドキュメント](https://www.postgresql.org/docs/current/high-availability.html) が詳しいです。',
+              ja: 'これは読み取りの対策。**書き込みはリーダー1台のまま**なので、書き込みが増えすぎると別の手（後述のシャーディング）が要る。PostgreSQL のレプリケーションは [High Availability のドキュメント](https://www.postgresql.org/docs/current/high-availability.html) が詳しい。',
               en: 'This scales reads only. **Writes still go through a single leader**, so once writes grow too large you need another technique (sharding, below). PostgreSQL\'s replication is covered in its [High Availability docs](https://www.postgresql.org/docs/current/high-availability.html).',
             },
           },
@@ -2330,14 +2330,14 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'レプリケーションはふつう**非同期**です。リーダーは書き込みを受けたらすぐ成功を返し、レプリカへの反映は少し遅れて届きます。この遅れを**レプリケーションラグ**と呼びます。ふだんは数ミリ秒〜数十ミリ秒ですが、負荷が高いと秒単位に伸びることもあります。',
+              ja: 'レプリケーションはふつう**非同期**。リーダーは書き込みを受けたらすぐ成功を返し、レプリカへの反映は少し遅れて届く。この遅れが**レプリケーションラグ**。ふだんは数ミリ秒〜数十ミリ秒だが、負荷が高いと秒単位に伸びることもある。',
               en: 'Replication is usually **asynchronous**: the leader returns success as soon as it commits, and the change reaches the replicas a little later. That delay is **replication lag** — typically a few to tens of milliseconds, but it can stretch to seconds under load.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'このラグが、分かりにくいバグを生みます。ツイートを投稿した直後に自分のタイムラインを開くと、**まだレプリカに届いておらず、自分の投稿が表示されない**ことがあります。これが「自分の書き込みが読めない（read-your-writes）」問題です。',
+              ja: 'このラグが、分かりにくいバグを生む。ツイートを投稿した直後に自分のタイムラインを開くと、**まだレプリカに届いておらず、自分の投稿が表示されない**ことがある。これが「自分の書き込みが読めない（read-your-writes）」問題。',
               en: 'This lag causes a subtle bug. Right after posting a tweet, you open your own timeline and **your tweet is missing, because it has not reached the replica yet**. This is the "read-your-writes" problem.',
             },
           },
@@ -2363,7 +2363,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'この「少し古くても最終的には揃う」考え方が**結果整合性（eventual consistency）**です。SQL / NoSQL と ACID / BASE の対比は [URL短縮の DB の節](#url-shortener/database) でも触れています。',
+              ja: 'この「少し古くても最終的には揃う」考え方が**結果整合性（eventual consistency）**。SQL / NoSQL と ACID / BASE の対比は [URL短縮の DB の節](#url-shortener/database) でも触れた。',
               en: 'This "slightly stale but it converges" idea is **eventual consistency**. The SQL/NoSQL and ACID/BASE contrast also appears in the [URL shortener\'s database section](#url-shortener/database).',
             },
           },
@@ -2376,14 +2376,14 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'レプリカをいくら足しても、**書き込みはリーダー1台**のままです。書き込み自体が1台の限界を超えたら、データを**複数の DB に分割**します。これが**シャーディング（水平分割）**です。各 DB（シャード）が、データの一部だけを持ちます。',
+              ja: 'レプリカをいくら足しても、**書き込みはリーダー1台**のまま。書き込み自体が1台の限界を超えたら、データを**複数の DB に分割**する。これが**シャーディング（水平分割）**。各 DB（シャード）が、データの一部だけを持つ。',
               en: 'No matter how many replicas you add, **writes still funnel through one leader**. When the write load itself exceeds one box, you **split the data across multiple databases**. This is **sharding (horizontal partitioning)**: each database (shard) holds only a slice of the data.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'どのデータをどのシャードに置くかは、**シャードキー**で決めます。フィード型アプリなら user_id が自然な候補です。分け方は主に2つ。下の図で切り替えてみてください。',
+              ja: 'どのデータをどのシャードに置くかは、**シャードキー**で決める。フィード型アプリなら user_id が自然な候補。分け方は主に2つ（下の図で切り替えられる）。',
               en: 'Which data lands on which shard is decided by a **shard key**. For a feed app, user_id is a natural choice. There are two main ways to split; toggle between them in the diagram below.',
             },
           },
@@ -2405,7 +2405,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'ホットスポットを避けるには、偏りにくいシャードキーを選びます。たとえば「有名人の user_id」のような一部に偏る値より、分布が均一なキーが向きます。',
+              ja: 'ホットスポットを避けるには、偏りにくいシャードキーを選ぶ。たとえば「有名人の user_id」のような一部に偏る値より、分布が均一なキーが向く。',
               en: 'To avoid hotspots, pick a shard key that spreads evenly — a uniformly distributed key beats one that clusters, like "celebrity user_ids".',
             },
           },
@@ -2419,14 +2419,14 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
               {
                 type: 'p',
                 text: {
-                  ja: '`shard = hash(user_id) % N` には弱点があります。シャードを増やして **N が変わると、割り算の余りがほぼ全キーで変わり、データのほとんどが別のシャードに引っ越し**になります。たとえば 4 台から 5 台にすると、約 80% のキーが移動します。移動中は負荷も跳ね上がり、現実的ではありません。',
+                  ja: '`shard = hash(user_id) % N` には弱点がある。シャードを増やして **N が変わると、割り算の余りがほぼ全キーで変わり、データのほとんどが別のシャードに引っ越し**になる。たとえば 4 台から 5 台にすると、約 80% のキーが移動する。移動中は負荷も跳ね上がり、現実的ではない。',
                   en: '`shard = hash(user_id) % N` has a weakness. When you add a shard and **N changes, almost every key gets a new remainder, so most of the data has to move** to a different shard. Going from 4 to 5 shards moves about 80% of the keys. The load spikes during the move, which is impractical.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: 'これを解くのが**コンシステントハッシュ**です。考え方はこうです。',
+                  ja: 'これを解くのが**コンシステントハッシュ**。考え方はこう。',
                   en: 'Consistent hashing solves this. The idea goes like this.',
                 },
               },
@@ -2451,7 +2451,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
               {
                 type: 'p',
                 text: {
-                  ja: 'こうすると、**ノードを1台足したとき、動くのは「追加した点と、その手前のノードの間」にあるキーだけ**です。残りのキーは担当が変わりません。移動量は全体の約 `1/N` に抑えられます。ノードを外すときも、その範囲を隣のノードが引き継ぐだけで済みます。',
+                  ja: 'こうすると、**ノードを1台足したとき、動くのは「追加した点と、その手前のノードの間」にあるキーだけ**。残りのキーは担当が変わらない。移動量は全体の約 `1/N` に抑えられる。ノードを外すときも、その範囲を隣のノードが引き継ぐだけで済む。',
                   en: 'Now, **adding one node only moves the keys that fall between the new point and the node just before it** on the ring. Every other key keeps its owner. The data that moves is only about `1/N` of the total. Removing a node is just as cheap: its neighbor takes over that stretch.',
                 },
               },
@@ -2459,14 +2459,14 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'ノードをリング上に1点だけ置くと、担当範囲に偏りが出ます。そこで各ノードを**仮想ノード**として多数の点に分けてリングにばらまき、担当範囲を均一にします。',
+                  ja: 'ノードをリング上に1点だけ置くと、担当範囲に偏りが出る。そこで各ノードを**仮想ノード**として多数の点に分けてリングにばらまき、担当範囲を均一にする。',
                   en: 'Placing each node at a single point leaves uneven ranges. So each node is split into many **virtual nodes** scattered around the ring, which evens out the ranges.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: 'DynamoDB や Cassandra などの分散データベース、分散キャッシュ、ロードバランサーで広く使われています。詳しくは [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing) を参照。',
+                  ja: 'DynamoDB や Cassandra などの分散データベース、分散キャッシュ、ロードバランサーで広く使われている。詳しくは [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing) を参照。',
                   en: 'It is widely used in distributed databases like DynamoDB and Cassandra, in distributed caches, and in load balancers. See [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing) for more.',
                 },
               },
@@ -2481,7 +2481,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'シャーディングは強力ですが、**一気に複雑さが増えます**。だから「最後の手段」です。データが複数の DB に散るせいで、今まで当たり前だった操作が難しくなります。',
+              ja: 'シャーディングは強力だが、**一気に複雑さが増える**。だから「最後の手段」。データが複数の DB に散るせいで、今まで当たり前だった操作が難しくなる。',
               en: 'Sharding is powerful, but it **adds a lot of complexity all at once**, which is why it is a last resort. Because the data is now spread across databases, operations that used to be trivial become hard.',
             },
           },
@@ -2510,7 +2510,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'だから順番が大切です。**まず垂直スケール → キャッシュ → レプリケーション → それでも書き込みが足りなければシャーディング**。シャーディングは、必要になるまで入れないのが賢明です。',
+              ja: 'だから順番が大切。**まず垂直スケール → キャッシュ → レプリケーション → それでも書き込みが足りなければシャーディング**。シャーディングは、必要になるまで入れないのが賢明。',
               en: 'So the order matters: **vertical scale → caching → replication → and only if writes still overflow, sharding**. It is wise not to shard until you truly need to.',
             },
           },
@@ -2523,7 +2523,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: '多くの NoSQL（DynamoDB・Cassandra など）が「水平スケールしやすい」と言われるのは、**最初からシャーディング前提で設計されている**からです。JOIN や複数行トランザクションのような、分割すると難しくなる機能を、あえて捨てる（制限する）ことで、台数を増やしやすくしています。',
+              ja: '多くの NoSQL（DynamoDB・Cassandra など）が「水平スケールしやすい」と言われるのは、**最初からシャーディング前提で設計されている**から。JOIN や複数行トランザクションのような、分割すると難しくなる機能を、あえて捨てる（制限する）ことで、台数を増やしやすくしている。',
               en: 'Many NoSQL stores (DynamoDB, Cassandra, etc.) are called "easy to scale horizontally" because they are **designed for sharding from day one**. They deliberately drop or limit the features that get hard once you split — JOINs, multi-row transactions — which makes adding machines easier.',
             },
           },
@@ -2544,7 +2544,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '「SQL か NoSQL か」より「このデータに、どんなアクセスパターンと一貫性が要るか」で選ぶのが実践的です。1つのサービスで両方を使い分けることもよくあります。',
+              ja: '「SQL か NoSQL か」より「このデータに、どんなアクセスパターンと一貫性が要るか」で選ぶのが実践的。1つのサービスで両方を使い分けることもよくある。',
               en: 'In practice, choose by "what access pattern and consistency does this data need?" rather than "SQL vs NoSQL". A single service often uses both for different data.',
             },
           },
@@ -2557,7 +2557,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'スケールの話に戻ると、**一番効く読み取り対策は、そもそも DB を読まないこと**です。よく読まれるデータ（人気ツイート、プロフィール）をキャッシュ（Redis など）に載せれば、読み取りの大半を DB の手前で返せます。レプリカを足すより安く効くことが多いです。',
+              ja: 'スケールの話に戻ると、**一番効く読み取り対策は、そもそも DB を読まないこと**。よく読まれるデータ（人気ツイート、プロフィール）をキャッシュ（Redis など）に載せれば、読み取りの大半を DB の手前で返せる。レプリカを足すより安く効くことが多い。',
               en: 'Coming back to scaling, **the most effective read optimization is to not read the DB at all**. Put frequently read data (popular tweets, profiles) in a cache (Redis) and most reads are served before they reach the DB — often cheaper and more effective than adding replicas.',
             },
           },
@@ -2565,7 +2565,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'list',
             items: [
               {
-                ja: '**キャッシュの考え方は別記事に**: cache-aside などの戦略は [URL短縮のキャッシュの節](#url-shortener/cache-scale) で図付きで説明しています',
+                ja: '**キャッシュの考え方は別記事に**: cache-aside などの戦略は [URL短縮のキャッシュの節](#url-shortener/cache-scale) に図付きでまとめた',
                 en: '**Cache strategies are covered elsewhere**: cache-aside and friends are explained with a diagram in the [URL shortener\'s cache section](#url-shortener/cache-scale)',
               },
               {
@@ -2609,7 +2609,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: '用語の整理には [Shard (Wikipedia)](https://en.wikipedia.org/wiki/Shard_%28database_architecture%29) と [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing)、実装例には [MongoDB の Sharding](https://www.mongodb.com/docs/manual/sharding/) が参考になります。',
+              ja: '用語の整理には [Shard (Wikipedia)](https://en.wikipedia.org/wiki/Shard_%28database_architecture%29) と [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing)、実装例には [MongoDB の Sharding](https://www.mongodb.com/docs/manual/sharding/) が参考になる。',
               en: 'For terminology, [Shard (Wikipedia)](https://en.wikipedia.org/wiki/Shard_%28database_architecture%29) and [Consistent hashing (Wikipedia)](https://en.wikipedia.org/wiki/Consistent_hashing) help; for an implementation, see [MongoDB\'s Sharding](https://www.mongodb.com/docs/manual/sharding/).',
             },
           },
@@ -2635,14 +2635,14 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'ネットワーク越しの呼び出しは、ときどき失敗します。パケットの取りこぼし、一瞬の過負荷、サーバーの再起動などです。こうした**一時的な失敗（transient failure）**の多くは、少し待ってもう一度試すと成功します。YouTube アプリが動画情報の取得に一度失敗しても、すぐ再取得できれば、ユーザーは何も気づきません。',
+              ja: 'ネットワーク越しの呼び出しは、ときどき失敗する。パケットの取りこぼし、一瞬の過負荷、サーバーの再起動など。こうした**一時的な失敗（transient failure）**の多くは、少し待ってもう一度試すと成功する。YouTube アプリが動画情報の取得に一度失敗しても、すぐ再取得できれば、ユーザーは何も気づかない。',
               en: 'Calls over the network fail from time to time: a dropped packet, a brief overload, a server restarting. Many of these **transient failures** succeed if you simply wait a moment and try again. If the YouTube app fails once to fetch video metadata but refetches right away, the user never notices.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'ただしリトライは、使い方を間違えると**障害を広げる凶器**になります。弱ったサーバーに全員が一斉に再送すると、とどめを刺してしまうからです。この記事では、リトライを安全にするための3点セット、**タイムアウト・バックオフ・ジッター**を見ていきます。',
+              ja: 'ただしリトライは、使い方を間違えると**障害を広げる凶器**になる。弱ったサーバーに全員が一斉に再送すると、とどめを刺してしまうから。この記事では、リトライを安全にするための3点セット、**タイムアウト・バックオフ・ジッター**を整理する。',
               en: 'But done wrong, retries become a **weapon that spreads the outage**: if everyone resends to a struggling server at once, the retries finish it off. This article walks through the trio that makes retries safe — **timeouts, backoff and jitter**.',
             },
           },
@@ -2650,7 +2650,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'リトライは「一時的な失敗」にだけ有効です。404 や 400 のような、何度試しても結果が変わらない失敗はリトライしてはいけません（判断の仕方は後の節で）。',
+              ja: 'リトライは「一時的な失敗」にだけ有効。404 や 400 のような、何度試しても結果が変わらない失敗はリトライしてはいけない（判断の仕方は後の節で）。',
               en: 'Retries only help with transient failures. Do not retry failures like 404 or 400 that will never change no matter how often you try (how to tell them apart is covered later).',
             },
           },
@@ -2663,7 +2663,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'リトライの前に、そもそも**いつ「失敗」と判断するか**を決める必要があります。それがタイムアウトです。応答が返ってこない呼び出しを待ち続けると、スレッドや接続がふさがり、[サーキットブレーカー](#circuit-breaker)の記事で見たような連鎖障害につながります。',
+              ja: 'リトライの前に、そもそも**いつ「失敗」と判断するか**を決める必要がある。それがタイムアウト。応答が返ってこない呼び出しを待ち続けると、スレッドや接続がふさがり、[サーキットブレーカー](#circuit-breaker)の記事で見たような連鎖障害につながる。',
               en: 'Before retrying, you must decide **when a call counts as "failed"**. That is the timeout. Waiting forever on a call that never responds ties up threads and connections, leading to the kind of cascading failure covered in the [circuit breaker](#circuit-breaker) article.',
             },
           },
@@ -2692,7 +2692,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'タイムアウトは「接続まで」と「応答全体まで」を分けて設定します。接続はすぐできるはずなので短く、処理を含む全体は少し長く、という具合です。',
+              ja: 'タイムアウトは「接続まで」と「応答全体まで」を分けて設定する。接続はすぐできるはずなので短く、処理を含む全体は少し長く、という具合。',
               en: 'Set separate timeouts for "establishing the connection" and "the whole response". The connection should be quick, so keep it short; the full response, including processing, can be a little longer.',
             },
           },
@@ -2705,7 +2705,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: 'サーバーが一瞬だけ不調になり、多くのクライアントの呼び出しが同時に失敗したとします。全員が「1 秒後にリトライ」と決め打ちしていると、ちょうど 1 秒後に**全リトライが同じ瞬間に殺到**します。回復しかけたサーバーは、この波でまた倒れます。これが再送の雪崩（thundering herd / retry storm）です。下の図で、ジッターあり/なしを切り替えてみてください。',
+              ja: 'サーバーが一瞬だけ不調になり、多くのクライアントの呼び出しが同時に失敗したとする。全員が「1 秒後にリトライ」と決め打ちしていると、ちょうど 1 秒後に**全リトライが同じ瞬間に殺到**する。回復しかけたサーバーは、この波でまた倒れる。これが再送の雪崩（thundering herd / retry storm）。下の図でジッターあり/なしを切り替えられる。',
               en: 'Suppose the server has a brief blip and many clients\' calls fail at the same time. If they all hardcode "retry after 1 second", then exactly 1 second later **all the retries hit at the same instant**. The barely-recovering server is knocked over again by that wave. This is the retry storm (thundering herd). Toggle jitter on and off in the diagram below.',
             },
           },
@@ -2713,7 +2713,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: '対策は2つを組み合わせます。**バックオフ**で待ち時間を少しずつ延ばし、**ジッター**でその待ち時間をクライアントごとにばらけさせます。これで再送が時間軸に散らばり、サーバーが吸収できる低い波になります。',
+              ja: '対策は2つの組み合わせ。**バックオフ**で待ち時間を少しずつ延ばし、**ジッター**でその待ち時間をクライアントごとにばらけさせる。これで再送が時間軸に散らばり、サーバーが吸収できる低い波になる。',
               en: 'The fix combines two things. **Backoff** stretches the wait a little more each time, and **jitter** scatters that wait randomly across clients. Together they spread the retries over time into a low wave the server can absorb.',
             },
           },
@@ -2726,7 +2726,7 @@ ticket if ( burn_rate(3d) > 1  and burn_rate(6h) > 1  )`,
           {
             type: 'p',
             text: {
-              ja: '**指数バックオフ**は、試行ごとに待ち時間を倍にしていく方法です。基本の式はこうです。',
+              ja: '**指数バックオフ**は、試行ごとに待ち時間を倍にしていく方法。基本の式はこう。',
               en: '**Exponential backoff** doubles the wait after each attempt. The basic formula is:',
             },
           },
@@ -2757,7 +2757,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'ジッターなしの指数バックオフだけでは不十分です。全員が同時に失敗すると、2 倍にしても「全員が同じ 2 秒後」に再送するだけだからです。AWS の実験でも、**フルジッターが競合と総リクエスト数を大きく減らす**と示されています（[Exponential Backoff And Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)）。',
+              ja: 'ジッターなしの指数バックオフだけでは不十分。全員が同時に失敗すると、2 倍にしても「全員が同じ 2 秒後」に再送するだけだから。AWS の実験でも、**フルジッターが競合と総リクエスト数を大きく減らす**と示されている（[Exponential Backoff And Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)）。',
               en: 'Exponential backoff without jitter is not enough: if everyone fails at the same time, doubling just means everyone retries "2 seconds later" together. AWS\'s own experiments show that **full jitter sharply reduces contention and total request count** ([Exponential Backoff And Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)).',
             },
           },
@@ -2772,7 +2772,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
               {
                 type: 'p',
                 text: {
-                  ja: '「たった数秒」でも効くのは、サーバーが落ちるかどうかを決めるのが**総リクエスト数ではなく、一瞬のピーク（同時に来る数）**だからです。効き方は2つに分けて考えると分かりやすいです。',
+                  ja: '「たった数秒」でも効くのは、サーバーが落ちるかどうかを決めるのが**総リクエスト数ではなく、一瞬のピーク（同時に来る数）**だから。効き方は2つに分けて考えると分かりやすい。',
                   en: 'A few seconds matters because whether a server falls over is decided by **the instantaneous peak (how many arrive at once), not the total count**. It helps to split the effect into two parts.',
                 },
               },
@@ -2786,7 +2786,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
               {
                 type: 'p',
                 text: {
-                  ja: '24 台が同時に失敗し、全員きっかり 2 秒後に再送すると、その瞬間に 24 件が1点に集中します。サーバーの容量が「0.25 秒あたり 14 件」なら、軽く超えて再び落ちます。ここで待ち時間を 0〜2 秒の乱数にばらすと、24 件が 2 秒間（＝0.25 秒のバケット 8 個）に散り、1 バケットあたり平均 `24 ÷ 8 = 3 件`。ピークが 24 → 3 前後に下がり、容量 14 の内側に収まります。**延ばした長さより、「同じ瞬間をなくした」ことが効いています。**',
+                  ja: '24 台が同時に失敗し、全員きっかり 2 秒後に再送すると、その瞬間に 24 件が1点に集中する。サーバーの容量が「0.25 秒あたり 14 件」なら、軽く超えて再び落ちる。ここで待ち時間を 0〜2 秒の乱数にばらすと、24 件が 2 秒間（＝0.25 秒のバケット 8 個）に散り、1 バケットあたり平均 `24 ÷ 8 = 3 件`。ピークが 24 → 3 前後に下がり、容量 14 の内側に収まる。**延ばした長さより、「同じ瞬間をなくした」ことが効いている。**',
                   en: 'If 24 clients fail together and all retry exactly 2 seconds later, 24 requests pile onto a single instant. If the server\'s capacity is "14 per 0.25s", that spike blows past it and it falls again. Spread the wait randomly over 0–2 seconds and those 24 requests scatter across 2 seconds (eight 0.25s buckets), about `24 ÷ 8 = 3` per bucket. The peak drops from 24 to around 3, comfortably under the capacity of 14. **What helped was removing the shared instant, not the length of the delay.**',
                 },
               },
@@ -2800,7 +2800,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
               {
                 type: 'p',
                 text: {
-                  ja: '相手が長く不調なとき、固定間隔（毎秒リトライ）だと一定ペースで叩き続けます。10 秒ダウンすれば 1 台につき約 10 回。指数バックオフ（0.5 → 1 → 2 → 4 秒…）なら、同じ 10 秒で約 4 回に減ります。待つほど呼び出し頻度が自動で下がるので、弱った相手に浴びせる総負荷が小さくなり、回復する時間を与えられます。',
+                  ja: '相手が長く不調なとき、固定間隔（毎秒リトライ）だと一定ペースで叩き続ける。10 秒ダウンすれば 1 台につき約 10 回。指数バックオフ（0.5 → 1 → 2 → 4 秒…）なら、同じ 10 秒で約 4 回に減る。待つほど呼び出し頻度が自動で下がるので、弱った相手に浴びせる総負荷が小さくなり、回復する時間を与えられる。',
                   en: 'When the dependency stays unhealthy, a fixed interval (retry every second) keeps hammering at a constant pace: about 10 tries per client over a 10-second outage. Exponential backoff (0.5 → 1 → 2 → 4 s…) cuts that to about 4 tries in the same 10 seconds. The longer you wait, the less often you call, so the total load on the struggling dependency shrinks and it gets room to recover.',
                 },
               },
@@ -2808,7 +2808,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
                 type: 'note',
                 tone: 'tip',
                 text: {
-                  ja: 'どちらか片方では足りません。バックオフだけだと「全員が同じ 2 秒後」に揃うのでピークは下がりません。ジッターだけだと総量は減りません。**両方そろって初めて、ピークを下げつつ総量も抑えられます。**',
+                  ja: 'どちらか片方では足りない。バックオフだけだと「全員が同じ 2 秒後」に揃うのでピークは下がらない。ジッターだけだと総量は減らない。**両方そろって初めて、ピークを下げつつ総量も抑えられる。**',
                   en: 'Neither half is enough alone. Backoff without jitter still lines everyone up at "2 seconds later", so the peak stays high. Jitter without backoff does not reduce the total. **Only together do they both lower the peak and hold down the total.**',
                 },
               },
@@ -2823,7 +2823,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'バックオフとジッターで波を平すだけでは足りません。相手が本当に落ちているなら、リトライは**いつか必ず打ち切る**必要があります。打ち切らないと、無駄な負荷をかけ続けます。',
+              ja: 'バックオフとジッターで波を平すだけでは足りない。相手が本当に落ちているなら、リトライは**いつか必ず打ち切る**必要がある。打ち切らないと、無駄な負荷をかけ続ける。',
               en: 'Smoothing the wave with backoff and jitter is not enough. If the dependency is truly down, retries **must eventually stop**. Otherwise you just keep piling on useless load.',
             },
           },
@@ -2848,7 +2848,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'リトライとサーキットブレーカーは組み合わせます。ブレーカーが OPEN の間はリトライしません（即フォールバック）。多層リトライの増幅は、過負荷対策の定番論点です（[Google SRE 本 · Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/)）。',
+              ja: 'リトライとサーキットブレーカーは組み合わせる。ブレーカーが OPEN の間はリトライしない（即フォールバック）。多層リトライの増幅は、過負荷対策の定番論点（[Google SRE 本 · Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/)）。',
               en: 'Combine retries with a circuit breaker: do not retry while the breaker is OPEN (fall back immediately). The amplification from retrying at multiple layers is a classic overload topic ([Google SRE book · Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/)).',
             },
           },
@@ -2861,7 +2861,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'すべての失敗をリトライしてよいわけではありません。2つの軸で判断します。「一時的な失敗か」と「同じ操作を2回やって安全か」です。',
+              ja: 'すべての失敗をリトライしてよいわけではない。判断の軸は2つ。「一時的な失敗か」と「同じ操作を2回やって安全か」。',
               en: 'Not every failure should be retried. Judge on two axes: "is it transient?" and "is doing the operation twice safe?"',
             },
           },
@@ -2885,7 +2885,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'もう1つの軸が**冪等性（べきとうせい / idempotency）**です。同じリクエストを2回処理しても結果が変わらない操作は、安全にリトライできます。読み取り（GET）はもともと安全です。書き込みは、**冪等キー**（リクエストごとに一意な ID）を付けて、サーバー側で「この ID は処理済み」と重複を弾けるようにします。',
+              ja: 'もう1つの軸が**冪等性（べきとうせい / idempotency）**。同じリクエストを2回処理しても結果が変わらない操作は、安全にリトライできる。読み取り（GET）はもともと安全。書き込みは、**冪等キー**（リクエストごとに一意な ID）を付けて、サーバー側で「この ID は処理済み」と重複を弾けるようにする。',
               en: 'The other axis is **idempotency**: an operation you can process twice with the same result is safe to retry. Reads (GET) are naturally safe. For writes, attach an **idempotency key** (a unique ID per request) so the server can reject a duplicate as "already processed".',
             },
           },
@@ -2893,7 +2893,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '冪等でない書き込みを素朴にリトライすると、二重課金や二重投稿が起きます。「視聴回数 +1」のような操作も、リトライで二重に数えないよう冪等キーで守ります。',
+              ja: '冪等でない書き込みを素朴にリトライすると、二重課金や二重投稿が起きる。「視聴回数 +1」のような操作も、リトライで二重に数えないよう冪等キーで守る。',
               en: 'Naively retrying a non-idempotent write causes double charges or double posts. Even an operation like "+1 view count" needs an idempotency key so a retry does not count it twice.',
             },
           },
@@ -2906,7 +2906,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'リトライはクライアントだけの話ではありません。サーバー側も、リトライされる前提で振る舞うと全体が安定します。',
+              ja: 'リトライはクライアントだけの話ではない。サーバー側も、リトライされる前提で振る舞うと全体が安定する。',
               en: 'Retries are not only a client concern. The whole system is steadier when the server behaves as if it will be retried.',
             },
           },
@@ -2980,14 +2980,14 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'マイクロサービスでは、1つのリクエストの裏で決済・在庫・推薦など複数のサービスを呼び出します。そのうち1つが遅くなったり落ちたりしたとき、何も対策がないと呼び出し側まで巻き込まれて止まってしまいます。',
+              ja: 'マイクロサービスでは、1つのリクエストの裏で決済・在庫・推薦など複数のサービスを呼び出す。そのうち1つが遅くなったり落ちたりしたとき、何も対策がないと呼び出し側まで巻き込まれて止まってしまう。',
               en: 'In a microservice system, one request fans out to several services behind the scenes: payments, inventory, recommendations. When one of them slows down or fails, a caller with no protection gets dragged down with it.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'サーキットブレーカーは、家の分電盤のブレーカーと同じ発想です。失敗が一定以上続いたら「回路を開いて」呼び出しを止め、しばらく待ってから少しだけ試して、直っていれば元に戻します。壊れている相手を叩き続けないことで、**自分を守り、相手が回復する時間も作ります**。',
+              ja: 'サーキットブレーカーは、家の分電盤のブレーカーと同じ発想。失敗が一定以上続いたら「回路を開いて」呼び出しを止め、しばらく待ってから少しだけ試して、直っていれば元に戻す。壊れている相手を叩き続けないことで、**自分を守り、相手が回復する時間も作る**。',
               en: 'A circuit breaker works like the breaker in your home\'s electrical panel. When failures keep piling up, it "opens the circuit" and stops calling; after a while it tries a little, and if things are fixed it closes again. By not hammering a broken dependency, it **protects the caller and gives the dependency room to recover**.',
             },
           },
@@ -2995,7 +2995,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'このパターンは Michael Nygard の『Release It!』で広まりました。短い解説として [Martin Fowler の CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html) が定番です。',
+              ja: 'このパターンは Michael Nygard の『Release It!』で広まった。短い解説としては [Martin Fowler の CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html) が定番。',
               en: 'The pattern was popularized by Michael Nygard\'s book "Release It!". For a short introduction, [Martin Fowler\'s CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html) is the classic read.',
             },
           },
@@ -3008,14 +3008,14 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: '実は、依存先が**完全に落ちる**より**遅くなる**方が危険です。すぐエラーが返れば呼び出し側はすぐ次へ進めますが、応答が返ってこないとタイムアウトまでスレッドや接続を握ったまま待ち続けるからです。',
+              ja: '実は、依存先が**完全に落ちる**より**遅くなる**方が危険。すぐエラーが返れば呼び出し側はすぐ次へ進めるが、応答が返ってこないとタイムアウトまでスレッドや接続を握ったまま待ち続けるから。',
               en: 'A dependency that is **slow** is actually more dangerous than one that is **down**. A fast error lets the caller move on immediately, but a missing response keeps a thread or connection tied up until the timeout fires.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '例: checkout-svc が毎秒 100 件のリクエストを受け、それぞれが payments-api を呼ぶとします。payments-api が応答しなくなりタイムアウトが 5 秒だと、同時に待っているリクエストは `100 件/秒 × 5 秒 = 500 件` に膨らみます。スレッドプールが 200 なら 2 秒で埋まり、**決済と関係ない商品ページまで返せなくなります**。',
+              ja: '例: checkout-svc が毎秒 100 件のリクエストを受け、それぞれが payments-api を呼ぶとする。payments-api が応答しなくなりタイムアウトが 5 秒だと、同時に待っているリクエストは `100 件/秒 × 5 秒 = 500 件` に膨らむ。スレッドプールが 200 なら 2 秒で埋まり、**決済と関係ない商品ページまで返せなくなる**。',
               en: 'Example: checkout-svc handles 100 requests per second and each one calls payments-api. If payments-api stops responding and the timeout is 5 seconds, the number of requests waiting at once grows to `100 req/s × 5 s = 500`. With a thread pool of 200, it fills up in 2 seconds, and **even product pages that never touch payments stop responding**.',
             },
           },
@@ -3040,7 +3040,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '連鎖障害の原因と対策は [Google SRE 本の Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) に詳しくまとまっています。',
+              ja: '連鎖障害の原因と対策は [Google SRE 本の Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) に詳しくまとまっている。',
               en: 'The causes and remedies of cascading failures are covered in depth in [Addressing Cascading Failures from the Google SRE book](https://sre.google/sre-book/addressing-cascading-failures/).',
             },
           },
@@ -3053,7 +3053,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'サーキットブレーカーは、依存先への呼び出しを包む小さな状態機械です。下の図では、payments-api が遅くなってから回復するまでの流れがループします。',
+              ja: 'サーキットブレーカーは、依存先への呼び出しを包む小さな状態機械。下の図では、payments-api が遅くなってから回復するまでの流れがループする。',
               en: 'A circuit breaker is a small state machine wrapped around calls to a dependency. The diagram below loops through what happens as payments-api slows down and then recovers.',
             },
           },
@@ -3079,7 +3079,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: 'ブレーカーは**依存先ごと**に持ちます。payments-api が壊れても、inventory-api への呼び出しまで止める必要はありません。',
+              ja: 'ブレーカーは**依存先ごと**に持つ。payments-api が壊れても、inventory-api への呼び出しまで止める必要はない。',
               en: 'Keep one breaker **per dependency**. When payments-api breaks, there is no reason to stop calling inventory-api.',
             },
           },
@@ -3092,7 +3092,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: '「どれくらい失敗したら開くか」の決め方は大きく2つです。',
+              ja: '「どれくらい失敗したら開くか」の決め方は大きく2つ。',
               en: 'There are two main ways to decide how much failure should open the breaker.',
             },
           },
@@ -3112,7 +3112,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: '失敗率を使うときは、あわせて次の2つも決めます。',
+              ja: '失敗率を使うときは、あわせて次の2つも決める。',
               en: 'When you use a failure rate, you also set two more things.',
             },
           },
@@ -3133,7 +3133,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '**何を失敗として数えるか**が重要です。タイムアウト・接続エラー・5xx は依存先の不調なので数えます。400 や 404 のようなクライアント側の誤り（4xx）は依存先が正常に答えているだけなので、数えてはいけません。',
+              ja: '**何を失敗として数えるか**が重要。タイムアウト・接続エラー・5xx は依存先の不調なので数える。400 や 404 のようなクライアント側の誤り（4xx）は依存先が正常に答えているだけなので、数えてはいけない。',
               en: '**What counts as a failure** matters. Timeouts, connection errors and 5xx responses mean the dependency is unhealthy, so count them. Client errors like 400 or 404 (4xx) mean the dependency answered correctly, so do not count them.',
             },
           },
@@ -3159,7 +3159,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
               {
                 type: 'p',
                 text: {
-                  ja: '項目名は Java の定番ライブラリ [Resilience4j の CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker) を参考にしています。ほかのライブラリでも、ほぼ同じ項目を設定します。',
+                  ja: '項目名は Java の定番ライブラリ [Resilience4j の CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker) を参考にした。ほかのライブラリでも、ほぼ同じ項目を設定する。',
                   en: 'The setting names follow [Resilience4j\'s CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker), a popular Java library. Other libraries expose nearly the same knobs.',
                 },
               },
@@ -3174,7 +3174,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'OPEN の間は依存先を呼ばないので、5 秒待つはずだった失敗が数ミリ秒で返ります。これだけでもスレッドが解放され、呼び出し側は生き残れます。そのうえで「エラーの代わりに何を返すか（フォールバック）」を決めておくと、ユーザーへの影響をさらに小さくできます。',
+              ja: 'OPEN の間は依存先を呼ばないので、5 秒待つはずだった失敗が数ミリ秒で返る。これだけでもスレッドが解放され、呼び出し側は生き残れる。そのうえで「エラーの代わりに何を返すか（フォールバック）」を決めておくと、ユーザーへの影響をさらに小さくできる。',
               en: 'While OPEN, the dependency is not called, so a failure that would have taken 5 seconds comes back in milliseconds. That alone frees up threads and keeps the caller alive. On top of that, deciding what to return instead of an error (a fallback) shrinks the impact on users even further.',
             },
           },
@@ -3207,7 +3207,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'フォールバック自体が、壊れた依存先や同じ DB に頼っていないか確認しましょう。フォールバックが重い処理だと、今度はそれが新しいボトルネックになります。',
+              ja: 'フォールバック自体が、壊れた依存先や同じ DB に頼っていないか確認しておく。フォールバックが重い処理だと、今度はそれが新しいボトルネックになる。',
               en: 'Check that the fallback itself does not rely on the broken dependency or the same database. A heavy fallback just becomes the next bottleneck.',
             },
           },
@@ -3220,7 +3220,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: '待機時間が過ぎると HALF-OPEN になり、決めた件数（たとえば 3 件）だけ本物の呼び出しを通します。その件数を超えたリクエストは、まだフォールバックで返します。試しの呼び出しが成功すれば CLOSED に戻り、1 件でも失敗すれば OPEN に戻って待機をやり直します。',
+              ja: '待機時間が過ぎると HALF-OPEN になり、決めた件数（たとえば 3 件）だけ本物の呼び出しを通す。その件数を超えたリクエストは、まだフォールバックで返す。試しの呼び出しが成功すれば CLOSED に戻り、1 件でも失敗すれば OPEN に戻って待機をやり直す。',
               en: 'Once the wait duration passes, the breaker goes HALF-OPEN and lets a set number of real calls through (say, 3). Requests beyond that still get the fallback. If the trial calls succeed it returns to CLOSED; if any of them fail it goes back to OPEN and the wait starts over.',
             },
           },
@@ -3250,7 +3250,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: 'サーキットブレーカーは単体では完成しません。次の仕組みと組み合わせて使います。',
+              ja: 'サーキットブレーカーは単体では完成しない。次の仕組みと組み合わせて使う。',
               en: 'A circuit breaker is not complete on its own. It is used together with these patterns.',
             },
           },
@@ -3283,7 +3283,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'リトライとブレーカーの役割の違いは [Azure の Circuit Breaker パターン](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker) にも整理されています。',
+              ja: 'リトライとブレーカーの役割の違いは [Azure の Circuit Breaker パターン](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker) にも整理されている。',
               en: 'The difference between retries and breakers is also laid out in [Azure\'s Circuit Breaker pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker).',
             },
           },
@@ -3310,14 +3310,14 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '名前に注意: Envoy の [circuit breaking](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) は「最大接続数・最大リクエスト数」の上限で、この記事の状態機械とは別物です（どちらかというとバルクヘッドに近い）。失敗したホストを一時的に外す動きは [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) が担います。',
+              ja: '名前に注意: Envoy の [circuit breaking](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) は「最大接続数・最大リクエスト数」の上限で、この記事の状態機械とは別物（どちらかというとバルクヘッドに近い）。失敗したホストを一時的に外す動きは [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) が担う。',
               en: 'Watch the naming: Envoy\'s [circuit breaking](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) is a set of limits on connections and requests, not the state machine in this article (it is closer to a bulkhead). Temporarily ejecting failing hosts is done by [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier).',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'ブレーカーの状態は、ふつうインスタンスごとにメモリで持ちます。台数が多いと各台が別々のタイミングで開きますが、それで問題ありません。状態を Redis などで共有すると、その共有先が新しい障害点になるからです。',
+              ja: 'ブレーカーの状態は、ふつうインスタンスごとにメモリで持つ。台数が多いと各台が別々のタイミングで開くが、それで問題ない。状態を Redis などで共有すると、その共有先が新しい障害点になるから。',
               en: 'Breaker state is usually kept in memory on each instance. With many instances, each one opens at a slightly different moment, and that is fine: sharing the state through something like Redis would just add a new point of failure.',
             },
           },
@@ -3330,7 +3330,7 @@ wait = random(0, wait)              // full jitter: spread 0..wait`,
           {
             type: 'p',
             text: {
-              ja: '失敗率で判定するブレーカーの流れを、疑似コードで書くとこうなります。',
+              ja: '失敗率で判定するブレーカーの流れを、疑似コードで書くとこうなる。',
               en: 'Here is the flow of a failure-rate breaker, written as pseudocode.',
             },
           },
@@ -3367,7 +3367,7 @@ call(request):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '実際のライブラリでは、HALF-OPEN で通す件数の上限や、複数スレッドから同時に呼ばれたときの排他もここに加わります。自作するより、定番ライブラリを使うのが安全です。',
+              ja: '実際のライブラリでは、HALF-OPEN で通す件数の上限や、複数スレッドから同時に呼ばれたときの排他もここに加わる。自作するより、定番ライブラリを使うのが安全。',
               en: 'Real libraries also cap the number of calls allowed in HALF-OPEN and handle concurrent callers safely. Using a well-known library is safer than writing your own.',
             },
           },
@@ -3380,7 +3380,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ブレーカーが開いたということは、どこかで問題が起きているということです。SRE の視点では、ブレーカーは「早期警報」の役割も果たします。',
+              ja: 'ブレーカーが開いたということは、どこかで問題が起きているということ。SRE の視点では、ブレーカーは「早期警報」の役割も果たす。',
               en: 'An open breaker means something is wrong somewhere. From an SRE point of view, breakers double as an early warning system.',
             },
           },
@@ -3466,21 +3466,21 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'これまでの記事で、[リトライとタイムアウト](#retries)、[サーキットブレーカー](#circuit-breaker)、[レートリミッター](#rate-limiter) など、障害に備える仕組みを見てきました。でも、それが**本番で本当に効くか**は、実際に障害が起きるまでわかりません。タイムアウトの値が大きすぎた、ブレーカーの設定が誤っていた、フォールバックが一度も動いたことがなかった、と本番障害のさなかに気づくのは一番つらい形です。',
+              ja: 'これまでの記事で、[リトライとタイムアウト](#retries)、[サーキットブレーカー](#circuit-breaker)、[レートリミッター](#rate-limiter) など、障害に備える仕組みを整理してきた。でも、それが**本番で本当に効くか**は、実際に障害が起きるまでわからない。タイムアウトの値が大きすぎた、ブレーカーの設定が誤っていた、フォールバックが一度も動いたことがなかった、と本番障害のさなかに気づくのは一番つらい形。',
               en: 'Earlier articles covered safeguards against failure: [retries and timeouts](#retries), [circuit breakers](#circuit-breaker), [rate limiters](#rate-limiter). But whether they **actually work in production** is unknown until something breaks. Finding out mid-incident that a timeout was too long, a breaker was misconfigured, or a fallback had never run is the worst way to learn.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'カオスエンジニアリングは、**障害をわざと、小さく、管理された形で起こして**、システムがどう振る舞うかを確かめる取り組みです。本番で起きる前に弱点を見つけ、直しておくことが目的です。',
+              ja: 'カオスエンジニアリングは、**障害をわざと、小さく、管理された形で起こして**、システムがどう振る舞うかを確かめる取り組み。本番で起きる前に弱点を見つけ、直しておくことが目的。',
               en: 'Chaos engineering means **causing failures on purpose, in small and controlled ways**, to see how the system behaves. The goal is to find weaknesses and fix them before production finds them for you.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '単体テストや結合テストでは見つかりにくい弱点があります。実際のトラフィック量、ネットワークの遅延、サービス同士の依存の重なり、設定の食い違いなどは、本番に近い環境でしか表に出ません。',
+              ja: '単体テストや結合テストでは見つかりにくい弱点がある。実際のトラフィック量、ネットワークの遅延、サービス同士の依存の重なり、設定の食い違いなどは、本番に近い環境でしか表に出ない。',
               en: 'Some weaknesses are hard to catch in unit or integration tests. Real traffic volume, network latency, layered dependencies between services and configuration drift only show up in production-like conditions.',
             },
           },
@@ -3488,7 +3488,7 @@ call(request):
             type: 'note',
             tone: 'info',
             text: {
-              ja: '「本番でランダムにサーバーを落とす危ないこと」と思われがちですが、実際は**仮説を立てて、影響範囲を絞り、止める条件を決めて行う実験**です。Netflix がクラウド移行のときに広めた手法で、原則は [Principles of Chaos Engineering](https://principlesofchaos.org/) にまとまっています。',
+              ja: '「本番でランダムにサーバーを落とす危ないこと」と思われがちだが、実際は**仮説を立てて、影響範囲を絞り、止める条件を決めて行う実験**。Netflix がクラウド移行のときに広めた手法で、原則は [Principles of Chaos Engineering](https://principlesofchaos.org/) にまとまっている。',
               en: 'It is often pictured as "randomly killing servers in production", but in practice it is **an experiment with a hypothesis, a limited blast radius and a defined stop condition**. Netflix popularized it during its move to the cloud, and the principles are summarized at [Principles of Chaos Engineering](https://principlesofchaos.org/).',
             },
           },
@@ -3501,7 +3501,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'カオスエンジニアリングは、科学の実験と同じ手順で進めます。',
+              ja: 'カオスエンジニアリングは、科学の実験と同じ手順で進める。',
               en: 'A chaos experiment follows the same steps as a science experiment.',
             },
           },
@@ -3535,7 +3535,7 @@ call(request):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '**仮説が外れるのは失敗ではありません**。それこそが、本番障害になる前に見つけたかった弱点です。逆に、何も起きなかった実験も「備えが効いている」という確かな根拠になります。',
+              ja: '**仮説が外れるのは失敗ではない**。それこそが、本番障害になる前に見つけたかった弱点。逆に、何も起きなかった実験も「備えが効いている」という確かな根拠になる。',
               en: '**A failed hypothesis is not a failed experiment.** It is exactly the weakness you wanted to find before it became an incident. And an experiment where nothing happens is solid evidence that your safeguards work.',
             },
           },
@@ -3548,7 +3548,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '[サーキットブレーカーの記事](#circuit-breaker/cb-cascade) と同じ例で考えます。checkout-svc が payments-api を呼んでいて、payments-api が遅くなると、スレッドが埋まって決済と関係ない商品ページまで返せなくなる、という話でした。ブレーカーを入れたなら、それが本当に効くかを確かめます。',
+              ja: '[サーキットブレーカーの記事](#circuit-breaker/cb-cascade) と同じ例で考える。checkout-svc が payments-api を呼んでいて、payments-api が遅くなると、スレッドが埋まって決済と関係ない商品ページまで返せなくなる、という話だった。ブレーカーを入れたなら、それが本当に効くかを確かめる。',
               en: 'Take the same setup as the [circuit breaker article](#circuit-breaker/cb-cascade): checkout-svc calls payments-api, and when payments-api slows down, threads fill up until even product pages that never touch payments stop responding. Having added a breaker, you now check that it really works.',
             },
           },
@@ -3577,7 +3577,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ブレーカーがない（または正しく効いていない）と、遅延がスレッドを埋めて成功率が落ち、中止ラインに届いた時点で実験は自動で止まります。これは「仮説が外れた」＝弱点が見つかった、という結果です。中止条件を決めておいたおかげで、影響は数秒・一部のユーザーにとどまります。ブレーカーが効いていれば、決済だけがすぐ失敗を返し、商品ページは SLO を保ったまま耐えます。',
+              ja: 'ブレーカーがない（または正しく効いていない）と、遅延がスレッドを埋めて成功率が落ち、中止ラインに届いた時点で実験は自動で止まる。これは「仮説が外れた」＝弱点が見つかった、という結果。中止条件を決めておいたおかげで、影響は数秒・一部のユーザーにとどまる。ブレーカーが効いていれば、決済だけがすぐ失敗を返し、商品ページは SLO を保ったまま耐える。',
               en: 'Without a breaker (or with one that is not working), the latency fills up threads, the success rate falls, and the experiment stops itself as soon as it hits the abort line. The hypothesis failed: a weakness was found. Because the abort condition was set in advance, the impact stays at a few seconds and a few users. With a working breaker, only payments fail fast, and product pages hold the SLO.',
             },
           },
@@ -3590,7 +3590,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'カオスエンジニアリングで一番大事なのは、**実験そのものが障害にならない**ことです。',
+              ja: 'カオスエンジニアリングで一番大事なのは、**実験そのものが障害にならない**こと。',
               en: 'The most important rule is that **the experiment itself must not become the incident**.',
             },
           },
@@ -3627,7 +3627,7 @@ call(request):
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '監視やアラートが整っていない状態でのカオス実験は、ただの障害です。**先に「壊れたことに気づける」状態を作る**のが前提です。',
+              ja: '監視やアラートが整っていない状態でのカオス実験は、ただの障害。**先に「壊れたことに気づける」状態を作る**のが前提。',
               en: 'Running chaos experiments without good monitoring and alerting is just causing an outage. **Being able to notice when something breaks** comes first.',
             },
           },
@@ -3640,7 +3640,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '注入する障害は、**実際に起きたこと、起きうること**から選びます。過去の障害報告（ポストモーテム）は、実験のアイデアの宝庫です。',
+              ja: '注入する障害は、**実際に起きたこと、起きうること**から選ぶ。過去の障害報告（ポストモーテム）は、実験のアイデアの宝庫。',
               en: 'Pick faults from **what has happened or realistically could**. Past incident reports (postmortems) are a great source of experiment ideas.',
             },
           },
@@ -3672,7 +3672,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '道具としては、Netflix の [Chaos Monkey](https://netflix.github.io/chaosmonkey/) のようなオープンソースや、[AWS Fault Injection Service](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html) のようなクラウドのマネージドサービスがあります。ただし、最初はツールより**手順と中止条件を決めること**の方が大事です。',
+              ja: '道具としては、Netflix の [Chaos Monkey](https://netflix.github.io/chaosmonkey/) のようなオープンソースや、[AWS Fault Injection Service](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html) のようなクラウドのマネージドサービスがある。ただし、最初はツールより**手順と中止条件を決めること**の方が大事。',
               en: 'Tools range from open source such as Netflix\'s [Chaos Monkey](https://netflix.github.io/chaosmonkey/) to managed cloud services such as [AWS Fault Injection Service](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html). At the start, though, **agreeing on the procedure and stop conditions** matters more than the tool.',
             },
           },
@@ -3685,7 +3685,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ゲームデイは、チームで時間を決めて障害を起こし、**対応する練習**をする日です。システムだけでなく、人と手順の弱点も見つかります。',
+              ja: 'ゲームデイは、チームで時間を決めて障害を起こし、**対応する練習**をする日。システムだけでなく、人と手順の弱点も見つかる。',
               en: 'A game day is a scheduled session where a team causes a failure and **practices responding to it**. It finds weaknesses in people and process, not just systems.',
             },
           },
@@ -3713,7 +3713,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '終わったら、本物の障害と同じように振り返りを書き、見つかった課題を直します。何度も練習しておくと、本番の障害で慌てずに動けるようになります。',
+              ja: '終わったら、本物の障害と同じように振り返りを書き、見つかった課題を直す。何度も練習しておくと、本番の障害で慌てずに動けるようになる。',
               en: 'Afterwards, write a review just like for a real incident and fix what you found. Practicing repeatedly is what lets a team stay calm during a real outage.',
             },
           },
@@ -3747,7 +3747,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'さらに詳しくは、[Principles of Chaos Engineering](https://principlesofchaos.org/) と、Google の SRE 本の [Testing for Reliability](https://sre.google/sre-book/testing-reliability/) がまとまっています。',
+              ja: 'さらに詳しくは、[Principles of Chaos Engineering](https://principlesofchaos.org/) と、Google の SRE 本の [Testing for Reliability](https://sre.google/sre-book/testing-reliability/) にまとまっている。',
               en: 'For more, see [Principles of Chaos Engineering](https://principlesofchaos.org/) and the [Testing for Reliability](https://sre.google/sre-book/testing-reliability/) chapter of Google\'s SRE book.',
             },
           },
@@ -3773,14 +3773,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'この記事は、AWS が公開した障害報告 [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/) を読み解くものです。2025 年 10 月 19 日の夜から 20 日の午後にかけて、AWS の北バージニアリージョン（us-east-1）で大規模な障害が起きました。始まりは 19 日 23:48、終わりは 20 日 14:20（どちらも PDT）で、約 14 時間半続きました。',
+              ja: 'AWS が公開した障害報告 [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/) を読み解いたメモ。2025 年 10 月 19 日の夜から 20 日の午後にかけて、AWS の北バージニアリージョン（us-east-1）で大規模な障害が起きた。始まりは 19 日 23:48、終わりは 20 日 14:20（どちらも PDT）で、約 14 時間半続いた。',
               en: 'This article walks through AWS\'s published incident report, [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/). From the night of October 19 to the afternoon of October 20, 2025, AWS\'s Northern Virginia Region (us-east-1) had a major outage. It began at 23:48 on the 19th and ended at 14:20 on the 20th (both PDT), lasting about 14½ hours.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'AWS の発表では、利用者への影響は大きく **3 つの時間帯**に分かれます。',
+              ja: 'AWS の発表では、利用者への影響は大きく **3 つの時間帯**に分かれる。',
               en: 'According to AWS, customer impact came in **three distinct periods**.',
             },
           },
@@ -3805,7 +3805,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '注目したいのは、**きっかけの DynamoDB は 02:40 には戻っていた**ことです。それなのに障害はそこから 11 時間以上続きました。きっかけを直した後に、別の仕組みが次々と詰まっていったからです。この記事では、その連鎖を順に追います。',
+              ja: '注目したいのは、**きっかけの DynamoDB は 02:40 には戻っていた**こと。それなのに障害はそこから 11 時間以上続いた。きっかけを直した後に、別の仕組みが次々と詰まっていったから。ここでは、その連鎖を順に追う。',
               en: 'The striking part is that **DynamoDB, the trigger, was back by 02:40**, yet the outage went on for more than 11 more hours. After the trigger was fixed, one system after another got stuck. This article follows that chain step by step.',
             },
           },
@@ -3813,7 +3813,7 @@ call(request):
             type: 'note',
             tone: 'info',
             text: {
-              ja: '事実関係は、冒頭の AWS の公開報告だけを根拠にしています。時刻は原文どおり PDT（太平洋夏時間）で、日本時間はこれに 16 時間を足します（始まりは 10 月 20 日 15:48 JST）。図は説明のために簡略化しています。',
+              ja: '事実関係は、冒頭の AWS の公開報告だけを根拠にしている。時刻は原文どおり PDT（太平洋夏時間）で、日本時間はこれに 16 時間を足す（始まりは 10 月 20 日 15:48 JST）。図は説明のために簡略化している。',
               en: 'All facts come solely from AWS\'s public report linked above. Times are PDT as in the original (UTC−7). The diagrams are simplified for explanation.',
             },
           },
@@ -3826,7 +3826,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '細部に入る前に、何が何を引き起こしたかを並べます。上の段の問題の間に溜まった影響が下の段へ流れ込み、今度はそこが詰まる、という形が繰り返されています。',
+              ja: '細部に入る前に、何が何を引き起こしたかを並べておく。上の段の問題の間に溜まった影響が下の段へ流れ込み、今度はそこが詰まる、という形が繰り返されている。',
               en: 'Before the details, here is what caused what. The effects that built up while an upper stage was broken flowed into the stage below, which then got stuck in turn.',
             },
           },
@@ -3834,7 +3834,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'もう 1 つ大事な点として、**すでに動いていた EC2 インスタンスは、障害の間ずっと正常**でした。EC2 で止まったのは、新しいインスタンスを起動し、ネットワークにつなぐ、という**変更の経路**です。',
+              ja: 'もう 1 つ大事な点として、**すでに動いていた EC2 インスタンスは、障害の間ずっと正常**だった。EC2 で止まったのは、新しいインスタンスを起動し、ネットワークにつなぐ、という**変更の経路**。',
               en: 'Another key point: **EC2 instances that were already running stayed healthy throughout**. What broke in EC2 was the **path for change**: launching new instances and connecting them to the network.',
             },
           },
@@ -3847,14 +3847,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'DynamoDB のような大きなサービスは、**DNS を使って負荷を分散し、障害を切り離しています**。各リージョンには非常に多くのロードバランサーがあり、DNS レコードは数十万に上ります。容量の追加やハードウェア障害に合わせて、これを自動で更新し続けています。',
+              ja: 'DynamoDB のような大きなサービスは、**DNS を使って負荷を分散し、障害を切り離している**。各リージョンには非常に多くのロードバランサーがあり、DNS レコードは数十万に上る。容量の追加やハードウェア障害に合わせて、これを自動で更新し続けている。',
               en: 'Large services like DynamoDB **rely on DNS to spread load and isolate failures**. Each Region runs a very large fleet of load balancers with hundreds of thousands of DNS records, and automation keeps updating them as capacity is added or hardware fails.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'この自動化は、可用性のために 2 つの独立した部品に分かれています。',
+              ja: 'この自動化は、可用性のために 2 つの独立した部品に分かれている。',
               en: 'For availability, this automation is split into two independent components.',
             },
           },
@@ -3874,7 +3874,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '各 Enactor は新しい計画を見つけると、Route 53 のトランザクションで現在の計画を新しい計画に置き換えます。複数の Enactor が同時に同じエンドポイントを更新しても、各エンドポイントには一貫した計画が入るようになっていました。',
+              ja: '各 Enactor は新しい計画を見つけると、Route 53 のトランザクションで現在の計画を新しい計画に置き換える。複数の Enactor が同時に同じエンドポイントを更新しても、各エンドポイントには一貫した計画が入るようになっていた。',
               en: 'When an Enactor finds a new plan, it replaces the current plan with it using a Route 53 transaction. Even if several Enactors update the same endpoint at once, each endpoint ends up with a consistent plan.',
             },
           },
@@ -3882,7 +3882,7 @@ call(request):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '計画を作る側と適用する側を分け、適用する側を 3 つの AZ で冗長化する。これ自体は**障害に強くするための、筋の良い設計**です。今回の問題は、この冗長な Enactor 同士の、まれなタイミングのずれから生まれました。',
+              ja: '計画を作る側と適用する側を分け、適用する側を 3 つの AZ で冗長化する。これ自体は**障害に強くするための、筋の良い設計**。今回の問題は、この冗長な Enactor 同士の、まれなタイミングのずれから生まれた。',
               en: 'Separating plan creation from plan application, with the applier redundant across three AZs, is **a sound design for resilience**. The problem came from a rare timing interaction between those redundant Enactors.',
             },
           },
@@ -3895,14 +3895,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Enactor は、計画の適用を**始める前に一度だけ**、「この計画は前に適用した計画より新しいか」を確認します。その後、エンドポイントを 1 つずつ更新していきます。他の Enactor と同じエンドポイントでぶつかったら、成功するまでリトライします。',
+              ja: 'Enactor は、計画の適用を**始める前に一度だけ**、「この計画は前に適用した計画より新しいか」を確認する。その後、エンドポイントを 1 つずつ更新していく。他の Enactor と同じエンドポイントでぶつかったら、成功するまでリトライする。',
               en: 'Before it starts applying a plan, an Enactor checks **once** that the plan is newer than the one previously applied. It then works through the endpoints one by one, retrying any endpoint where it collides with another Enactor until it succeeds.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '障害の直前、1 つの Enactor でこのリトライがいつになく重なり、大きく遅れていました。そこから起きたことを、順に見てください。',
+              ja: '障害の直前、1 つの Enactor でこのリトライがいつになく重なり、大きく遅れていた。そこから起きたことを、順に追う。',
               en: 'Right before the event, one Enactor hit unusually heavy retries and fell far behind. Step through what happened next.',
             },
           },
@@ -3910,14 +3910,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '原因は、**確認してから実行するまでの間に、前提が変わってしまった**ことです。最初の「新しいか」の確認は、遅れている間に古くなっていました。さらに、別の Enactor のクリーンアップが「古い計画」として消したものが、実は今まさに使われている計画でした。',
+              ja: '原因は、**確認してから実行するまでの間に、前提が変わってしまった**こと。最初の「新しいか」の確認は、遅れている間に古くなっていた。さらに、別の Enactor のクリーンアップが「古い計画」として消したものが、実は今まさに使われている計画だった。',
               en: 'The root problem is that **the assumption changed between checking and acting**. The initial "is it newer?" check had gone stale during the delay. On top of that, the "old plan" another Enactor\'s clean-up deleted was the very plan in effect.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'これは [レートリミッターの記事](#rate-limiter/distributed) で見た「読み取って、判断して、書き戻す」の間に割り込まれるレースコンディションと、同じ形の問題です。違うのは影響の大きさで、ここではリージョン全体の入口となるエンドポイントのレコードが空になりました。',
+              ja: 'これは [レートリミッターの記事](#rate-limiter/distributed) で見た「読み取って、判断して、書き戻す」の間に割り込まれるレースコンディションと、同じ形の問題。違うのは影響の大きさで、ここではリージョン全体の入口となるエンドポイントのレコードが空になった。',
               en: 'It has the same shape as the race in the [rate limiter article](#rate-limiter/distributed), where something slips in between read, decide and write back. The difference is the impact: here, the record for the endpoint that serves as the whole Region\'s front door went empty.',
             },
           },
@@ -3938,7 +3938,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '23:48、地域エンドポイント `dynamodb.us-east-1.amazonaws.com` の名前解決が失敗し始めました。影響を受けたのは顧客だけではありません。**AWS の社内サービスも同じ DynamoDB に依存している**ため、そこから先の連鎖が始まります。',
+              ja: '23:48、地域エンドポイント `dynamodb.us-east-1.amazonaws.com` の名前解決が失敗し始めた。影響を受けたのは顧客だけではない。**AWS の社内サービスも同じ DynamoDB に依存している**ため、そこから先の連鎖が始まる。',
               en: 'At 23:48, resolving the regional endpoint `dynamodb.us-east-1.amazonaws.com` started failing. Customers were not the only ones affected: **internal AWS services depend on the same DynamoDB**, and that is where the cascade began.',
             },
           },
@@ -3966,7 +3966,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '[グローバルテーブル](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html) を使っていた顧客は、他のリージョンのレプリカには問題なく読み書きできました。ただし us-east-1 との間の複製は大きく遅れました。[DB スケールの記事](#database-scaling/ds-lag) で見たレプリケーションラグが、リージョン単位で起きた形です。',
+              ja: '[グローバルテーブル](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html) を使っていた顧客は、他のリージョンのレプリカには問題なく読み書きできた。ただし us-east-1 との間の複製は大きく遅れた。[DB スケールの記事](#database-scaling/ds-lag) で見たレプリケーションラグが、リージョン単位で起きた形。',
               en: 'Customers using [global tables](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html) could still read and write their replicas in other Regions, but replication to and from us-east-1 lagged badly. It is the replication lag from the [database scaling article](#database-scaling/ds-lag), at the scale of a Region.',
             },
           },
@@ -3979,7 +3979,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'DynamoDB が戻った後も、EC2 の新規起動は失敗し続けました。理由を知るには、EC2 の裏側にある 2 つの仕組みが必要です。',
+              ja: 'DynamoDB が戻った後も、EC2 の新規起動は失敗し続けた。理由を知るには、EC2 の裏側にある 2 つの仕組みが必要。',
               en: 'Even after DynamoDB returned, new EC2 launches kept failing. Two systems behind EC2 explain why.',
             },
           },
@@ -3999,14 +3999,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'DWFM の状態確認は DynamoDB に依存していました。23:48 以降この確認が失敗し、リースが少しずつ切れていきます。動いているインスタンスには影響しませんが、**リースのないドロップレットは新しいインスタンスの置き場所の候補から外れます**。',
+              ja: 'DWFM の状態確認は DynamoDB に依存していた。23:48 以降この確認が失敗し、リースが少しずつ切れていく。動いているインスタンスには影響しないが、**リースのないドロップレットは新しいインスタンスの置き場所の候補から外れる**。',
               en: 'DWFM\'s state checks depended on DynamoDB. From 23:48 they failed, and leases slowly timed out. Running instances were unaffected, but **a droplet without a lease is not a candidate for new launches**.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '02:25 に DynamoDB が戻ると、DWFM はフリート全体でリースを張り直し始めました。ところがドロップレットの数が多すぎて、**1 つの張り直しが終わる前にタイムアウトしてしまう**。失敗した分は再試行としてキューに積まれ、キューはさらに長くなる。AWS はこれを**輻輳崩壊（congestive collapse）**と呼び、前に進めない状態に陥ったと説明しています。',
+              ja: '02:25 に DynamoDB が戻ると、DWFM はフリート全体でリースを張り直し始めた。ところがドロップレットの数が多すぎて、**1 つの張り直しが終わる前にタイムアウトしてしまう**。失敗した分は再試行としてキューに積まれ、キューはさらに長くなる。AWS はこれを**輻輳崩壊（congestive collapse）**と呼び、前に進めない状態に陥ったと説明している。',
               en: 'When DynamoDB returned at 02:25, DWFM began re-establishing leases across the whole fleet. But with so many droplets, **each attempt took long enough to time out before it finished**. Failed attempts were queued to retry, making the queue even longer. AWS describes this as **congestive collapse**: DWFM could make no forward progress.',
             },
           },
@@ -4014,14 +4014,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'この状態には確立された復旧手順がなく、エンジニアは状況を悪化させないよう慎重に対応しました。いくつかの対策を試した後、04:14 に**流入する仕事を絞り、DWFM ホストを選んで再起動**します。再起動でキューが空になり、処理時間が短くなって、リースが張れるようになりました。05:28 には全ドロップレットのリースが戻ります。',
+              ja: 'この状態には確立された復旧手順がなく、エンジニアは状況を悪化させないよう慎重に対応した。いくつかの対策を試した後、04:14 に**流入する仕事を絞り、DWFM ホストを選んで再起動**する。再起動でキューが空になり、処理時間が短くなって、リースが張れるようになった。05:28 には全ドロップレットのリースが戻る。',
               en: 'There was no established recovery procedure for this, so engineers moved carefully to avoid making it worse. After trying several mitigations, at 04:14 they **throttled incoming work and selectively restarted DWFM hosts**. Restarts cleared the queues, processing times dropped, and leases could be established. By 05:28 every droplet had a lease again.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '[リトライの記事](#retries/rt-storm) で見た「再送の雪崩」と同じ構図です。**仕事が遅れるほど再試行が増え、再試行が増えるほど仕事が遅れる**。いったんこのループに入ると、元の原因が消えても自然には抜け出せません。抜け出す方法も同じで、[流入を絞り](#retries/rt-server)、溜まった仕事を捨てることでした。',
+              ja: '[リトライの記事](#retries/rt-storm) で見た「再送の雪崩」と同じ構図。**仕事が遅れるほど再試行が増え、再試行が増えるほど仕事が遅れる**。いったんこのループに入ると、元の原因が消えても自然には抜け出せない。抜け出す方法も同じで、[流入を絞り](#retries/rt-server)、溜まった仕事を捨てることだった。',
               en: 'It is the same picture as the [retry storm](#retries/rt-storm): **the slower the work, the more retries; the more retries, the slower the work**. Once in that loop, the system does not climb out on its own even after the original cause is gone. The way out was the same too: [shed incoming load](#retries/rt-server) and throw away the backlog.',
             },
           },
@@ -4029,7 +4029,7 @@ call(request):
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'このように、きっかけが消えた後も悪い状態が自分を保ち続ける障害は、一般に**メタステーブル障害**とも呼ばれます。AWS の発表ではこの言葉は使われておらず、ここでは考え方を紹介するために挙げています。',
+              ja: 'このように、きっかけが消えた後も悪い状態が自分を保ち続ける障害は、一般に**メタステーブル障害**とも呼ばれる。AWS の発表ではこの言葉は使われておらず、ここでは考え方の整理として挙げている。',
               en: 'Failures that sustain themselves after the trigger is gone are often called **metastable failures** in general. AWS\'s summary does not use that term; it is mentioned here only to name the idea.',
             },
           },
@@ -4042,14 +4042,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'DWFM が戻った 05:28、今度は Network Manager の番です。DWFM の問題で止まっていた**ネットワーク設定の反映が、大量に溜まっていました**。06:21 から反映に時間がかかるようになり、インスタンスは起動できても、ネットワークの設定が届かず通信できない、という状態になります。',
+              ja: 'DWFM が戻った 05:28、今度は Network Manager の番。DWFM の問題で止まっていた**ネットワーク設定の反映が、大量に溜まっていた**。06:21 から反映に時間がかかるようになり、インスタンスは起動できても、ネットワークの設定が届かず通信できない、という状態になる。',
               en: 'Once DWFM recovered at 05:28, it was Network Manager\'s turn. **Network state changes delayed by the DWFM issue had piled up into a large backlog**. From 06:21 propagation slowed, so instances could launch but had no connectivity until their configuration arrived.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'エンジニアは Network Manager の負荷を下げ、10:36 に反映時間が正常に戻りました。その後 11:23 から、各所の負荷を守るために入れていた EC2 のリクエスト制限を少しずつ緩め、13:50 に EC2 は完全に復旧します。',
+              ja: 'エンジニアは Network Manager の負荷を下げ、10:36 に反映時間が正常に戻った。その後 11:23 から、各所の負荷を守るために入れていた EC2 のリクエスト制限を少しずつ緩め、13:50 に EC2 は完全に復旧する。',
               en: 'Engineers reduced the load on Network Manager, and propagation times were back to normal by 10:36. From 11:23 they gradually relaxed the EC2 request throttles that had been protecting the subsystems, and EC2 fully recovered at 13:50.',
             },
           },
@@ -4057,7 +4057,7 @@ call(request):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '制限を**一気に外さず、少しずつ緩めている**点に注目してください。溜まった需要が一度に戻ると、直したばかりの仕組みをもう一度詰まらせかねません。',
+              ja: '制限を**一気に外さず、少しずつ緩めている**点がポイント。溜まった需要が一度に戻ると、直したばかりの仕組みをもう一度詰まらせかねない。',
               en: 'Notice that the throttles were **relaxed gradually rather than removed at once**. Letting all the pent-up demand back in together could have jammed the systems that had just been fixed.',
             },
           },
@@ -4070,7 +4070,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Network Manager の遅れは、Network Load Balancer（NLB）にも波及しました。NLB には、ノードを定期的に検査して、不健全なものをサービスから外すヘルスチェックの仕組みがあります。',
+              ja: 'Network Manager の遅れは、Network Load Balancer（NLB）にも波及した。NLB には、ノードを定期的に検査して、不健全なものをサービスから外すヘルスチェックの仕組みがある。',
               en: 'Network Manager\'s delays also hit Network Load Balancer (NLB). NLB has a health check subsystem that regularly checks every node and removes unhealthy ones from service.',
             },
           },
@@ -4094,14 +4094,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '06:52 に監視が検知し、09:36 にエンジニアが**NLB の自動ヘルスチェックフェイルオーバーを無効化**しました。これで健全なノードがすべてサービスに戻り、接続エラーは解消します。EC2 の復旧後、14:09 に自動フェイルオーバーを再び有効にしました。',
+              ja: '06:52 に監視が検知し、09:36 にエンジニアが**NLB の自動ヘルスチェックフェイルオーバーを無効化**した。これで健全なノードがすべてサービスに戻り、接続エラーは解消する。EC2 の復旧後、14:09 に自動フェイルオーバーを再び有効にした。',
               en: 'Monitoring caught it at 06:52, and at 09:36 engineers **disabled automatic health check failover for NLB**, bringing all healthy nodes back into service and resolving the connection errors. After EC2 recovered, they re-enabled automatic failover at 14:09.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '守るための仕組みが、条件次第で害になる例です。[サーキットブレーカーの記事](#circuit-breaker/cb-cascade) のように、自動の切り離しは普段は障害を局所化しますが、**検査そのものが信用できないときは、健全な容量まで削ってしまいます**。07:04 からは NLB のヘルスチェック失敗がインスタンスの終了も引き起こし、Lambda の内部システムの一部が容量不足になりました。',
+              ja: '守るための仕組みが、条件次第で害になる例。[サーキットブレーカーの記事](#circuit-breaker/cb-cascade) のように、自動の切り離しは普段は障害を局所化するが、**検査そのものが信用できないときは、健全な容量まで削ってしまう**。07:04 からは NLB のヘルスチェック失敗がインスタンスの終了も引き起こし、Lambda の内部システムの一部が容量不足になった。',
               en: 'This is a safeguard turning harmful under the wrong conditions. As in the [circuit breaker article](#circuit-breaker/cb-cascade), automatic isolation usually contains failures, but **when the check itself is unreliable, it removes healthy capacity too**. From 07:04, NLB health check failures also triggered instance terminations that left a subset of Lambda\'s internal systems under-scaled.',
             },
           },
@@ -4114,7 +4114,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'DynamoDB、EC2 の起動、NLB は多くのサービスの土台です。そのため影響は、それぞれの段に合わせた形で広がりました。',
+              ja: 'DynamoDB、EC2 の起動、NLB は多くのサービスの土台。そのため影響は、それぞれの段に合わせた形で広がった。',
               en: 'DynamoDB, EC2 launches and NLB sit underneath many services, so the impact spread in shapes that matched each stage.',
             },
           },
@@ -4142,7 +4142,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ほかにも ECS、EKS、Fargate、Amazon Connect、サポートセンターなどが影響を受けました。全体の一覧は、元の発表から AWS のイベント履歴をたどれます。',
+              ja: 'ほかにも ECS、EKS、Fargate、Amazon Connect、サポートセンターなどが影響を受けた。全体の一覧は、元の発表から AWS のイベント履歴をたどれる。',
               en: 'ECS, EKS, Fargate, Amazon Connect, the Support Center and others were affected too. The original summary points to AWS\'s event history for the full list.',
             },
           },
@@ -4155,7 +4155,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '発表では、次の対策が挙げられています。',
+              ja: '発表で挙げられている対策は次のとおり。',
               en: 'The summary lists the following changes.',
             },
           },
@@ -4189,7 +4189,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ここからは AWS の発表ではなく、この記事としての読み解きです。規模は違っても、同じ形の弱点はどのシステムにもありえます。',
+              ja: 'ここからは AWS の発表ではなく、自分なりの読み解き。規模は違っても、同じ形の弱点はどのシステムにもありうる。',
               en: 'From here on, this is this article\'s reading, not AWS\'s statement. The scale is different, but weaknesses of the same shape can exist in any system.',
             },
           },
@@ -4225,7 +4225,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '[SLO の記事](#sli-slo-sla/slo-nines) で見たとおり、99.9% の月間の許容停止時間は約 43 分です。依存しているリージョンの土台が半日不安定になると、影響を受けた機能はそれだけでその月の予算を何倍も超えます。自分のサービスがどの程度の停止に耐える必要があるのか、リージョンをまたぐ構成が必要かは、SLO から逆算して決めます。',
+              ja: '[SLO の記事](#sli-slo-sla/slo-nines) で見たとおり、99.9% の月間の許容停止時間は約 43 分。依存しているリージョンの土台が半日不安定になると、影響を受けた機能はそれだけでその月の予算を何倍も超える。自分のサービスがどの程度の停止に耐える必要があるのか、リージョンをまたぐ構成が必要かは、SLO から逆算して決める。',
               en: 'As in the [SLO article](#sli-slo-sla/slo-nines), 99.9% allows about 43 minutes of downtime a month. If the foundations of the Region you depend on are unstable for half a day, any affected feature blows through that budget many times over. How much disruption your service must survive, and whether you need a multi-Region setup, should be worked backward from your SLO.',
             },
           },
@@ -4259,7 +4259,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '一次資料は AWS の [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/) です。過負荷からの回復については、Google の SRE 本の [Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) もあわせて読むと理解が深まります。',
+              ja: '一次資料は AWS の [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/)。過負荷からの回復については、Google の SRE 本の [Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) もあわせて読むと理解が深まる。',
               en: 'The primary source is AWS\'s [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/). For recovering from overload, the [Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) chapter of Google\'s SRE book is a good companion.',
             },
           },
@@ -4285,7 +4285,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Kubernetes のクラスタは、大きく2つの層に分かれます。**何をどこで動かすかを決めるコントロールプレーン**と、**実際にコンテナを動かすワーカーノード**です。人間の体でいえば、頭脳と手足の関係です。',
+              ja: 'Kubernetes のクラスタは、大きく2つの層に分かれる。**何をどこで動かすかを決めるコントロールプレーン**と、**実際にコンテナを動かすワーカーノード**。人間の体でいえば、頭脳と手足の関係。',
               en: 'A Kubernetes cluster splits into two layers: **the control plane, which decides what runs where**, and **the worker nodes, which actually run the containers**. Think of it as a brain and its hands.',
             },
           },
@@ -4293,7 +4293,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '図でいちばん大事なのは、矢印がすべて **kube-apiserver に集まっている**ことです。scheduler も kubelet も、互いに直接話しません。全員が API server を通して「今の状態」を読み、「こうしたい」を書き込みます。この形のおかげで、部品を1つずつ入れ替えたり、増やしたりできます。',
+              ja: '図でいちばん大事なのは、矢印がすべて **kube-apiserver に集まっている**こと。scheduler も kubelet も、互いに直接話さない。全員が API server を通して「今の状態」を読み、「こうしたい」を書き込む。この形のおかげで、部品を1つずつ入れ替えたり、増やしたりできる。',
               en: 'The most important thing in the diagram is that every arrow **meets at kube-apiserver**. The scheduler and the kubelets never talk to each other directly. Everyone reads the current state and writes their intent through the API server, which is what lets each part be replaced or scaled on its own.',
             },
           },
@@ -4314,7 +4314,7 @@ call(request):
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'EKS や GKE などのマネージドサービスでは、コントロールプレーンはクラウド事業者が運用し、利用者からは見えません。それでも中で動いている部品は同じなので、仕組みを知っておくとトラブルのときに原因を絞り込めます。公式の一覧は [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/) にあります。',
+              ja: 'EKS や GKE などのマネージドサービスでは、コントロールプレーンはクラウド事業者が運用し、利用者からは見えない。それでも中で動いている部品は同じなので、仕組みを知っておくとトラブルのときに原因を絞り込める。公式の一覧は [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/)。',
               en: 'With managed services such as EKS or GKE, the cloud provider runs the control plane and you never see it. The parts inside are the same, though, so knowing them helps you narrow down problems. The official list is at [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/).',
             },
           },
@@ -4328,7 +4328,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'クラスタの**唯一の窓口**です。`kubectl` も、他のすべての部品も、ここに HTTP の REST API でリクエストを送ります。受け取ったリクエストは、次の順に処理されてから保存されます。',
+              ja: 'クラスタの**唯一の窓口**。`kubectl` も、他のすべての部品も、ここに HTTP の REST API でリクエストを送る。受け取ったリクエストは、次の順に処理されてから保存される。',
               en: 'The cluster\'s **single front door**. `kubectl` and every other component send requests to it over an HTTP REST API. Each request goes through these steps before it is stored.',
             },
           },
@@ -4344,7 +4344,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'API server 自体は状態を持たないので、複数台並べてロードバランサーの後ろに置けます。',
+              ja: 'API server 自体は状態を持たないので、複数台並べてロードバランサーの後ろに置ける。',
               en: 'The API server keeps no state of its own, so you can run several copies behind a load balancer.',
             },
           },
@@ -4352,14 +4352,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'クラスタの**すべての状態を持つ分散キーバリューストア**です。どんな Deployment があるか、どの Pod がどのノードにいるか、Secret の中身まで、ここに入っています。etcd に直接アクセスするのは API server だけです。',
+              ja: 'クラスタの**すべての状態を持つ分散キーバリューストア**。どんな Deployment があるか、どの Pod がどのノードにいるか、Secret の中身まで、ここに入っている。etcd に直接アクセスするのは API server だけ。',
               en: 'A **distributed key-value store holding all cluster state**: which Deployments exist, which Pod sits on which node, even the contents of Secrets. Only the API server talks to etcd directly.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'Raft という合意アルゴリズムで、複数台のあいだでデータをそろえます。過半数が生きていれば書き込めるので、ふつうは 3 台か 5 台の奇数で組みます。',
+              ja: 'Raft という合意アルゴリズムで、複数台のあいだでデータをそろえる。過半数が生きていれば書き込めるので、ふつうは 3 台か 5 台の奇数で組む。',
               en: 'It keeps copies in agreement using the Raft consensus algorithm. Writes succeed as long as a majority is alive, so clusters usually run an odd number of members, 3 or 5.',
             },
           },
@@ -4367,7 +4367,7 @@ call(request):
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'etcd が消えると、クラスタは「何を動かすべきか」を丸ごと忘れます。自分で運用するなら、定期的なバックアップは必須です。',
+              ja: 'etcd が消えると、クラスタは「何を動かすべきか」を丸ごと忘れる。自分で運用するなら、定期的なバックアップは必須。',
               en: 'Lose etcd and the cluster forgets everything it is supposed to run. If you operate it yourself, regular backups are not optional.',
             },
           },
@@ -4375,7 +4375,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '**まだノードが決まっていない Pod を見つけて、どのノードで動かすかを決める**部品です。決めるだけで、起動はしません。決め方は2段階です。',
+              ja: '**まだノードが決まっていない Pod を見つけて、どのノードで動かすかを決める**部品。決めるだけで、起動はしない。決め方は2段階。',
               en: 'It **finds Pods that have no node yet and decides where they should run**. It only decides; it does not start anything. The decision has two stages.',
             },
           },
@@ -4395,7 +4395,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '選んだ結果は、Pod の `nodeName` に書き込む形で API server に伝えます（バインド）。詳しくは [Kubernetes Scheduler](https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/) を参照してください。',
+              ja: '選んだ結果は、Pod の `nodeName` に書き込む形で API server に伝える（バインド）。詳しくは [Kubernetes Scheduler](https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/)。',
               en: 'It reports the choice to the API server by setting the Pod\'s `nodeName` (a binding). See [Kubernetes Scheduler](https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/) for details.',
             },
           },
@@ -4403,7 +4403,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '**たくさんのコントローラを1つのプロセスにまとめたもの**です。コントローラはそれぞれ担当のリソースを見張り、望ましい状態とのズレを直します（くわしくは [調整ループ](#kubernetes-components/k8s-reconcile) で説明します）。',
+              ja: '**たくさんのコントローラを1つのプロセスにまとめたもの**。コントローラはそれぞれ担当のリソースを見張り、望ましい状態とのズレを直す（くわしくは [調整ループ](#kubernetes-components/k8s-reconcile) で）。',
               en: 'A **single process bundling many controllers**. Each controller watches the resources it owns and fixes any gap from the desired state (more in [The reconcile loop](#kubernetes-components/k8s-reconcile)).',
             },
           },
@@ -4419,7 +4419,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'クラウド上では、ロードバランサーの作成やノードの登録など、クラウド固有の処理を **cloud-controller-manager** が別プロセスで受け持ちます。',
+              ja: 'クラウド上では、ロードバランサーの作成やノードの登録など、クラウド固有の処理を **cloud-controller-manager** が別プロセスで受け持つ。',
               en: 'In the cloud, **cloud-controller-manager** handles provider-specific work such as creating load balancers and registering nodes, in a separate process.',
             },
           },
@@ -4432,7 +4432,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ワーカーノードには、コントロールプレーンの決定を実行に移す部品が3つ入っています。',
+              ja: 'ワーカーノードには、コントロールプレーンの決定を実行に移す部品が3つ入っている。',
               en: 'Every worker node runs three components that turn the control plane\'s decisions into running software.',
             },
           },
@@ -4440,7 +4440,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '各ノードに1つずつ常駐するエージェントです。API server を見張り、**自分のノードに割り当てられた Pod** を見つけると、コンテナランタイムに起動を頼みます。起動したあとも次のことを続けます。',
+              ja: '各ノードに1つずつ常駐するエージェント。API server を見張り、**自分のノードに割り当てられた Pod** を見つけると、コンテナランタイムに起動を頼む。起動したあとも次のことを続ける。',
               en: 'An agent that runs on every node. It watches the API server, and when it sees **a Pod assigned to its own node** it asks the container runtime to start it. After that it keeps doing the following.',
             },
           },
@@ -4456,7 +4456,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '実際にイメージを取得してコンテナを動かすソフトウェアです。代表は **containerd** と **CRI-O** です。kubelet とは **CRI（Container Runtime Interface）** という決まったインターフェースで話すので、ランタイムを差し替えられます。',
+              ja: '実際にイメージを取得してコンテナを動かすソフトウェア。代表は **containerd** と **CRI-O**。kubelet とは **CRI（Container Runtime Interface）** という決まったインターフェースで話すので、ランタイムを差し替えられる。',
               en: 'The software that actually pulls images and runs containers. The common ones are **containerd** and **CRI-O**. The kubelet talks to it through a fixed interface, the **CRI (Container Runtime Interface)**, so the runtime can be swapped.',
             },
           },
@@ -4464,7 +4464,7 @@ call(request):
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'Docker Engine を直接使う仕組み（dockershim）は v1.24 で削除されました。ただし Docker でビルドしたイメージは標準形式（OCI）なので、そのまま containerd で動きます。',
+              ja: 'Docker Engine を直接使う仕組み（dockershim）は v1.24 で削除された。ただし Docker でビルドしたイメージは標準形式（OCI）なので、そのまま containerd で動く。',
               en: 'Direct support for Docker Engine (dockershim) was removed in v1.24. Images built with Docker follow the standard OCI format, so they still run unchanged on containerd.',
             },
           },
@@ -4472,14 +4472,14 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Service 宛ての通信を、裏にある Pod へ届けるためのルールをノードに書き込む部品です。通信そのものを中継するのではなく、iptables や IPVS などカーネルの仕組みにルールを設定し、転送はカーネルが行います（くわしくは [Service とネットワーク](#kubernetes-components/k8s-service)）。',
+              ja: 'Service 宛ての通信を、裏にある Pod へ届けるためのルールをノードに書き込む部品。通信そのものを中継するのではなく、iptables や IPVS などカーネルの仕組みにルールを設定し、転送はカーネルが行う（くわしくは [Service とネットワーク](#kubernetes-components/k8s-service)）。',
               en: 'It writes rules on the node so that traffic sent to a Service reaches the Pods behind it. It does not relay packets itself; it programs kernel mechanisms such as iptables or IPVS, and the kernel forwards the traffic (more in [Services and networking](#kubernetes-components/k8s-service)).',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'このほか、Pod に IP を割り当てて Pod 同士をつなぐ **CNI プラグイン**（Calico、Cilium など）と、クラスタ内の名前解決を行う **CoreDNS** も、ほぼすべてのクラスタに入っています。Cilium のように kube-proxy の役割まで肩代わりする CNI もあります。',
+              ja: 'このほか、Pod に IP を割り当てて Pod 同士をつなぐ **CNI プラグイン**（Calico、Cilium など）と、クラスタ内の名前解決を行う **CoreDNS** も、ほぼすべてのクラスタに入っている。Cilium のように kube-proxy の役割まで肩代わりする CNI もある。',
               en: 'Almost every cluster also runs a **CNI plugin** (Calico, Cilium, ...) that gives Pods IPs and connects them, and **CoreDNS** for in-cluster name resolution. Some CNIs, such as Cilium, can take over kube-proxy\'s job as well.',
             },
           },
@@ -4492,7 +4492,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ここまでの部品が、どう協力して動くかを見てみます。`kubectl apply` で Deployment を送ってから、Pod が Running になるまでの流れです。',
+              ja: 'ここまでの部品が、どう協力して動くか。`kubectl apply` で Deployment を送ってから、Pod が Running になるまでの流れ。',
               en: 'Here is how those parts work together, from sending a Deployment with `kubectl apply` until a Pod is Running.',
             },
           },
@@ -4509,7 +4509,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'ポイントは、**誰も他の部品に「やって」と命令していない**ことです。コントローラは scheduler を呼ばず、scheduler も kubelet を呼びません。それぞれが API server を **watch**（変更の通知を受け取る購読）して、自分の担当の変化にだけ反応します。',
+              ja: 'ポイントは、**誰も他の部品に「やって」と命令していない**こと。コントローラは scheduler を呼ばず、scheduler も kubelet を呼ばない。それぞれが API server を **watch**（変更の通知を受け取る購読）して、自分の担当の変化にだけ反応する。',
               en: 'The key point: **nobody tells another component what to do**. The controllers never call the scheduler, and the scheduler never calls the kubelet. Each one **watches** the API server (subscribes to change notifications) and reacts only to the changes it owns.',
             },
           },
@@ -4517,7 +4517,7 @@ call(request):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '`kubectl apply` がすぐ返ってきても、Pod が動いたとは限りません。「保存された」だけです。実際の進み具合は `kubectl get pods -w` や `kubectl get events` で確かめます。Pending のまま止まっているなら scheduler の段階（置けるノードがない）、ContainerCreating や ImagePullBackOff なら kubelet とランタイムの段階で詰まっています。',
+              ja: '`kubectl apply` がすぐ返ってきても、Pod が動いたとは限らない。「保存された」だけ。実際の進み具合は `kubectl get pods -w` や `kubectl get events` で確かめる。Pending のまま止まっているなら scheduler の段階（置けるノードがない）、ContainerCreating や ImagePullBackOff なら kubelet とランタイムの段階で詰まっている。',
               en: 'A quick reply from `kubectl apply` does not mean the Pod is running; it only means the request was stored. Check real progress with `kubectl get pods -w` or `kubectl get events`. Stuck in Pending points to the scheduler stage (no node fits); ContainerCreating or ImagePullBackOff points to the kubelet and runtime stage.',
             },
           },
@@ -4530,7 +4530,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Kubernetes は**宣言的**です。「Pod を3つ起動せよ」と手順を命令するのではなく、「Pod が3つある状態」を宣言します。その状態に近づける仕事は、コントローラが受け持ちます。',
+              ja: 'Kubernetes は**宣言的**。「Pod を3つ起動せよ」と手順を命令するのではなく、「Pod が3つある状態」を宣言する。その状態に近づける仕事は、コントローラが受け持つ。',
               en: 'Kubernetes is **declarative**. Instead of commanding "start three Pods", you declare "there should be three Pods". Getting there is the controllers\' job.',
             },
           },
@@ -4538,7 +4538,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'どのコントローラも、同じループを回し続けています。',
+              ja: 'どのコントローラも、同じループを回し続けている。',
               en: 'Every controller runs the same loop, over and over.',
             },
           },
@@ -4553,7 +4553,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'このループは「Pod が消えた」という**出来事**ではなく、「今 2 つしかない」という**状態**を見て動きます。そのため、通知を取りこぼしたり、コントローラが再起動したりしても、次にループが回ったときに正しい状態へ戻せます。Pod を手で `kubectl delete` しても、すぐに新しい Pod が作られるのはこのためです。',
+              ja: 'このループは「Pod が消えた」という**出来事**ではなく、「今 2 つしかない」という**状態**を見て動く。そのため、通知を取りこぼしたり、コントローラが再起動したりしても、次にループが回ったときに正しい状態へ戻せる。Pod を手で `kubectl delete` しても、すぐに新しい Pod が作られるのはこのため。',
               en: 'The loop acts on **state** ("there are only two now"), not on **events** ("a Pod disappeared"). So even if a notification is missed or the controller restarts, the next pass still brings things back to the right state. This is why a Pod you `kubectl delete` by hand is replaced almost immediately.',
             },
           },
@@ -4561,14 +4561,14 @@ call(request):
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '裏を返すと、手で直した変更はコントローラに上書きされます。Deployment が管理する Pod を直接編集しても、次のローリングアップデートで消えます。変更はいつも、宣言（YAML）の側に入れましょう。',
+              ja: '裏を返すと、手で直した変更はコントローラに上書きされる。Deployment が管理する Pod を直接編集しても、次のローリングアップデートで消える。変更はいつも、宣言（YAML）の側に入れる。',
               en: 'The flip side: manual fixes get overwritten by the controller. Edit a Pod owned by a Deployment directly and the change disappears at the next rollout. Always make changes in the declaration (the YAML).',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'この考え方は [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/) にまとまっています。独自のリソースとコントローラを足して、データベースなどの運用を自動化する仕組みを Operator パターンと呼びます。',
+              ja: 'この考え方は [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/) にまとまっている。独自のリソースとコントローラを足して、データベースなどの運用を自動化する仕組みが Operator パターン。',
               en: 'The idea is described in [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/). Adding your own resource types and controllers to automate operating things like databases is called the Operator pattern.',
             },
           },
@@ -4581,7 +4581,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: '利用者が API server に書き込む「宣言」の単位がリソースです。まず押さえておきたいのは次のものです。',
+              ja: '利用者が API server に書き込む「宣言」の単位がリソース。まず押さえておきたいのは次のもの。',
               en: 'Resources are the units of declaration you write to the API server. These are the ones to know first.',
             },
           },
@@ -4617,7 +4617,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Deployment → ReplicaSet → Pod は、親が子を作って管理する関係です。前のセクションで見たとおり、それぞれ別のコントローラが担当しています。',
+              ja: 'Deployment → ReplicaSet → Pod は、親が子を作って管理する関係。前のセクションで見たとおり、それぞれ別のコントローラが担当している。',
               en: 'Deployment → ReplicaSet → Pod is a chain where each parent creates and owns its children. As shown earlier, a different controller handles each level.',
             },
           },
@@ -4625,14 +4625,14 @@ call(request):
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'Secret は既定では base64 で符号化されているだけで、暗号化されていません。etcd での暗号化（encryption at rest）を有効にし、RBAC で読める人を絞りましょう。',
+              ja: 'Secret は既定では base64 で符号化されているだけで、暗号化されていない。etcd での暗号化（encryption at rest）を有効にし、RBAC で読める人を絞る。',
               en: 'By default a Secret is only base64-encoded, not encrypted. Turn on encryption at rest for etcd and use RBAC to limit who can read Secrets.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'ほかに、データベースのように Pod ごとに固定の名前とディスクが必要なものには **StatefulSet**、全ノードに1つずつ置くログ収集などには **DaemonSet**、1回で終わる処理には **Job** を使います。',
+              ja: 'ほかに、データベースのように Pod ごとに固定の名前とディスクが必要なものには **StatefulSet**、全ノードに1つずつ置くログ収集などには **DaemonSet**、1回で終わる処理には **Job** を使う。',
               en: 'Beyond these: **StatefulSet** for things like databases that need a fixed name and disk per Pod, **DaemonSet** for one-per-node agents such as log collectors, and **Job** for work that runs once to completion.',
             },
           },
@@ -4645,7 +4645,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Pod は作り直されるたびに IP が変わります。呼び出す側が Pod の IP を直接覚えていたら、入れ替わるたびに壊れてしまいます。そこで **Service** が、変わらない名前と IP を用意し、そのときどきの Pod に振り分けます。',
+              ja: 'Pod は作り直されるたびに IP が変わる。呼び出す側が Pod の IP を直接覚えていたら、入れ替わるたびに壊れてしまう。そこで **Service** が、変わらない名前と IP を用意し、そのときどきの Pod に振り分ける。',
               en: 'A Pod gets a new IP every time it is recreated. If callers remembered Pod IPs, every replacement would break them. A **Service** provides a stable name and IP and routes to whichever Pods exist at the moment.',
             },
           },
@@ -4674,7 +4674,7 @@ call(request):
           {
             type: 'p',
             text: {
-              ja: 'Service には公開範囲によっていくつか種類があります。',
+              ja: 'Service には公開範囲によっていくつか種類がある。',
               en: 'Services come in a few types, depending on how far they are exposed.',
             },
           },
@@ -4693,7 +4693,7 @@ call(request):
               {
                 type: 'p',
                 text: {
-                  ja: '3 つは別々の仕組みではなく、**積み重なっています**。NodePort は ClusterIP を含み、LoadBalancer は NodePort を含みます。外側の種類は、内側の入口の手前にもう1つ入口を足しているだけです。',
+                  ja: '3 つは別々の仕組みではなく、**積み重なっている**。NodePort は ClusterIP を含み、LoadBalancer は NodePort を含む。外側の種類は、内側の入口の手前にもう1つ入口を足しているだけ。',
                   en: 'The three are not separate mechanisms but **layers**: a NodePort includes a ClusterIP, and a LoadBalancer includes a NodePort. Each outer type just adds another entrance in front of the inner one.',
                 },
               },
@@ -4726,7 +4726,7 @@ web-lb   LoadBalancer   10.96.0.77    203.0.113.10   80:31544/TCP`,
               {
                 type: 'p',
                 text: {
-                  ja: '3 つとも `CLUSTER-IP` を持ち、NodePort と LoadBalancer にはノードのポート（`:30080`）が加わり、LoadBalancer だけが `EXTERNAL-IP` を持ちます。',
+                  ja: '3 つとも `CLUSTER-IP` を持ち、NodePort と LoadBalancer にはノードのポート（`:30080`）が加わり、LoadBalancer だけが `EXTERNAL-IP` を持つ。',
                   en: 'All three have a `CLUSTER-IP`; NodePort and LoadBalancer add a node port (`:30080`); only the LoadBalancer has an `EXTERNAL-IP`.',
                 },
               },
@@ -4735,7 +4735,7 @@ web-lb   LoadBalancer   10.96.0.77    203.0.113.10   80:31544/TCP`,
           {
             type: 'p',
             text: {
-              ja: 'HTTP のパスやホスト名で振り分けたいときは、Service の前に Ingress、またはその後継の Gateway API を置きます。詳しくは [Service](https://kubernetes.io/docs/concepts/services-networking/service/) を参照してください。',
+              ja: 'HTTP のパスやホスト名で振り分けたいときは、Service の前に Ingress、またはその後継の Gateway API を置く。詳しくは [Service](https://kubernetes.io/docs/concepts/services-networking/service/)。',
               en: 'To route by HTTP path or host name, put an Ingress, or its successor the Gateway API, in front of the Services. See [Service](https://kubernetes.io/docs/concepts/services-networking/service/) for details.',
             },
           },
@@ -4748,7 +4748,7 @@ web-lb   LoadBalancer   10.96.0.77    203.0.113.10   80:31544/TCP`,
           {
             type: 'p',
             text: {
-              ja: 'ここまでの内容を、最小の Deployment と Service で書くとこうなります。3 つの Pod を動かし、`web` という名前で呼べるようにします。',
+              ja: 'ここまでの内容を、最小の Deployment と Service で書くとこうなる。3 つの Pod を動かし、`web` という名前で呼べるようにする。',
               en: 'Here is everything so far as a minimal Deployment and Service: three Pods, reachable by the name `web`.',
             },
           },
@@ -4798,7 +4798,7 @@ spec:
           {
             type: 'p',
             text: {
-              ja: '適用して、各部品が作ったものを確かめます。',
+              ja: '適用して、各部品が作ったものを確かめる。',
               en: 'Apply it and check what each component created.',
             },
           },
@@ -4828,7 +4828,7 @@ web-x8k2j   IPv4          80      10.244.1.5,10.244.2.8,10.244.1.9`,
           {
             type: 'p',
             text: {
-              ja: 'Deployment が ReplicaSet を作り（Deployment コントローラ）、ReplicaSet が Pod を作り（ReplicaSet コントローラ）、scheduler が `NODE` 列を決め、kubelet が `Running` にし、EndpointSlice コントローラが Service の宛先をそろえた、という流れが出力に表れています。',
+              ja: 'Deployment が ReplicaSet を作り（Deployment コントローラ）、ReplicaSet が Pod を作り（ReplicaSet コントローラ）、scheduler が `NODE` 列を決め、kubelet が `Running` にし、EndpointSlice コントローラが Service の宛先をそろえた、という流れが出力に表れている。',
               en: 'The output shows the whole chain: the Deployment created a ReplicaSet (Deployment controller), the ReplicaSet created Pods (ReplicaSet controller), the scheduler filled in the `NODE` column, the kubelets made them `Running`, and the EndpointSlice controller lined up the Service\'s targets.',
             },
           },
@@ -4836,7 +4836,7 @@ web-x8k2j   IPv4          80      10.244.1.5,10.244.2.8,10.244.1.9`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '試しに `kubectl delete pod web-7f9c6d5b8c-zr5wd` を実行してから、もう一度 `kubectl get pods` を見てみましょう。別の名前と IP の Pod がすぐに現れ、エンドポイントも新しい IP に入れ替わります。調整ループが働いている様子を、手元で確かめられます。',
+              ja: '試しに `kubectl delete pod web-7f9c6d5b8c-zr5wd` を実行してから、もう一度 `kubectl get pods` を見ると、別の名前と IP の Pod がすぐに現れ、エンドポイントも新しい IP に入れ替わる。調整ループが働いている様子を、手元で確かめられる。',
               en: 'Try `kubectl delete pod web-7f9c6d5b8c-zr5wd`, then run `kubectl get pods` again. A Pod with a new name and IP appears almost at once, and the endpoints switch to the new IP. You can watch the reconcile loop at work.',
             },
           },
@@ -4870,7 +4870,7 @@ web-x8k2j   IPv4          80      10.244.1.5,10.244.2.8,10.244.1.9`,
           {
             type: 'p',
             text: {
-              ja: 'さらに詳しくは、公式ドキュメントの [Cluster Architecture](https://kubernetes.io/docs/concepts/architecture/) と [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/) がまとまっています。',
+              ja: 'さらに詳しくは、公式ドキュメントの [Cluster Architecture](https://kubernetes.io/docs/concepts/architecture/) と [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/) にまとまっている。',
               en: 'For more, see [Cluster Architecture](https://kubernetes.io/docs/concepts/architecture/) and [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/) in the official docs.',
             },
           },
@@ -4896,14 +4896,14 @@ web-x8k2j   IPv4          80      10.244.1.5,10.244.2.8,10.244.1.9`,
           {
             type: 'p',
             text: {
-              ja: 'SQL インジェクションは、**ユーザーの入力が「データ」ではなく「SQL の命令の一部」として実行されてしまう**脆弱性です。原因はほとんどの場合ひとつで、SQL 文を**文字列の連結**で組み立てていることです。',
+              ja: 'SQL インジェクションは、**ユーザーの入力が「データ」ではなく「SQL の命令の一部」として実行されてしまう**脆弱性。原因はほとんどの場合ひとつで、SQL 文を**文字列の連結**で組み立てていること。',
               en: 'SQL injection is a vulnerability where **user input runs as part of a SQL command instead of being treated as data**. It almost always has one cause: building SQL statements by **concatenating strings**.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '古くから知られている脆弱性ですが、今でも Web アプリの代表的な脆弱性のひとつです。ログイン画面や検索フォームのような、入力を受け取って DB に問い合わせる場所ならどこでも起こりえます。',
+              ja: '古くから知られている脆弱性だが、今でも Web アプリの代表的な脆弱性のひとつ。ログイン画面や検索フォームのような、入力を受け取って DB に問い合わせる場所ならどこでも起こりうる。',
               en: 'It has been known for decades, yet it remains one of the most common web vulnerabilities. It can happen anywhere input is taken and used to query a database: login screens, search boxes, filters.',
             },
           },
@@ -4911,7 +4911,7 @@ web-x8k2j   IPv4          80      10.244.1.5,10.244.2.8,10.244.1.9`,
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'この記事は、仕組みを理解して**自分のシステムを守る**ためのものです。自分が管理していないシステムで試すことは、法律で禁止されている行為にあたります。',
+              ja: 'このメモは、仕組みを理解して**自分のシステムを守る**ためのもの。自分が管理していないシステムで試すことは、法律で禁止されている行為にあたる。',
               en: 'This article is about understanding the mechanism so you can **protect your own systems**. Trying it against systems you do not own or have permission to test is illegal.',
             },
           },
@@ -4924,7 +4924,7 @@ web-x8k2j   IPv4          80      10.244.1.5,10.244.2.8,10.244.1.9`,
           {
             type: 'p',
             text: {
-              ja: 'ログイン処理を、入力をそのまま SQL に埋め込んで書いたとします。',
+              ja: 'ログイン処理を、入力をそのまま SQL に埋め込んで書いたとする。',
               en: 'Suppose a login handler builds its SQL by embedding the input directly.',
             },
           },
@@ -4940,7 +4940,7 @@ cursor.execute(query)`,
           {
             type: 'p',
             text: {
-              ja: "普通に `alice` と `s3cret` を入力すれば、入力は `' '` の中に収まり、ただの値として比べられます。ところがパスワード欄に `' OR '1'='1` と入れられると、入力の先頭の `'` が文字列を途中で閉じ、その後ろが SQL の命令として解釈されます。",
+              ja: "普通に `alice` と `s3cret` を入力すれば、入力は `' '` の中に収まり、ただの値として比べられる。ところがパスワード欄に `' OR '1'='1` と入れられると、入力の先頭の `'` が文字列を途中で閉じ、その後ろが SQL の命令として解釈される。",
               en: "With a normal input like `alice` and `s3cret`, the input stays inside the quotes and is compared as a plain value. But if someone types `' OR '1'='1` into the password field, the leading `'` closes the string early and everything after it is parsed as SQL.",
             },
           },
@@ -4948,7 +4948,7 @@ cursor.execute(query)`,
           {
             type: 'p',
             text: {
-              ja: "`'1'='1'` は常に真なので、WHERE の条件全体が真になります。結果として全ユーザーの行が返り、アプリは先頭の行（多くの場合、最初に作られた管理者アカウント）としてログインさせてしまいます。",
+              ja: "`'1'='1'` は常に真なので、WHERE の条件全体が真になる。結果として全ユーザーの行が返り、アプリは先頭の行（多くの場合、最初に作られた管理者アカウント）としてログインさせてしまう。",
               en: "Since `'1'='1'` is always true, the whole WHERE clause becomes true. Every user row comes back, and the app logs the attacker in as the first one, which is often the first account created: an admin.",
             },
           },
@@ -4959,7 +4959,7 @@ cursor.execute(query)`,
               {
                 type: 'p',
                 text: {
-                  ja: '**SQL では AND が OR より先に評価されます**。なので組み立てられた条件は、次のように区切られます。',
+                  ja: '**SQL では AND が OR より先に評価される**。なので組み立てられた条件は、次のように区切られる。',
                   en: '**In SQL, AND binds more tightly than OR.** So the resulting condition groups like this:',
                 },
               },
@@ -4971,7 +4971,7 @@ cursor.execute(query)`,
               {
                 type: 'p',
                 text: {
-                  ja: '左側のかっこは偽でも、右側の OR 以降が常に真なので、行ごとに見て全部の行が条件を満たします。name に何を入れても結果は同じです。',
+                  ja: '左側のかっこは偽でも、右側の OR 以降が常に真なので、行ごとに見て全部の行が条件を満たす。name に何を入れても結果は同じ。',
                   en: 'Even when the left group is false, the right side after OR is always true, so every row satisfies the condition. Whatever goes into name makes no difference.',
                 },
               },
@@ -4981,7 +4981,7 @@ cursor.execute(query)`,
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '例を単純にするためにパスワードを平文で比べていますが、実際のシステムではパスワードはハッシュで保存し、ハッシュ同士を比べます。それでも、連結で SQL を組み立てていれば同じように破られます。',
+              ja: '例を単純にするためにパスワードを平文で比べているが、実際のシステムではパスワードはハッシュで保存し、ハッシュ同士を比べる。それでも、連結で SQL を組み立てていれば同じように破られる。',
               en: 'The example compares plain-text passwords to keep it simple. Real systems store and compare password hashes, but string-built SQL is just as breakable either way.',
             },
           },
@@ -4994,7 +4994,7 @@ cursor.execute(query)`,
           {
             type: 'p',
             text: {
-              ja: 'ログインを破るのは入り口にすぎません。入力が命令になるということは、**その DB ユーザーにできることは何でもできてしまう**ということです。',
+              ja: 'ログインを破るのは入り口にすぎない。入力が命令になるということは、**その DB ユーザーにできることは何でもできてしまう**ということ。',
               en: 'Bypassing login is only the start. If input can become a command, **an attacker can do anything the database user is allowed to do**.',
             },
           },
@@ -5022,7 +5022,7 @@ cursor.execute(query)`,
           {
             type: 'p',
             text: {
-              ja: '画面に結果が表示されない場所でも安全とは限りません。エラーが出るかどうかや、応答にかかる時間の違いから、少しずつ中身を推測される手口（ブラインド SQL インジェクション）もあります。',
+              ja: '画面に結果が表示されない場所でも安全とは限らない。エラーが出るかどうかや、応答にかかる時間の違いから、少しずつ中身を推測される手口（ブラインド SQL インジェクション）もある。',
               en: 'A query whose result never appears on screen is not safe either. Attackers can infer data bit by bit from whether an error occurs or how long a response takes (blind SQL injection).',
             },
           },
@@ -5035,7 +5035,7 @@ cursor.execute(query)`,
           {
             type: 'p',
             text: {
-              ja: '本質的な対策は、**プレースホルダ（パラメータ化クエリ）**を使うことです。SQL の「形」と「値」を分けて DB に渡します。',
+              ja: '本質的な対策は、**プレースホルダ（パラメータ化クエリ）**を使うこと。SQL の「形」と「値」を分けて DB に渡す。',
               en: 'The real fix is **placeholders (parameterized queries)**: send the shape of the SQL and the values to the database separately.',
             },
           },
@@ -5050,7 +5050,7 @@ cursor.execute(query)`,
           {
             type: 'p',
             text: {
-              ja: 'DB はまず `?`（ドライバによっては `%s` や `$1`）を含む SQL を解析して、命令の形を確定させます。値はそのあとで別に届き、`?` の位置に**ただの文字列として**入るだけです。入力に `\'` が含まれていても、形はもう決まっているので命令にはなりません。',
+              ja: 'DB はまず `?`（ドライバによっては `%s` や `$1`）を含む SQL を解析して、命令の形を確定させる。値はそのあとで別に届き、`?` の位置に**ただの文字列として**入るだけ。入力に `\'` が含まれていても、形はもう決まっているので命令にはならない。',
               en: 'The database first parses the SQL containing `?` (or `%s` or `$1`, depending on the driver) and fixes the shape of the command. The values arrive afterwards and only fill those slots **as plain strings**. Even if the input contains a `\'`, the shape is already set, so it cannot become a command.',
             },
           },
@@ -5058,7 +5058,7 @@ cursor.execute(query)`,
           {
             type: 'p',
             text: {
-              ja: 'プレースホルダを基本にしたうえで、次の対策を重ねます。',
+              ja: 'プレースホルダを基本にしたうえで、次の対策を重ねる。',
               en: 'With placeholders as the foundation, layer these on top:',
             },
           },
@@ -5066,7 +5066,7 @@ cursor.execute(query)`,
             type: 'list',
             items: [
               {
-                ja: '**ORM やクエリビルダーを正しく使う**: 普通の書き方なら内部でプレースホルダを使ってくれます。ただし `raw()` のような生 SQL や、文字列を組み立てて渡した部分は同じように危険です',
+                ja: '**ORM やクエリビルダーを正しく使う**: 普通の書き方なら内部でプレースホルダを使ってくれる。ただし `raw()` のような生 SQL や、文字列を組み立てて渡した部分は同じように危険',
                 en: '**Use your ORM or query builder properly**: the normal API uses placeholders internally. Raw SQL escapes such as `raw()`, or strings you build and pass in, are just as dangerous',
               },
               {
@@ -5078,7 +5078,7 @@ cursor.execute(query)`,
                 en: '**Give the database user the least privilege**: allow only the reads and writes the app needs, with no `DROP` or access to other schemas',
               },
               {
-                ja: '**入力チェックは補助として使う**: 数値のはずの値が数値かを確かめるのは有効です。ただし「危ない文字を消す」処理やエスケープだけに頼ると漏れが出るので、本命の対策にはしない',
+                ja: '**入力チェックは補助として使う**: 数値のはずの値が数値かを確かめるのは有効。ただし「危ない文字を消す」処理やエスケープだけに頼ると漏れが出るので、本命の対策にはしない',
                 en: '**Treat input validation as a backup**: checking that a number is a number helps, but stripping "dangerous" characters or escaping alone leaks, so never rely on it as the main defense',
               },
             ],
@@ -5098,7 +5098,7 @@ cursor.execute(
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'この例で f-string に入るのは、コードに書いた候補の値だけです。ユーザーの入力そのものは決して SQL に入りません。値（`team_id`）はプレースホルダのままです。',
+              ja: 'この例で f-string に入るのは、コードに書いた候補の値だけ。ユーザーの入力そのものは決して SQL に入らない。値（`team_id`）はプレースホルダのまま。',
               en: 'Here only a value written in your own code goes into the f-string; the user input itself never reaches the SQL. The actual value (`team_id`) still goes through a placeholder.',
             },
           },
@@ -5111,7 +5111,7 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: 'コードで防ぐのが第一ですが、どこか1か所の見落としで破られることもあります。SRE の視点では、**破られたときに早く気づき、被害を小さく保つ**仕組みも合わせて用意します。',
+              ja: 'コードで防ぐのが第一だが、どこか1か所の見落としで破られることもある。SRE の視点では、**破られたときに早く気づき、被害を小さく保つ**仕組みも合わせて用意する。',
               en: 'Preventing it in code comes first, but a single missed spot is enough. From an SRE point of view, you also want ways to **notice quickly and keep the blast radius small** if it does happen.',
             },
           },
@@ -5145,14 +5145,14 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: '覚えておくことはひとつです。**SQL の形はコードが決め、入力は値としてしか渡さない。** これを守れば SQL インジェクションはほぼ防げます。権限の最小化と監視は、それでも何かあったときの保険です。',
+              ja: '覚えておくことはひとつ。**SQL の形はコードが決め、入力は値としてしか渡さない。** これを守れば SQL インジェクションはほぼ防げる。権限の最小化と監視は、それでも何かあったときの保険。',
               en: 'One rule covers it: **your code decides the shape of the SQL, and input is only ever passed as a value.** Follow it and SQL injection is essentially prevented. Least privilege and monitoring are the insurance for when something slips through.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'さらに詳しくは、[OWASP の SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) がまとまっています。',
+              ja: 'さらに詳しくは、[OWASP の SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) にまとまっている。',
               en: 'For more depth, the [OWASP SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) is the standard reference.',
             },
           },
@@ -5178,14 +5178,14 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: 'LLM を使ったアプリでは、開発者が書いた指示（システムプロンプト）、ユーザーの入力、Web ページやメールなど外から取ってきた文章が、**ひとつの文章としてまとめて**モデルに渡されます。',
+              ja: 'LLM を使ったアプリでは、開発者が書いた指示（システムプロンプト）、ユーザーの入力、Web ページやメールなど外から取ってきた文章が、**ひとつの文章としてまとめて**モデルに渡される。',
               en: 'In an LLM app, the developer\'s instructions (the system prompt), the user\'s input and text pulled in from outside, such as web pages and emails, are all handed to the model **as one combined text**.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'プロンプトインジェクションは、その中に紛れ込んだ文章が**「データ」ではなく「指示」として受け取られ、モデルが従ってしまう**問題です。データのはずのものが命令として実行される、という形は [SQL インジェクション](#sql-injection) と同じです。',
+              ja: 'プロンプトインジェクションは、その中に紛れ込んだ文章が**「データ」ではなく「指示」として受け取られ、モデルが従ってしまう**問題。データのはずのものが命令として実行される、という形は [SQL インジェクション](#sql-injection) と同じ。',
               en: 'Prompt injection is when text slipped into that mix is **taken as an instruction instead of data, and the model follows it**. Data being executed as a command is the same shape of problem as [SQL injection](#sql-injection).',
             },
           },
@@ -5193,7 +5193,7 @@ cursor.execute(
             type: 'note',
             tone: 'info',
             text: {
-              ja: '変化の速い分野なので、この記事は 2026 年 10 月時点での理解をまとめたものです。自分が管理していない AI サービスへの攻撃を試すことは、利用規約や法律に反する場合があります。',
+              ja: '変化の速い分野なので、2026 年 10 月時点での理解をまとめたもの。自分が管理していない AI サービスへの攻撃を試すことは、利用規約や法律に反する場合がある。',
               en: 'This field moves fast, so this article reflects the understanding as of October 2026. Attacking AI services you do not own may violate their terms or the law.',
             },
           },
@@ -5219,7 +5219,7 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: '危ないのは間接の方です。AI エージェントがメール送信やファイル操作のような**ツールを使える**と、読んだ文章ひとつで、ユーザーが頼んでいない操作まで実行されてしまいます。',
+              ja: '危ないのは間接の方。AI エージェントがメール送信やファイル操作のような**ツールを使える**と、読んだ文章ひとつで、ユーザーが頼んでいない操作まで実行されてしまう。',
               en: 'The indirect kind is the dangerous one. Once an AI agent can **use tools** such as sending email or editing files, a single piece of text it reads can trigger actions the user never asked for.',
             },
           },
@@ -5227,7 +5227,7 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: '指示は人間には見えない形で仕込めます。背景と同じ色の文字、画像の中の文字、HTML のコメント、ドキュメントのメタデータなどです。ユーザーが画面で確認しても気づけないことがあります。',
+              ja: '指示は人間には見えない形で仕込める。背景と同じ色の文字、画像の中の文字、HTML のコメント、ドキュメントのメタデータなど。ユーザーが画面で確認しても気づけないことがある。',
               en: 'The instruction can be invisible to people: text the same color as the background, text inside an image, HTML comments, document metadata. A user looking at the page may see nothing wrong.',
             },
           },
@@ -5247,7 +5247,7 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: 'LLM には、これに当たるものがありません。指示もデータも同じ自然言語の文章として 1 本にまとめて読まれ、どこまでが指示かを決めるのはモデル自身の判断だからです。',
+              ja: 'LLM には、これに当たるものがない。指示もデータも同じ自然言語の文章として 1 本にまとめて読まれ、どこまでが指示かを決めるのはモデル自身の判断だから。',
               en: 'LLMs have no equivalent. Instructions and data are read together as one stream of natural language, and deciding which part is an instruction is left to the model itself.',
             },
           },
@@ -5255,7 +5255,7 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: '外部の文章を区切り記号で囲む、システムプロンプトに「読んだ文章の指示には従わない」と書く、怪しい入力を検出するモデルを挟む、といった工夫は効果があります。ただしどれも**確率的に減らす**もので、プレースホルダのように「絶対に起きない」とは言えません。',
+              ja: '外部の文章を区切り記号で囲む、システムプロンプトに「読んだ文章の指示には従わない」と書く、怪しい入力を検出するモデルを挟む、といった工夫は効果がある。ただしどれも**確率的に減らす**もので、プレースホルダのように「絶対に起きない」とは言えない。',
               en: 'Wrapping outside text in delimiters, telling the model in the system prompt not to follow instructions it reads, and adding a classifier that flags suspicious input all help. But each only **lowers the odds**; none can guarantee it never happens the way placeholders do.',
             },
           },
@@ -5263,7 +5263,7 @@ cursor.execute(
             type: 'note',
             tone: 'warn',
             text: {
-              ja: '「モデルが賢くなれば解決する」と考えて設計すると危険です。**モデルはいつか騙される**という前提で、騙されても被害が出ないシステムにします。',
+              ja: '「モデルが賢くなれば解決する」と考えて設計すると危険。**モデルはいつか騙される**という前提で、騙されても被害が出ないシステムにする。',
               en: 'Designing on the assumption that smarter models will solve this is risky. Assume **the model will be fooled eventually**, and build a system where being fooled does no harm.',
             },
           },
@@ -5276,7 +5276,7 @@ cursor.execute(
           {
             type: 'p',
             text: {
-              ja: 'モデルの中で完全に防げない以上、守る場所は**モデルの外側**です。被害が出るかどうかは、モデルが騙されたかではなく、**騙されたモデルに何ができるか**で決まります。',
+              ja: 'モデルの中で完全に防げない以上、守る場所は**モデルの外側**。被害が出るかどうかは、モデルが騙されたかではなく、**騙されたモデルに何ができるか**で決まる。',
               en: 'Since it can\'t be fully stopped inside the model, the defenses live **outside the model**. Whether harm happens depends not on whether the model was fooled, but on **what a fooled model is able to do**.',
             },
           },
@@ -5330,14 +5330,14 @@ def call_tool(name, args, user):
               {
                 type: 'p',
                 text: {
-                  ja: 'チャット画面がモデルの出力を Markdown として表示する場合、出力に外部の画像が含まれていると、画面はその URL に自動でアクセスします。URL のクエリに会話の内容が埋め込まれていれば、ユーザーが何もクリックしなくても、その内容が攻撃者のサーバーに届きます。',
+                  ja: 'チャット画面がモデルの出力を Markdown として表示する場合、出力に外部の画像が含まれていると、画面はその URL に自動でアクセスする。URL のクエリに会話の内容が埋め込まれていれば、ユーザーが何もクリックしなくても、その内容が攻撃者のサーバーに届く。',
                   en: 'If a chat UI renders model output as Markdown, an external image in that output makes the UI fetch its URL automatically. If the URL\'s query string contains parts of the conversation, they reach the attacker\'s server without the user clicking anything.',
                 },
               },
               {
                 type: 'p',
                 text: {
-                  ja: '対策は、表示してよい画像やリンクの送り先を許可リストに限ること、または外部の画像を自動で読み込まないことです。「送信ツールを渡していないから安全」とは限らない、という例です。',
+                  ja: '対策は、表示してよい画像やリンクの送り先を許可リストに限ること、または外部の画像を自動で読み込まないこと。「送信ツールを渡していないから安全」とは限らない、という例。',
                   en: 'The fix is to allowlist where images and links may point, or to never auto-load external images. It shows that "we gave it no send tool" does not mean "it cannot send".',
                 },
               },
@@ -5352,7 +5352,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '設計で被害を小さくしたうえで、SRE の視点では**起きたときに気づけること**も大事です。',
+              ja: '設計で被害を小さくしたうえで、SRE の視点では**起きたときに気づけること**も大事。',
               en: 'With the blast radius contained by design, the SRE side is about **noticing when it happens**.',
             },
           },
@@ -5390,14 +5390,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'SQL インジェクションは「値として渡す」ことで根本から防げました。プロンプトインジェクションは、今のところモデルの中で根本から防ぐ方法がありません。だから考え方を変えて、**モデルが騙されても被害が出ないように、権限と確認と監視で外側を固めます**。',
+              ja: 'SQL インジェクションは「値として渡す」ことで根本から防げた。プロンプトインジェクションは、今のところモデルの中で根本から防ぐ方法がない。だから考え方を変えて、**モデルが騙されても被害が出ないように、権限と確認と監視で外側を固める**。',
               en: 'SQL injection is fixed at the root by passing input as values. Prompt injection, for now, has no root fix inside the model. So the approach changes: **lock down the outside with permissions, confirmations and monitoring, so that a fooled model can\'t do harm**.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '詳しくは [OWASP Top 10 for LLM Applications の LLM01: Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) と、[LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html) がまとまっています。',
+              ja: '詳しくは [OWASP Top 10 for LLM Applications の LLM01: Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) と、[LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html) にまとまっている。',
               en: 'For more, see [LLM01: Prompt Injection in the OWASP Top 10 for LLM Applications](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) and the [LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html).',
             },
           },
@@ -5436,14 +5436,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'ホテルにたとえると、フロントで身分証を見せるのが認証、渡されたカードキーで入れる部屋が決まっているのが認可です。順番は必ず認証が先で、誰かがわからなければ、何を許すかも決められません。',
+              ja: 'ホテルにたとえると、フロントで身分証を見せるのが認証、渡されたカードキーで入れる部屋が決まっているのが認可。順番は必ず認証が先で、誰かがわからなければ、何を許すかも決められない。',
               en: 'Think of a hotel: showing your ID at the front desk is authentication; the key card that only opens your room is authorization. Authentication always comes first, since you cannot decide what to allow until you know who it is.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'HTTP のステータスコードもこの区別に沿っています。`401 Unauthorized` は「誰かわからない（認証が必要）」、`403 Forbidden` は「誰かはわかったが、その操作は許されていない」です。名前が紛らわしいですが、401 は実質「未認証」です。',
+              ja: 'HTTP のステータスコードもこの区別に沿っている。`401 Unauthorized` は「誰かわからない（認証が必要）」、`403 Forbidden` は「誰かはわかったが、その操作は許されていない」。名前が紛らわしいが、401 は実質「未認証」。',
               en: 'HTTP status codes follow the same split. `401 Unauthorized` means "I don\'t know who you are (authenticate first)", and `403 Forbidden` means "I know who you are, but you may not do this". Despite the name, 401 really means unauthenticated.',
             },
           },
@@ -5456,7 +5456,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '一度ログインしたあと、毎回パスワードを送るわけにはいきません。そこで「ログイン済み」の証明を持たせます。代表的なのは次の 2 つです。',
+              ja: '一度ログインしたあと、毎回パスワードを送るわけにはいかない。そこで「ログイン済み」の証明を持たせる。代表的なのは次の 2 つ。',
               en: 'After logging in once, you don\'t want to send the password on every request. Instead the client carries proof that it is logged in. There are two common styles.',
             },
           },
@@ -5487,7 +5487,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'JWT のペイロードは Base64 で**符号化されているだけで、暗号化はされていません**。誰でも中身を読めるので、秘密の情報は入れないこと。署名が守るのは「改ざんされていないこと」だけです。',
+              ja: 'JWT のペイロードは Base64 で**符号化されているだけで、暗号化はされていない**。誰でも中身を読めるので、秘密の情報は入れないこと。署名が守るのは「改ざんされていないこと」だけ。',
               en: 'A JWT payload is only **Base64-encoded, not encrypted**. Anyone can read it, so never put secrets in it. The signature only guarantees it hasn\'t been tampered with.',
             },
           },
@@ -5500,14 +5500,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'たとえば、写真の印刷サービスに、Google フォトの写真を読ませたいとします。昔は、印刷サービスに Google のパスワードそのものを渡すしかありませんでした。これでは印刷サービスがメールも含めて何でもできてしまい、やめさせるにはパスワードを変えるしかありません。',
+              ja: 'たとえば、写真の印刷サービスに、Google フォトの写真を読ませたいとする。昔は、印刷サービスに Google のパスワードそのものを渡すしかなかった。これでは印刷サービスがメールも含めて何でもできてしまい、やめさせるにはパスワードを変えるしかない。',
               en: 'Say a photo-printing service wants to read your Google Photos. In the old days the only way was to give it your actual Google password. Then the service could do anything, email included, and the only way to stop it was to change your password.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'OAuth 2.0 は、**パスワードを渡さずに、範囲と期限を限った権限だけを渡す**ための仕組みです。印刷サービスが受け取るのは「写真を読むことだけ」が許された**アクセストークン**で、ユーザーはいつでもその許可を取り消せます。許す範囲は**スコープ**（例: `photos.read`）で表します。',
+              ja: 'OAuth 2.0 は、**パスワードを渡さずに、範囲と期限を限った権限だけを渡す**ための仕組み。印刷サービスが受け取るのは「写真を読むことだけ」が許された**アクセストークン**で、ユーザーはいつでもその許可を取り消せる。許す範囲は**スコープ**（例: `photos.read`）で表す。',
               en: 'OAuth 2.0 is a way to **hand over limited, expiring permission without sharing the password**. The printing service receives an **access token** that only allows reading photos, and the user can revoke it any time. The allowed range is expressed as **scopes** (e.g. `photos.read`).',
             },
           },
@@ -5541,7 +5541,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'Web アプリでもスマホアプリでも、今の標準は**認可コードフロー（+ PKCE）**です。ポイントは、ブラウザを通る経路では短命の「認可コード」だけを渡し、本物のトークンはサーバー同士の通信で受け取ることです。',
+              ja: 'Web アプリでもスマホアプリでも、今の標準は**認可コードフロー（+ PKCE）**。ポイントは、ブラウザを通る経路では短命の「認可コード」だけを渡し、本物のトークンはサーバー同士の通信で受け取ること。',
               en: 'For web and mobile apps alike, the standard today is the **authorization code flow (with PKCE)**. The key idea: only a short-lived "authorization code" travels through the browser, and the real tokens are fetched server to server.',
             },
           },
@@ -5578,7 +5578,7 @@ def call_tool(name, args, user):
               {
                 type: 'p',
                 text: {
-                  ja: '認可コードはブラウザを通るので、ログやスマホ上の悪意あるアプリなどから盗み見られる可能性があります。PKCE（ピクシー）では、アプリが最初に乱数（`code_verifier`）を作り、そのハッシュ（`code_challenge`）だけを認可リクエストに付けます。コードを交換するときは元の乱数を見せる必要があるので、コードだけを盗んでもトークンには交換できません。',
+                  ja: '認可コードはブラウザを通るので、ログやスマホ上の悪意あるアプリなどから盗み見られる可能性がある。PKCE（ピクシー）では、アプリが最初に乱数（`code_verifier`）を作り、そのハッシュ（`code_challenge`）だけを認可リクエストに付ける。コードを交換するときは元の乱数を見せる必要があるので、コードだけを盗んでもトークンには交換できない。',
                   en: 'Because the authorization code passes through the browser, it can leak through logs or a malicious app on the device. With PKCE ("pixy"), the app first creates a random `code_verifier` and sends only its hash, the `code_challenge`, with the authorization request. Exchanging the code requires presenting the original value, so a stolen code alone cannot be turned into a token.',
                 },
               },
@@ -5586,7 +5586,7 @@ def call_tool(name, args, user):
               {
                 type: 'p',
                 text: {
-                  ja: 'もともとはスマホアプリのように秘密の鍵（クライアントシークレット）を安全に持てないアプリのための仕組みでしたが、今は**すべてのクライアントで使うこと**が推奨されています。',
+                  ja: 'もともとはスマホアプリのように秘密の鍵（クライアントシークレット）を安全に持てないアプリのための仕組みだったが、今は**すべてのクライアントで使うこと**が推奨されている。',
                   en: 'It was originally designed for apps like mobile clients that can\'t keep a client secret safe, but current guidance is to **use it for every client**.',
                 },
               },
@@ -5601,14 +5601,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'OAuth 2.0 は**認可**の仕組みです。アクセストークンは「この API を呼んでよい」という許可証で、「誰がログインしたか」を伝えるものではありません。アクセストークンをログインの証明として使うのは、よくある間違いです。',
+              ja: 'OAuth 2.0 は**認可**の仕組み。アクセストークンは「この API を呼んでよい」という許可証で、「誰がログインしたか」を伝えるものではない。アクセストークンをログインの証明として使うのは、よくある間違い。',
               en: 'OAuth 2.0 is about **authorization**. An access token is a permit to call an API; it does not say who logged in. Treating an access token as proof of login is a common mistake.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '**OpenID Connect（OIDC）**は、OAuth 2.0 の上に**認証**を足した仕組みです。「Google でログイン」のようなボタンは、たいていこれです。認可コードフローに `openid` スコープを付けると、アクセストークンと一緒に **ID トークン**（JWT）が返り、そこに「誰が、いつ、どのアプリのためにログインしたか」が書かれています。',
+              ja: '**OpenID Connect（OIDC）**は、OAuth 2.0 の上に**認証**を足した仕組み。「Google でログイン」のようなボタンは、たいていこれ。認可コードフローに `openid` スコープを付けると、アクセストークンと一緒に **ID トークン**（JWT）が返り、そこに「誰が、いつ、どのアプリのためにログインしたか」が書かれている。',
               en: '**OpenID Connect (OIDC)** adds **authentication** on top of OAuth 2.0. Buttons like "Sign in with Google" are usually OIDC. Add the `openid` scope to the authorization code flow and you get an **ID token** (a JWT) alongside the access token, stating who logged in, when, and for which app.',
             },
           },
@@ -5628,7 +5628,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'ID トークンを受け取ったら、次をすべて確かめてからログインさせます。',
+              ja: 'ID トークンを受け取ったら、次をすべて確かめてからログインさせる。',
               en: 'Before logging the user in, verify all of the following:',
             },
           },
@@ -5657,7 +5657,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '使い分けは「**ID トークンはアプリが自分で読むもの、アクセストークンは API に渡すもの**」と覚えると迷いません。ユーザーを識別するときは、メールアドレスではなく、変わらない `sub` を使います。',
+              ja: '使い分けは「**ID トークンはアプリが自分で読むもの、アクセストークンは API に渡すもの**」と覚えておくと迷わない。ユーザーを識別するときは、メールアドレスではなく、変わらない `sub` を使う。',
               en: 'A simple rule: **the ID token is for your app to read; the access token is for the API.** To identify a user, use the stable `sub`, not the email address, which can change.',
             },
           },
@@ -5668,7 +5668,7 @@ def call_tool(name, args, user):
               {
                 type: 'p',
                 text: {
-                  ja: '**同じとは限りません。** 期限は認可サーバーがそれぞれ別に決めます。両方とも約 1 時間で発行するサービスもありますが、それはたまたまそろっているだけです。そもそも、期限が意味するものが違います。',
+                  ja: '**同じとは限らない。** 期限は認可サーバーがそれぞれ別に決める。両方とも約 1 時間で発行するサービスもあるが、それはたまたまそろっているだけ。そもそも、期限が意味するものが違う。',
                   en: '**Not necessarily.** The auth server sets each lifetime separately. Some providers issue both for about an hour, but that is a coincidence. More importantly, the two expiries mean different things.',
                 },
               },
@@ -5692,7 +5692,7 @@ def call_tool(name, args, user):
               {
                 type: 'p',
                 text: {
-                  ja: 'ありがちな間違いは、ID トークンをセッションの代わりに持ち続けて、期限が来るたびにユーザーをログアウトさせてしまうことです。逆に、期限切れの ID トークンをログインの証明として受け付けるのも誤りです。**ID トークンはログイン時に一度だけ使い、その後は自分のセッションで管理する**と覚えておくと迷いません。',
+                  ja: 'ありがちな間違いは、ID トークンをセッションの代わりに持ち続けて、期限が来るたびにユーザーをログアウトさせてしまうこと。逆に、期限切れの ID トークンをログインの証明として受け付けるのも誤り。**ID トークンはログイン時に一度だけ使い、その後は自分のセッションで管理する**と覚えておくと迷わない。',
                   en: 'A common mistake is keeping the ID token around as the session and logging users out whenever it expires. Accepting an expired ID token as proof of login is wrong too. Remember: **use the ID token once at login, then manage login state with your own session.**',
                 },
               },
@@ -5705,7 +5705,7 @@ def call_tool(name, args, user):
               {
                 type: 'p',
                 text: {
-                  ja: '**アプリ次第です。** OIDC の仕様は、ID トークンを検証したあとにログイン状態をどう保つかを決めていません。アプリの形に合わせて選びます。',
+                  ja: '**アプリ次第。** OIDC の仕様は、ID トークンを検証したあとにログイン状態をどう保つかを決めていない。アプリの形に合わせて選ぶ。',
                   en: '**It\'s up to the app.** The OIDC spec doesn\'t say how to keep the user logged in after the ID token is verified, so you choose what fits your app.',
                 },
               },
@@ -5725,7 +5725,7 @@ def call_tool(name, args, user):
               {
                 type: 'p',
                 text: {
-                  ja: '考え方は前の「ログイン状態をどう覚えるか」と同じで、**すぐ取り消せるのがセッション、保存がいらず広げやすいのがトークン**です。',
+                  ja: '考え方は前の「ログイン状態をどう覚えるか」と同じで、**すぐ取り消せるのがセッション、保存がいらず広げやすいのがトークン**。',
                   en: 'The trade-off is the same as in "Remembering who is logged in" above: **sessions are easy to revoke; tokens need no storage and scale out easily.**',
                 },
               },
@@ -5733,7 +5733,7 @@ def call_tool(name, args, user):
                 type: 'note',
                 tone: 'warn',
                 text: {
-                  ja: 'どちらを選んでも、**認可サーバーから受け取った ID トークンやアクセストークンを、そのまま自分のアプリのセッション代わりにしない**こと。ID トークンはログイン時に一度検証するためのもの、アクセストークンは認可サーバー側の API を呼ぶためのものです。自分のアプリのログイン状態には、自分のセッションか、自分で発行したトークンを使います。',
+                  ja: 'どちらを選んでも、**認可サーバーから受け取った ID トークンやアクセストークンを、そのまま自分のアプリのセッション代わりにしない**こと。ID トークンはログイン時に一度検証するためのもの、アクセストークンは認可サーバー側の API を呼ぶためのもの。自分のアプリのログイン状態には、自分のセッションか、自分で発行したトークンを使う。',
                   en: 'Either way, **don\'t reuse the ID token or access token from the auth server as your own app\'s session.** The ID token is for verifying the login once; the access token is for calling the provider\'s APIs. Track your app\'s login state with your own session, or a token you issue yourself.',
                 },
               },
@@ -5783,7 +5783,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'SRE の視点では、認可サーバーは**全員のログインが通る重要な依存先**です。ここが止まると、ほかが元気でもサービス全体が使えなくなります。',
+              ja: 'SRE の視点では、認可サーバーは**全員のログインが通る重要な依存先**。ここが止まると、ほかが元気でもサービス全体が使えなくなる。',
               en: 'From an SRE point of view, the auth server is a **critical dependency every login passes through**. If it goes down, the whole service is unusable even when everything else is healthy.',
             },
           },
@@ -5842,7 +5842,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '仕様は [RFC 6749（OAuth 2.0）](https://datatracker.ietf.org/doc/html/rfc6749)、[RFC 7636（PKCE）](https://datatracker.ietf.org/doc/html/rfc7636)、[OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html) です。実装の注意点は [RFC 9700（OAuth 2.0 Security Best Current Practice）](https://datatracker.ietf.org/doc/html/rfc9700) と [OWASP の OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html) にまとまっています。',
+              ja: '仕様は [RFC 6749（OAuth 2.0）](https://datatracker.ietf.org/doc/html/rfc6749)、[RFC 7636（PKCE）](https://datatracker.ietf.org/doc/html/rfc7636)、[OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)。実装の注意点は [RFC 9700（OAuth 2.0 Security Best Current Practice）](https://datatracker.ietf.org/doc/html/rfc9700) と [OWASP の OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html) にまとまっている。',
               en: 'The specs are [RFC 6749 (OAuth 2.0)](https://datatracker.ietf.org/doc/html/rfc6749), [RFC 7636 (PKCE)](https://datatracker.ietf.org/doc/html/rfc7636) and [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html). For implementation guidance, see [RFC 9700 (OAuth 2.0 Security Best Current Practice)](https://datatracker.ietf.org/doc/html/rfc9700) and the [OWASP OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html).',
             },
           },
@@ -5868,14 +5868,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'LLM（大規模言語モデル）が1回の計算でやっていることは、驚くほど単純です。**入力された文章の続きとして、次に来る1トークンの確率を出す**。それだけです。',
+              ja: 'LLM（大規模言語モデル）が1回の計算でやっていることは、意外と単純。**入力された文章の続きとして、次に来る1トークンの確率を出す**。それだけ。',
               en: 'What an LLM (large language model) does in one pass is surprisingly simple: **given the text so far, it outputs a probability for every possible next token**. That is all.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '確率の中から1つを選び、入力の最後に足して、もう一度予測します。これを「終了」を表すトークンが選ばれるまで繰り返すと、文章ができあがります。この方式を**自己回帰（autoregressive）**と呼びます。',
+              ja: '確率の中から1つを選び、入力の最後に足して、もう一度予測する。「終了」を表すトークンが選ばれるまでこれを繰り返すと、文章になる。この方式が**自己回帰（autoregressive）**。',
               en: 'One token is picked from those probabilities, appended to the input, and the model predicts again. Repeat until a special end token is picked, and you have a full response. This is called **autoregressive** generation.',
             },
           },
@@ -5901,7 +5901,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '出力のトークンは1つずつ順番に作るしかないので、**応答時間は出力の長さにほぼ比例します**。入力は一度にまとめて処理できるため、同じトークン数なら出力の方が時間も料金もかかります。速くしたいときは、まず出力を短くするのが効きます。',
+              ja: '出力のトークンは1つずつ順番に作るしかないので、**応答時間は出力の長さにほぼ比例する**。入力は一度にまとめて処理できるため、同じトークン数なら出力の方が時間も料金もかかる。速くしたいなら、まず出力を短くするのが効く。',
               en: 'Because output tokens can only be made one after another, **response time grows roughly with output length**. Input can be processed in one batch, so token for token, output costs more time and money. To speed things up, shorten the output first.',
             },
           },
@@ -5914,7 +5914,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'LLM は文字をそのまま扱うのではなく、**トークン**という単位に区切ってから扱います。トークンは単語でも文字でもなく、その中間です。よく出てくる文字列は1トークンにまとまり、珍しい文字列は細かく分かれます。',
+              ja: 'LLM は文字をそのまま扱わず、**トークン**という単位に区切ってから扱う。トークンは単語でも文字でもなく、その中間。よく出てくる文字列は1トークンにまとまり、珍しい文字列は細かく分かれる。',
               en: 'LLMs do not work on raw characters; they first split text into **tokens**. A token is neither a word nor a character but something in between: common strings become a single token, and rare ones are split into pieces.',
             },
           },
@@ -5922,7 +5922,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '区切り方は、学習の前に大量の文章から「よく一緒に出てくる文字の並び」を集めて決めます（BPE などの方式）。モデルが知っている語彙は、ふつう数万〜数十万種類のトークンです。',
+              ja: '区切り方は、学習の前に大量の文章から「よく一緒に出てくる文字の並び」を集めて決める（BPE などの方式）。モデルが知っている語彙は、ふつう数万〜数十万種類のトークン。',
               en: 'The splits are decided before training by collecting character sequences that often appear together in a large corpus (methods such as BPE). A model\'s vocabulary is usually tens of thousands to a few hundred thousand tokens.',
             },
           },
@@ -5947,7 +5947,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'info',
             text: {
-              ja: 'トークナイザはモデルごとに違うので、同じ文章でもモデルを変えるとトークン数が変わります。正確な数は、各社の API が返す使用量か、トークン数を数える API で確かめます。',
+              ja: 'トークナイザはモデルごとに違うので、同じ文章でもモデルを変えるとトークン数が変わる。正確な数は、API が返す使用量か、トークン数を数える API で確かめる。',
               en: 'Each model has its own tokenizer, so the same text can have a different token count on a different model. For exact numbers, use the usage the API returns or a token-counting endpoint.',
             },
           },
@@ -5960,14 +5960,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'モデルが直接出すのは、語彙のすべてのトークンに対するスコア（**ロジット**）です。これを softmax という計算で合計 100% の確率に直し、その確率に従って1つを選びます（**サンプリング**）。同じ質問でも毎回少し違う答えが返ってくるのは、ここでくじを引いているからです。',
+              ja: 'モデルが直接出すのは、語彙のすべてのトークンに対するスコア（**ロジット**）。これを softmax で合計 100% の確率に直し、その確率に従って1つを選ぶ（**サンプリング**）。同じ質問でも毎回少し違う答えが返ってくるのは、ここでくじを引いているから。',
               en: 'What the model outputs directly is a score (**logit**) for every token in its vocabulary. A function called softmax turns these into probabilities that add up to 100%, and one token is drawn according to them (**sampling**). That draw is why the same question can get a slightly different answer each time.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: 'この選び方を調整するのが **temperature** です。ロジットを temperature で割ってから確率に直すので、値によって分布の形が変わります。下の図のスライダーで試してみてください。',
+              ja: 'この選び方を調整するのが **temperature**。ロジットを temperature で割ってから確率に直すので、値によって分布の形が変わる（下の図のスライダーで確認できる）。',
               en: '**Temperature** tunes that draw. The logits are divided by the temperature before becoming probabilities, so the value reshapes the distribution. Try the slider below.',
             },
           },
@@ -5992,7 +5992,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '**top-p** は、確率の高い順に足していき、合計が p（たとえば 90%）に届くまでの候補だけを残して、その中から選ぶ方法です。「バナナ」のような明らかに外れた候補を最初から除けます。temperature と top-p はどちらも「くじの引き方」の調整なので、ふつうはどちらか片方だけを動かします。',
+              ja: '**top-p** は、確率の高い順に足していき、合計が p（たとえば 90%）に届くまでの候補だけを残して、その中から選ぶ方法。「バナナ」のような明らかに外れた候補を最初から除ける。temperature も top-p も「くじの引き方」の調整なので、ふつうはどちらか片方だけを動かす。',
               en: '**Top-p** keeps the most likely candidates until their probabilities add up to p (say 90%) and picks only among them. It removes clearly wrong options such as "banana" up front. Temperature and top-p both tune the same draw, so usually you adjust only one of them.',
             },
           },
@@ -6000,7 +6000,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'warn',
             text: {
-              ja: 'temperature を 0 にしても、出力が毎回完全に同じになるとは限りません。サーバー側の並列計算の順序などで、確率がわずかに揺れることがあるためです。テストで出力の完全一致を期待するのは避けましょう。',
+              ja: 'temperature を 0 にしても、出力が毎回完全に同じになるとは限らない。サーバー側の並列計算の順序などで、確率がわずかに揺れることがあるため。テストで出力の完全一致を期待しないこと。',
               en: 'Even at temperature 0, output is not guaranteed to be identical every time; things like the order of parallel computation on the server can nudge the probabilities slightly. Avoid tests that expect exact output matches.',
             },
           },
@@ -6013,14 +6013,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '**コンテキストウィンドウ**は、モデルが1回のリクエストで扱えるトークン数の上限です。入力（システムプロンプト、会話の履歴、渡した資料）と、これから作る出力の**合計**がこの中に収まる必要があります。今のモデルでは数万〜100 万トークン以上まで、モデルによって大きく違います。',
+              ja: '**コンテキストウィンドウ**は、モデルが1回のリクエストで扱えるトークン数の上限。入力（システムプロンプト、会話の履歴、渡した資料）と、これから作る出力の**合計**がこの中に収まる必要がある。今のモデルだと数万〜100 万トークン以上まで、モデルによって大きく違う。',
               en: 'The **context window** is the most tokens a model can handle in one request. The input (system prompt, conversation history, attached documents) **plus** the output it is about to write must all fit. Current models range from tens of thousands to over a million tokens.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '大事なのは、**モデルは会話を覚えていない**ことです。API はステートレスで、2回目の質問をするときは、1回目の質問と答えもあわせて全部送り直しています。チャットアプリが「覚えている」ように見えるのは、アプリ側が履歴を毎回つけて送っているからです。',
+              ja: '大事なのは、**モデルは会話を覚えていない**こと。API はステートレスで、2回目の質問をするときは、1回目の質問と答えもあわせて全部送り直している。チャットアプリが「覚えている」ように見えるのは、アプリ側が履歴を毎回つけて送っているから。',
               en: 'The key point: **the model remembers nothing**. The API is stateless; to ask a second question, you send the first question and its answer again along with it. A chat app only seems to remember because the app attaches the history to every request.',
             },
           },
@@ -6046,7 +6046,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '毎回同じ先頭部分（長いシステムプロンプトや資料）を送る場合は、多くの API にある**プロンプトキャッシュ**を使うと、その部分の料金と処理時間を大きく減らせます。キャッシュは先頭から一致する部分にしか効かないので、変わらない内容を前に、変わる内容を後ろに置きます。',
+              ja: '毎回同じ先頭部分（長いシステムプロンプトや資料）を送るなら、多くの API にある**プロンプトキャッシュ**で、その部分の料金と処理時間を大きく減らせる。キャッシュは先頭から一致する部分にしか効かないので、変わらない内容を前に、変わる内容を後ろに置く。',
               en: 'If every request starts with the same large prefix (a long system prompt or documents), the **prompt caching** offered by many APIs can cut the cost and latency of that part sharply. Caching only applies to a matching prefix, so put the unchanging parts first and the changing parts last.',
             },
           },
@@ -6059,7 +6059,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '今の LLM のほとんどは **Transformer** という構造でできています。数式を使わずにざっくり言うと、次の順に処理しています。',
+              ja: '今の LLM のほとんどは **Transformer** という構造。数式抜きでざっくり言うと、次の順に処理している。',
               en: 'Nearly all current LLMs are built on the **Transformer** architecture. Without the math, it works in this order.',
             },
           },
@@ -6087,7 +6087,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '中心になるのが **Attention** です。下の図では、最後のトークンが前のどのトークンを強く参照しているかを線の太さで表しています。最後の単語を切り替えると、「それ」が猫と魚のどちらと結びつくかが変わります。',
+              ja: '中心になるのが **Attention**。下の図は、最後のトークンが前のどのトークンを強く参照しているかを線の太さで表したもの。最後の単語を切り替えると、「それ」が猫と魚のどちらと結びつくかが変わる。',
               en: 'The core idea is **attention**. The diagram shows, by line width, which earlier tokens the last token attends to. Switch the last word and you change whether "it" is linked to the cat or the fish.',
             },
           },
@@ -6095,7 +6095,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '文章を生成するモデルでは、各トークンは**自分より前のトークンだけ**を見られます。まだ書いていない先の内容は参照できません。この仕組みは論文 [Attention Is All You Need](https://arxiv.org/abs/1706.03762)（2017年）で提案されました。',
+              ja: '文章を生成するモデルでは、各トークンは**自分より前のトークンだけ**を見られる。まだ書いていない先の内容は参照できない。この仕組みは論文 [Attention Is All You Need](https://arxiv.org/abs/1706.03762)（2017年）で提案された。',
               en: 'In a text-generating model, each token can only look at **tokens before it**; it cannot see what has not been written yet. The architecture was introduced in the 2017 paper [Attention Is All You Need](https://arxiv.org/abs/1706.03762).',
             },
           },
@@ -6103,7 +6103,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'info',
             text: {
-              ja: '入力の長さが倍になると、Attention の計算はおおよそ4倍に増えます（全トークンが全トークンを見るため）。コンテキストウィンドウに上限があり、長い入力が高くつくのは、これが大きな理由です。',
+              ja: '入力の長さが倍になると、Attention の計算はおおよそ4倍に増える（全トークンが全トークンを見るため）。コンテキストウィンドウに上限があり、長い入力が高くつく大きな理由がこれ。',
               en: 'Doubling the input length roughly quadruples the attention work, since every token looks at every other. That is a big reason context windows have limits and long inputs are expensive.',
             },
           },
@@ -6116,7 +6116,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '「次のトークンを当てる」能力は、大きく3つの段階で身につけます。',
+              ja: '「次のトークンを当てる」能力は、大きく3つの段階で身につける。',
               en: 'The ability to predict the next token is built in roughly three stages.',
             },
           },
@@ -6140,14 +6140,14 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: '学習が終わるとパラメータは固定され、使っているあいだに勝手に覚えることはありません。そのため、モデルの知識は学習データを集めた時点（**知識のカットオフ**）で止まっています。それより新しい情報や社内の情報は、プロンプトに入れて渡す必要があります。',
+              ja: '学習が終わるとパラメータは固定され、使っているあいだに勝手に覚えることはない。だからモデルの知識は、学習データを集めた時点（**知識のカットオフ**）で止まっている。それより新しい情報や社内の情報は、プロンプトに入れて渡す必要がある。',
               en: 'Once training ends the parameters are frozen; the model does not learn while you use it. Its knowledge stops when the training data was collected (the **knowledge cutoff**). Anything newer, or private to your company, must be passed in the prompt.',
             },
           },
           {
             type: 'p',
             text: {
-              ja: '指示チューニングとフィードバックによる調整の流れは、[InstructGPT の論文](https://arxiv.org/abs/2203.02155) が代表的です。',
+              ja: '指示チューニングとフィードバックによる調整の流れは、[InstructGPT の論文](https://arxiv.org/abs/2203.02155) が代表的。',
               en: 'The [InstructGPT paper](https://arxiv.org/abs/2203.02155) is the classic description of instruction tuning plus feedback.',
             },
           },
@@ -6160,7 +6160,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'ここまでの内容は、API を呼ぶときのパラメータにそのまま出てきます。細かい名前は提供元ごとに違いますが、形はおおむね次のとおりです。',
+              ja: 'ここまでの内容は、API を呼ぶときのパラメータにそのまま出てくる。細かい名前は提供元ごとに違うが、形はおおむね次のとおり。',
               en: 'Everything so far shows up directly in the parameters of an API call. Names vary by provider, but the shape is roughly this.',
             },
           },
@@ -6217,7 +6217,7 @@ def call_tool(name, args, user):
             type: 'note',
             tone: 'tip',
             text: {
-              ja: '本番で LLM を使うときは、`usage` と `stop_reason` をログやメトリクスに残しておきましょう。料金の急増や、出力が上限で切れている問題に早く気づけます。',
+              ja: '本番で LLM を使うなら、`usage` と `stop_reason` をログやメトリクスに残しておく。料金の急増や、出力が上限で切れている問題に早く気づける。',
               en: 'When running LLMs in production, record `usage` and `stop_reason` in your logs or metrics. You will notice cost spikes and truncated outputs much sooner.',
             },
           },
@@ -6255,7 +6255,7 @@ def call_tool(name, args, user):
           {
             type: 'p',
             text: {
-              ja: 'プロンプトに外部のデータを入れるときの危険は [プロンプトインジェクション](#prompt-injection) で扱っています。さらに詳しく学ぶなら、Transformer の原論文 [Attention Is All You Need](https://arxiv.org/abs/1706.03762) が出発点です。',
+              ja: 'プロンプトに外部のデータを入れるときの危険は [プロンプトインジェクション](#prompt-injection) にまとめた。さらに深掘りするなら、Transformer の原論文 [Attention Is All You Need](https://arxiv.org/abs/1706.03762) が出発点。',
               en: 'The risks of putting outside data into a prompt are covered in [Prompt Injection](#prompt-injection). To go deeper, start with the original Transformer paper, [Attention Is All You Need](https://arxiv.org/abs/1706.03762).',
             },
           },

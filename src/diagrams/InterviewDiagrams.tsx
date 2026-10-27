@@ -60,7 +60,7 @@ export function IvTimeline() {
         <text x={AX1} y={44} textAnchor="end" fill="var(--text-dim)" fontSize={11} fontFamily={MONO}>~45m</text>
         {/* note line */}
         <text x={330} y={158} textAnchor="middle" fill="var(--text-dim)" fontSize={11}>
-          {lang === 'ja' ? '※ 課題や面接官により前後します' : '※ Varies with the problem and interviewer'}
+          {lang === 'ja' ? '※ 課題や面接官により前後する' : '※ Varies with the problem and interviewer'}
         </text>
       </svg>
     </DiagramFrame>
