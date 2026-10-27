@@ -45,7 +45,11 @@ export type DiagramId =
   | 'ua-timeline'
   | 'ua-cascade'
   | 'ua-dns-race'
-  | 'ua-congestion';
+  | 'ua-congestion'
+  | 'k8s-architecture'
+  | 'k8s-pod-lifecycle'
+  | 'k8s-reconcile'
+  | 'k8s-service';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -4251,6 +4255,617 @@ call(request):
             text: {
               ja: '一次資料は AWS の [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/) です。過負荷からの回復については、Google の SRE 本の [Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) もあわせて読むと理解が深まります。',
               en: 'The primary source is AWS\'s [Summary of the Amazon DynamoDB Service Disruption in the Northern Virginia (US-EAST-1) Region](https://aws.amazon.com/message/101925/). For recovering from overload, the [Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/) chapter of Google\'s SRE book is a good companion.',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'kubernetes-components',
+    category: 'sre',
+    publishedAt: '2026-10-27',
+    updatedAt: '2026-10-27',
+    title: { ja: 'Kubernetes の基本コンポーネント', en: 'Kubernetes Core Components' },
+    tagline: {
+      ja: '「宣言した状態に近づけ続ける」仕組みを、部品ごとに分解する。',
+      en: 'Taking apart the machinery that keeps pulling a cluster toward the state you declared.',
+    },
+    sections: [
+      {
+        id: 'k8s-overview',
+        title: { ja: '全体像: コントロールプレーンとノード', en: 'The big picture: control plane and nodes' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'Kubernetes のクラスタは、大きく2つの層に分かれます。**何をどこで動かすかを決めるコントロールプレーン**と、**実際にコンテナを動かすワーカーノード**です。人間の体でいえば、頭脳と手足の関係です。',
+              en: 'A Kubernetes cluster splits into two layers: **the control plane, which decides what runs where**, and **the worker nodes, which actually run the containers**. Think of it as a brain and its hands.',
+            },
+          },
+          { type: 'diagram', id: 'k8s-architecture' },
+          {
+            type: 'p',
+            text: {
+              ja: '図でいちばん大事なのは、矢印がすべて **kube-apiserver に集まっている**ことです。scheduler も kubelet も、互いに直接話しません。全員が API server を通して「今の状態」を読み、「こうしたい」を書き込みます。この形のおかげで、部品を1つずつ入れ替えたり、増やしたりできます。',
+              en: 'The most important thing in the diagram is that every arrow **meets at kube-apiserver**. The scheduler and the kubelets never talk to each other directly. Everyone reads the current state and writes their intent through the API server, which is what lets each part be replaced or scaled on its own.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**コントロールプレーン**: kube-apiserver、etcd、kube-scheduler、kube-controller-manager（クラウド上では cloud-controller-manager も）',
+                en: '**Control plane**: kube-apiserver, etcd, kube-scheduler, kube-controller-manager (plus cloud-controller-manager in the cloud)',
+              },
+              {
+                ja: '**ワーカーノード**: kubelet、kube-proxy、コンテナランタイム。その上で Pod が動く',
+                en: '**Worker nodes**: kubelet, kube-proxy and a container runtime, with Pods running on top',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'EKS や GKE などのマネージドサービスでは、コントロールプレーンはクラウド事業者が運用し、利用者からは見えません。それでも中で動いている部品は同じなので、仕組みを知っておくとトラブルのときに原因を絞り込めます。公式の一覧は [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/) にあります。',
+              en: 'With managed services such as EKS or GKE, the cloud provider runs the control plane and you never see it. The parts inside are the same, though, so knowing them helps you narrow down problems. The official list is at [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/).',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-control-plane',
+        title: { ja: 'コントロールプレーン', en: 'The control plane' },
+        blocks: [
+          { type: 'h', text: { ja: 'kube-apiserver', en: 'kube-apiserver' } },
+          {
+            type: 'p',
+            text: {
+              ja: 'クラスタの**唯一の窓口**です。`kubectl` も、他のすべての部品も、ここに HTTP の REST API でリクエストを送ります。受け取ったリクエストは、次の順に処理されてから保存されます。',
+              en: 'The cluster\'s **single front door**. `kubectl` and every other component send requests to it over an HTTP REST API. Each request goes through these steps before it is stored.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '**認証**: 誰からのリクエストか（証明書、トークンなど）', en: '**Authentication**: who sent it (certificates, tokens, ...)' },
+              { ja: '**認可**: その操作をしてよいか（RBAC）', en: '**Authorization**: are they allowed to do it (RBAC)' },
+              { ja: '**アドミッション**: 既定値を足したり、ポリシーに反するものを拒否したりする', en: '**Admission**: fill in defaults or reject what breaks policy' },
+              { ja: '**検証と保存**: 形が正しいか確かめ、etcd に書き込む', en: '**Validation and storage**: check the shape, then write it to etcd' },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'API server 自体は状態を持たないので、複数台並べてロードバランサーの後ろに置けます。',
+              en: 'The API server keeps no state of its own, so you can run several copies behind a load balancer.',
+            },
+          },
+          { type: 'h', text: { ja: 'etcd', en: 'etcd' } },
+          {
+            type: 'p',
+            text: {
+              ja: 'クラスタの**すべての状態を持つ分散キーバリューストア**です。どんな Deployment があるか、どの Pod がどのノードにいるか、Secret の中身まで、ここに入っています。etcd に直接アクセスするのは API server だけです。',
+              en: 'A **distributed key-value store holding all cluster state**: which Deployments exist, which Pod sits on which node, even the contents of Secrets. Only the API server talks to etcd directly.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'Raft という合意アルゴリズムで、複数台のあいだでデータをそろえます。過半数が生きていれば書き込めるので、ふつうは 3 台か 5 台の奇数で組みます。',
+              en: 'It keeps copies in agreement using the Raft consensus algorithm. Writes succeed as long as a majority is alive, so clusters usually run an odd number of members, 3 or 5.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'etcd が消えると、クラスタは「何を動かすべきか」を丸ごと忘れます。自分で運用するなら、定期的なバックアップは必須です。',
+              en: 'Lose etcd and the cluster forgets everything it is supposed to run. If you operate it yourself, regular backups are not optional.',
+            },
+          },
+          { type: 'h', text: { ja: 'kube-scheduler', en: 'kube-scheduler' } },
+          {
+            type: 'p',
+            text: {
+              ja: '**まだノードが決まっていない Pod を見つけて、どのノードで動かすかを決める**部品です。決めるだけで、起動はしません。決め方は2段階です。',
+              en: 'It **finds Pods that have no node yet and decides where they should run**. It only decides; it does not start anything. The decision has two stages.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**フィルタリング**: 置けないノードを外す。CPU やメモリの空きが `requests` に足りない、nodeSelector が合わない、taint を許容していない、など',
+                en: '**Filtering**: drop nodes that cannot take the Pod, e.g. not enough free CPU or memory for its `requests`, a nodeSelector mismatch, or a taint it does not tolerate',
+              },
+              {
+                ja: '**スコアリング**: 残ったノードに点数をつけ、いちばん高いノードを選ぶ。空きの多さや、同じアプリの Pod をばらけさせるかどうか、など',
+                en: '**Scoring**: rank the remaining nodes and pick the best, e.g. by free capacity or by spreading replicas of the same app apart',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '選んだ結果は、Pod の `nodeName` に書き込む形で API server に伝えます（バインド）。詳しくは [Kubernetes Scheduler](https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/) を参照してください。',
+              en: 'It reports the choice to the API server by setting the Pod\'s `nodeName` (a binding). See [Kubernetes Scheduler](https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/) for details.',
+            },
+          },
+          { type: 'h', text: { ja: 'kube-controller-manager', en: 'kube-controller-manager' } },
+          {
+            type: 'p',
+            text: {
+              ja: '**たくさんのコントローラを1つのプロセスにまとめたもの**です。コントローラはそれぞれ担当のリソースを見張り、望ましい状態とのズレを直します（くわしくは [調整ループ](#kubernetes-components/k8s-reconcile) で説明します）。',
+              en: 'A **single process bundling many controllers**. Each controller watches the resources it owns and fixes any gap from the desired state (more in [The reconcile loop](#kubernetes-components/k8s-reconcile)).',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '**Deployment コントローラ**: Deployment から ReplicaSet を作り、ローリングアップデートを進める', en: '**Deployment controller**: creates ReplicaSets from a Deployment and drives rolling updates' },
+              { ja: '**ReplicaSet コントローラ**: Pod の数を `replicas` にそろえる', en: '**ReplicaSet controller**: keeps the Pod count equal to `replicas`' },
+              { ja: '**Node コントローラ**: 応答しなくなったノードを見つけ、その上の Pod を退避させる', en: '**Node controller**: notices unresponsive nodes and evicts their Pods' },
+              { ja: '**EndpointSlice コントローラ**: Service に対応する Pod の IP の一覧を更新する', en: '**EndpointSlice controller**: keeps the list of Pod IPs behind each Service up to date' },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'クラウド上では、ロードバランサーの作成やノードの登録など、クラウド固有の処理を **cloud-controller-manager** が別プロセスで受け持ちます。',
+              en: 'In the cloud, **cloud-controller-manager** handles provider-specific work such as creating load balancers and registering nodes, in a separate process.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-node',
+        title: { ja: 'ノード上のコンポーネント', en: 'Components on each node' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ワーカーノードには、コントロールプレーンの決定を実行に移す部品が3つ入っています。',
+              en: 'Every worker node runs three components that turn the control plane\'s decisions into running software.',
+            },
+          },
+          { type: 'h', text: { ja: 'kubelet', en: 'kubelet' } },
+          {
+            type: 'p',
+            text: {
+              ja: '各ノードに1つずつ常駐するエージェントです。API server を見張り、**自分のノードに割り当てられた Pod** を見つけると、コンテナランタイムに起動を頼みます。起動したあとも次のことを続けます。',
+              en: 'An agent that runs on every node. It watches the API server, and when it sees **a Pod assigned to its own node** it asks the container runtime to start it. After that it keeps doing the following.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '**プローブ**: liveness（生きているか）、readiness（通信を受けてよいか）、startup（起動し終わったか）を定期的に確かめる', en: '**Probes**: regularly check liveness (is it alive), readiness (may it receive traffic) and startup (has it finished starting)' },
+              { ja: '**再起動**: liveness が失敗したコンテナや、異常終了したコンテナを再起動する', en: '**Restarts**: restart containers that fail liveness or exit unexpectedly' },
+              { ja: '**状態の報告**: Pod とノードの状態を API server に書き戻す', en: '**Status reporting**: write Pod and node status back to the API server' },
+            ],
+          },
+          { type: 'h', text: { ja: 'コンテナランタイム', en: 'Container runtime' } },
+          {
+            type: 'p',
+            text: {
+              ja: '実際にイメージを取得してコンテナを動かすソフトウェアです。代表は **containerd** と **CRI-O** です。kubelet とは **CRI（Container Runtime Interface）** という決まったインターフェースで話すので、ランタイムを差し替えられます。',
+              en: 'The software that actually pulls images and runs containers. The common ones are **containerd** and **CRI-O**. The kubelet talks to it through a fixed interface, the **CRI (Container Runtime Interface)**, so the runtime can be swapped.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'Docker Engine を直接使う仕組み（dockershim）は v1.24 で削除されました。ただし Docker でビルドしたイメージは標準形式（OCI）なので、そのまま containerd で動きます。',
+              en: 'Direct support for Docker Engine (dockershim) was removed in v1.24. Images built with Docker follow the standard OCI format, so they still run unchanged on containerd.',
+            },
+          },
+          { type: 'h', text: { ja: 'kube-proxy', en: 'kube-proxy' } },
+          {
+            type: 'p',
+            text: {
+              ja: 'Service 宛ての通信を、裏にある Pod へ届けるためのルールをノードに書き込む部品です。通信そのものを中継するのではなく、iptables や IPVS などカーネルの仕組みにルールを設定し、転送はカーネルが行います（くわしくは [Service とネットワーク](#kubernetes-components/k8s-service)）。',
+              en: 'It writes rules on the node so that traffic sent to a Service reaches the Pods behind it. It does not relay packets itself; it programs kernel mechanisms such as iptables or IPVS, and the kernel forwards the traffic (more in [Services and networking](#kubernetes-components/k8s-service)).',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'このほか、Pod に IP を割り当てて Pod 同士をつなぐ **CNI プラグイン**（Calico、Cilium など）と、クラスタ内の名前解決を行う **CoreDNS** も、ほぼすべてのクラスタに入っています。Cilium のように kube-proxy の役割まで肩代わりする CNI もあります。',
+              en: 'Almost every cluster also runs a **CNI plugin** (Calico, Cilium, ...) that gives Pods IPs and connects them, and **CoreDNS** for in-cluster name resolution. Some CNIs, such as Cilium, can take over kube-proxy\'s job as well.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-pod-startup',
+        title: { ja: 'Pod が起動するまで', en: 'How a Pod gets started' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ここまでの部品が、どう協力して動くかを見てみます。`kubectl apply` で Deployment を送ってから、Pod が Running になるまでの流れです。',
+              en: 'Here is how those parts work together, from sending a Deployment with `kubectl apply` until a Pod is Running.',
+            },
+          },
+          { type: 'diagram', id: 'k8s-pod-lifecycle' },
+          {
+            type: 'list',
+            items: [
+              { ja: '**01–02**: API server がリクエストを検証し、Deployment を etcd に保存する。`kubectl` にはこの時点で応答が返る', en: '**01–02**: the API server validates the request and stores the Deployment in etcd. `kubectl` gets its reply right here' },
+              { ja: '**03–04**: コントローラが新しい Deployment に気づき、ReplicaSet と Pod を作る。この Pod にはまだノードが決まっていない', en: '**03–04**: the controllers notice the new Deployment and create a ReplicaSet and a Pod. The Pod has no node yet' },
+              { ja: '**05–06**: scheduler がノード未定の Pod に気づき、node-1 を選んで書き込む', en: '**05–06**: the scheduler notices a Pod with no node, picks node-1 and records it' },
+              { ja: '**07–09**: node-1 の kubelet が自分宛ての Pod に気づき、ランタイムにコンテナを起動させ、Running になったことを報告する', en: '**07–09**: the kubelet on node-1 notices a Pod meant for it, has the runtime start the containers and reports Running' },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'ポイントは、**誰も他の部品に「やって」と命令していない**ことです。コントローラは scheduler を呼ばず、scheduler も kubelet を呼びません。それぞれが API server を **watch**（変更の通知を受け取る購読）して、自分の担当の変化にだけ反応します。',
+              en: 'The key point: **nobody tells another component what to do**. The controllers never call the scheduler, and the scheduler never calls the kubelet. Each one **watches** the API server (subscribes to change notifications) and reacts only to the changes it owns.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '`kubectl apply` がすぐ返ってきても、Pod が動いたとは限りません。「保存された」だけです。実際の進み具合は `kubectl get pods -w` や `kubectl get events` で確かめます。Pending のまま止まっているなら scheduler の段階（置けるノードがない）、ContainerCreating や ImagePullBackOff なら kubelet とランタイムの段階で詰まっています。',
+              en: 'A quick reply from `kubectl apply` does not mean the Pod is running; it only means the request was stored. Check real progress with `kubectl get pods -w` or `kubectl get events`. Stuck in Pending points to the scheduler stage (no node fits); ContainerCreating or ImagePullBackOff points to the kubelet and runtime stage.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-reconcile',
+        title: { ja: '調整ループ（Reconciliation）', en: 'The reconcile loop' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'Kubernetes は**宣言的**です。「Pod を3つ起動せよ」と手順を命令するのではなく、「Pod が3つある状態」を宣言します。その状態に近づける仕事は、コントローラが受け持ちます。',
+              en: 'Kubernetes is **declarative**. Instead of commanding "start three Pods", you declare "there should be three Pods". Getting there is the controllers\' job.',
+            },
+          },
+          { type: 'diagram', id: 'k8s-reconcile' },
+          {
+            type: 'p',
+            text: {
+              ja: 'どのコントローラも、同じループを回し続けています。',
+              en: 'Every controller runs the same loop, over and over.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '**観察**: API server から、担当するリソースの今の状態を読む', en: '**Observe**: read the current state of the resources it owns from the API server' },
+              { ja: '**比較**: 望ましい状態（spec）と現在の状態（status）を比べる', en: '**Compare**: diff the desired state (spec) against the current state (status)' },
+              { ja: '**調整**: ズレがあれば、それを埋める変更を API server に書き込む', en: '**Act**: if there is a gap, write the change that closes it to the API server' },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'このループは「Pod が消えた」という**出来事**ではなく、「今 2 つしかない」という**状態**を見て動きます。そのため、通知を取りこぼしたり、コントローラが再起動したりしても、次にループが回ったときに正しい状態へ戻せます。Pod を手で `kubectl delete` しても、すぐに新しい Pod が作られるのはこのためです。',
+              en: 'The loop acts on **state** ("there are only two now"), not on **events** ("a Pod disappeared"). So even if a notification is missed or the controller restarts, the next pass still brings things back to the right state. This is why a Pod you `kubectl delete` by hand is replaced almost immediately.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: '裏を返すと、手で直した変更はコントローラに上書きされます。Deployment が管理する Pod を直接編集しても、次のローリングアップデートで消えます。変更はいつも、宣言（YAML）の側に入れましょう。',
+              en: 'The flip side: manual fixes get overwritten by the controller. Edit a Pod owned by a Deployment directly and the change disappears at the next rollout. Always make changes in the declaration (the YAML).',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'この考え方は [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/) にまとまっています。独自のリソースとコントローラを足して、データベースなどの運用を自動化する仕組みを Operator パターンと呼びます。',
+              en: 'The idea is described in [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/). Adding your own resource types and controllers to automate operating things like databases is called the Operator pattern.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-resources',
+        title: { ja: '主要なリソース', en: 'The main resources' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '利用者が API server に書き込む「宣言」の単位がリソースです。まず押さえておきたいのは次のものです。',
+              en: 'Resources are the units of declaration you write to the API server. These are the ones to know first.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**Pod**: コンテナを動かす最小単位。1つ以上のコンテナが、同じ IP とボリュームを共有する。使い捨てで、作り直されると IP も変わる',
+                en: '**Pod**: the smallest unit that runs containers. One or more containers share an IP and volumes. Pods are disposable; a recreated Pod gets a new IP',
+              },
+              {
+                ja: '**ReplicaSet**: 同じ Pod を決まった数だけ動かし続ける。ふつうは直接作らない',
+                en: '**ReplicaSet**: keeps a fixed number of identical Pods running. You rarely create one directly',
+              },
+              {
+                ja: '**Deployment**: ReplicaSet を管理し、新旧のバージョンを少しずつ入れ替える（ローリングアップデート）。ロールバックもできる。ステートレスなアプリはふつうこれで動かす',
+                en: '**Deployment**: manages ReplicaSets and swaps old and new versions gradually (rolling update), with rollback. The usual way to run stateless apps',
+              },
+              {
+                ja: '**Service**: 入れ替わる Pod の前に、変わらない名前と IP を置く',
+                en: '**Service**: puts a stable name and IP in front of Pods that come and go',
+              },
+              {
+                ja: '**ConfigMap / Secret**: 設定値や認証情報をイメージから切り離して渡す',
+                en: '**ConfigMap / Secret**: pass configuration and credentials separately from the image',
+              },
+              {
+                ja: '**Namespace**: クラスタを論理的に区切る。チームや環境ごとに権限やリソース上限を分ける',
+                en: '**Namespace**: logically partitions a cluster, so permissions and quotas can differ per team or environment',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'Deployment → ReplicaSet → Pod は、親が子を作って管理する関係です。前のセクションで見たとおり、それぞれ別のコントローラが担当しています。',
+              en: 'Deployment → ReplicaSet → Pod is a chain where each parent creates and owns its children. As shown earlier, a different controller handles each level.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'Secret は既定では base64 で符号化されているだけで、暗号化されていません。etcd での暗号化（encryption at rest）を有効にし、RBAC で読める人を絞りましょう。',
+              en: 'By default a Secret is only base64-encoded, not encrypted. Turn on encryption at rest for etcd and use RBAC to limit who can read Secrets.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'ほかに、データベースのように Pod ごとに固定の名前とディスクが必要なものには **StatefulSet**、全ノードに1つずつ置くログ収集などには **DaemonSet**、1回で終わる処理には **Job** を使います。',
+              en: 'Beyond these: **StatefulSet** for things like databases that need a fixed name and disk per Pod, **DaemonSet** for one-per-node agents such as log collectors, and **Job** for work that runs once to completion.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-service',
+        title: { ja: 'Service とネットワーク', en: 'Services and networking' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'Pod は作り直されるたびに IP が変わります。呼び出す側が Pod の IP を直接覚えていたら、入れ替わるたびに壊れてしまいます。そこで **Service** が、変わらない名前と IP を用意し、そのときどきの Pod に振り分けます。',
+              en: 'A Pod gets a new IP every time it is recreated. If callers remembered Pod IPs, every replacement would break them. A **Service** provides a stable name and IP and routes to whichever Pods exist at the moment.',
+            },
+          },
+          { type: 'diagram', id: 'k8s-service' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**ラベルで選ぶ**: Service は `selector: app=web` のようにラベルで Pod を選ぶ。Pod の名前や IP は書かない',
+                en: '**Selection by label**: a Service picks Pods by label, e.g. `selector: app=web`. It never lists Pod names or IPs',
+              },
+              {
+                ja: '**エンドポイントの自動更新**: EndpointSlice コントローラが、条件に合い Ready な Pod の IP を一覧にする。readiness プローブに失敗した Pod は外れる',
+                en: '**Automatic endpoints**: the EndpointSlice controller lists the IPs of matching, Ready Pods. A Pod failing its readiness probe is removed',
+              },
+              {
+                ja: '**振り分け**: 各ノードの kube-proxy がその一覧を watch し、ClusterIP 宛ての通信をいずれかの Pod へ転送するルールを書く',
+                en: '**Routing**: kube-proxy on each node watches that list and writes rules that forward ClusterIP traffic to one of the Pods',
+              },
+              {
+                ja: '**名前解決**: CoreDNS が `web.default.svc.cluster.local`（同じ Namespace からは `web` だけ）を ClusterIP に解決する',
+                en: '**Name resolution**: CoreDNS resolves `web.default.svc.cluster.local` (just `web` from the same Namespace) to the ClusterIP',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'Service には公開範囲によっていくつか種類があります。',
+              en: 'Services come in a few types, depending on how far they are exposed.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              { ja: '**ClusterIP**（既定）: クラスタの中からだけ届く', en: '**ClusterIP** (default): reachable only from inside the cluster' },
+              { ja: '**NodePort**: 全ノードの決まったポートで外から受ける', en: '**NodePort**: accepts outside traffic on a fixed port of every node' },
+              { ja: '**LoadBalancer**: クラウドのロードバランサーを作って外に公開する（cloud-controller-manager が作成）', en: '**LoadBalancer**: exposes it through a cloud load balancer (created by cloud-controller-manager)' },
+            ],
+          },
+          {
+            type: 'details',
+            summary: { ja: '3 つの違いをもう少し詳しく見る', en: 'See how the three differ' },
+            blocks: [
+              {
+                type: 'p',
+                text: {
+                  ja: '3 つは別々の仕組みではなく、**積み重なっています**。NodePort は ClusterIP を含み、LoadBalancer は NodePort を含みます。外側の種類は、内側の入口の手前にもう1つ入口を足しているだけです。',
+                  en: 'The three are not separate mechanisms but **layers**: a NodePort includes a ClusterIP, and a LoadBalancer includes a NodePort. Each outer type just adds another entrance in front of the inner one.',
+                },
+              },
+              {
+                type: 'list',
+                items: [
+                  {
+                    ja: '**ClusterIP**: Service 用の範囲から仮想 IP が割り当てられ、kube-proxy のルールで Pod に転送される。外からは届かないので、手元から試すときは `kubectl port-forward svc/web 8080:80` を使う。マイクロサービス同士の呼び出しなど、Service の大半はこれ',
+                    en: '**ClusterIP**: gets a virtual IP from the Service range, forwarded to Pods by kube-proxy\'s rules. It is unreachable from outside, so use `kubectl port-forward svc/web 8080:80` to try it locally. Most Services, such as service-to-service calls, are this type',
+                  },
+                  {
+                    ja: '**NodePort**: ClusterIP に加えて、全ノードの同じポート（既定で 30000〜32767 のどれか）を開ける。どのノードに送っても Pod まで転送されるが、クライアントがノードの IP を知る必要があり、ノードが入れ替わると宛先も変わる。検証用か、自前のロードバランサーを前に置くときに使う',
+                    en: '**NodePort**: on top of the ClusterIP, opens the same port (one from 30000–32767 by default) on every node. Any node forwards to the Pods, but clients must know node IPs, which change as nodes are replaced. Use it for testing or behind your own load balancer',
+                  },
+                  {
+                    ja: '**LoadBalancer**: NodePort に加えて、cloud-controller-manager がクラウドのロードバランサーを作り、全ノードの NodePort を振り分け先に登録する。外部 IP が1つで済むが、Service ごとに1台できて料金がかかる。クラウド以外では `EXTERNAL-IP` が `<pending>` のままになる',
+                    en: '**LoadBalancer**: on top of the NodePort, cloud-controller-manager creates a cloud load balancer that targets every node\'s NodePort. Clients get one external IP, but each Service gets its own load balancer and bill. Outside a cloud, `EXTERNAL-IP` stays `<pending>`',
+                  },
+                ],
+              },
+              {
+                type: 'code',
+                label: { ja: '同じ Pod に 3 種類を作った例', en: 'All three types for the same Pods' },
+                code: `$ kubectl get svc
+NAME     TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)
+web      ClusterIP      10.96.0.12    <none>         80/TCP
+web-np   NodePort       10.96.0.40    <none>         80:30080/TCP
+web-lb   LoadBalancer   10.96.0.77    203.0.113.10   80:31544/TCP`,
+              },
+              {
+                type: 'p',
+                text: {
+                  ja: '3 つとも `CLUSTER-IP` を持ち、NodePort と LoadBalancer にはノードのポート（`:30080`）が加わり、LoadBalancer だけが `EXTERNAL-IP` を持ちます。',
+                  en: 'All three have a `CLUSTER-IP`; NodePort and LoadBalancer add a node port (`:30080`); only the LoadBalancer has an `EXTERNAL-IP`.',
+                },
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'HTTP のパスやホスト名で振り分けたいときは、Service の前に Ingress、またはその後継の Gateway API を置きます。詳しくは [Service](https://kubernetes.io/docs/concepts/services-networking/service/) を参照してください。',
+              en: 'To route by HTTP path or host name, put an Ingress, or its successor the Gateway API, in front of the Services. See [Service](https://kubernetes.io/docs/concepts/services-networking/service/) for details.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-example',
+        title: { ja: '実装イメージ', en: 'What it looks like' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ここまでの内容を、最小の Deployment と Service で書くとこうなります。3 つの Pod を動かし、`web` という名前で呼べるようにします。',
+              en: 'Here is everything so far as a minimal Deployment and Service: three Pods, reachable by the name `web`.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: 'web.yaml', en: 'web.yaml' },
+            code: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3                  # desired state: the ReplicaSet keeps 3 Pods
+  selector:
+    matchLabels:
+      app: web
+  template:                    # the Pod to create
+    metadata:
+      labels:
+        app: web               # the Service selects Pods by this label
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+          resources:
+            requests:          # the scheduler uses these to pick a node
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:      # only Ready Pods receive traffic
+            httpGet:
+              path: /
+              port: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  type: ClusterIP
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80`,
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '適用して、各部品が作ったものを確かめます。',
+              en: 'Apply it and check what each component created.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: '適用と確認', en: 'Apply and inspect' },
+            code: `$ kubectl apply -f web.yaml
+deployment.apps/web created
+service/web created
+
+$ kubectl get deploy,rs,pods -l app=web -o wide
+NAME                  READY   UP-TO-DATE   AVAILABLE
+deployment.apps/web   3/3     3            3
+
+NAME                             DESIRED   CURRENT   READY
+replicaset.apps/web-7f9c6d5b8c   3         3         3
+
+NAME                       READY   STATUS    IP            NODE
+pod/web-7f9c6d5b8c-4kx2p   1/1     Running   10.244.1.5    node-1
+pod/web-7f9c6d5b8c-9tq7m   1/1     Running   10.244.2.8    node-2
+pod/web-7f9c6d5b8c-zr5wd   1/1     Running   10.244.1.9    node-1
+
+$ kubectl get endpointslices -l kubernetes.io/service-name=web
+NAME        ADDRESSTYPE   PORTS   ENDPOINTS
+web-x8k2j   IPv4          80      10.244.1.5,10.244.2.8,10.244.1.9`,
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'Deployment が ReplicaSet を作り（Deployment コントローラ）、ReplicaSet が Pod を作り（ReplicaSet コントローラ）、scheduler が `NODE` 列を決め、kubelet が `Running` にし、EndpointSlice コントローラが Service の宛先をそろえた、という流れが出力に表れています。',
+              en: 'The output shows the whole chain: the Deployment created a ReplicaSet (Deployment controller), the ReplicaSet created Pods (ReplicaSet controller), the scheduler filled in the `NODE` column, the kubelets made them `Running`, and the EndpointSlice controller lined up the Service\'s targets.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '試しに `kubectl delete pod web-7f9c6d5b8c-zr5wd` を実行してから、もう一度 `kubectl get pods` を見てみましょう。別の名前と IP の Pod がすぐに現れ、エンドポイントも新しい IP に入れ替わります。調整ループが働いている様子を、手元で確かめられます。',
+              en: 'Try `kubectl delete pod web-7f9c6d5b8c-zr5wd`, then run `kubectl get pods` again. A Pod with a new name and IP appears almost at once, and the endpoints switch to the new IP. You can watch the reconcile loop at work.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'k8s-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**コントロールプレーンが決め、ノードが動かす**。API server、etcd、scheduler、controller-manager と、kubelet、kube-proxy、ランタイム',
+                en: '**The control plane decides; the nodes run.** API server, etcd, scheduler and controller-manager, then kubelet, kube-proxy and the runtime',
+              },
+              {
+                ja: '**すべては API server を通る**。部品どうしは直接話さず、watch で自分の担当の変化に反応する',
+                en: '**Everything goes through the API server.** Components never talk directly; they watch for the changes they own',
+              },
+              {
+                ja: '**宣言して、コントローラに任せる**。調整ループが、望ましい状態とのズレを直し続ける',
+                en: '**Declare it and let the controllers work.** Reconcile loops keep closing the gap to the desired state',
+              },
+              {
+                ja: '**Pod は使い捨て、Service は変わらない**。呼び出しは Pod ではなく Service に向ける',
+                en: '**Pods are disposable; Services are stable.** Point callers at Services, never at Pods',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'さらに詳しくは、公式ドキュメントの [Cluster Architecture](https://kubernetes.io/docs/concepts/architecture/) と [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/) がまとまっています。',
+              en: 'For more, see [Cluster Architecture](https://kubernetes.io/docs/concepts/architecture/) and [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/) in the official docs.',
             },
           },
         ],
