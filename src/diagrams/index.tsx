@@ -14,6 +14,7 @@ import { OAuthCodeFlow, OAuthPkce } from './OAuthDiagrams';
 import { ChaosExperiment, ChaosLoop } from './ChaosDiagrams';
 import { UaCascade, UaCongestion, UaDnsRace, UaTimeline } from './AwsOutageDiagrams';
 import { K8sArchitecture, K8sPodLifecycle, K8sReconcile, K8sService } from './KubernetesDiagrams';
+import { LlmAttention, LlmContextWindow, LlmNextToken, LlmTemperature, LlmTokens } from './LlmDiagrams';
 
 export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'fund-latency': FundLatency,
@@ -62,6 +63,11 @@ export const diagramRegistry: Record<DiagramId, () => JSX.Element> = {
   'k8s-pod-lifecycle': K8sPodLifecycle,
   'k8s-reconcile': K8sReconcile,
   'k8s-service': K8sService,
+  'llm-next-token': LlmNextToken,
+  'llm-tokens': LlmTokens,
+  'llm-temperature': LlmTemperature,
+  'llm-context-window': LlmContextWindow,
+  'llm-attention': LlmAttention,
 };
 
 export function Diagram({ id }: { id: DiagramId }) {

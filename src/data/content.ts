@@ -49,7 +49,12 @@ export type DiagramId =
   | 'k8s-architecture'
   | 'k8s-pod-lifecycle'
   | 'k8s-reconcile'
-  | 'k8s-service';
+  | 'k8s-service'
+  | 'llm-next-token'
+  | 'llm-tokens'
+  | 'llm-temperature'
+  | 'llm-context-window'
+  | 'llm-attention';
 
 export type Block =
   | { type: 'p'; text: LocalizedString }
@@ -66,7 +71,7 @@ export interface Section {
   blocks: Block[];
 }
 
-export type CategoryId = 'system-design' | 'sre' | 'security';
+export type CategoryId = 'system-design' | 'sre' | 'security' | 'ai';
 
 export interface Category {
   id: CategoryId;
@@ -78,6 +83,7 @@ export const categories: Category[] = [
   { id: 'system-design', label: { ja: 'システム設計', en: 'System Design' } },
   { id: 'sre', label: { ja: 'SRE（サイト信頼性）', en: 'SRE' } },
   { id: 'security', label: { ja: 'セキュリティ', en: 'Security' } },
+  { id: 'ai', label: { ja: 'AI', en: 'AI' } },
 ];
 
 export interface Topic {
@@ -5838,6 +5844,419 @@ def call_tool(name, args, user):
             text: {
               ja: '仕様は [RFC 6749（OAuth 2.0）](https://datatracker.ietf.org/doc/html/rfc6749)、[RFC 7636（PKCE）](https://datatracker.ietf.org/doc/html/rfc7636)、[OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html) です。実装の注意点は [RFC 9700（OAuth 2.0 Security Best Current Practice）](https://datatracker.ietf.org/doc/html/rfc9700) と [OWASP の OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html) にまとまっています。',
               en: 'The specs are [RFC 6749 (OAuth 2.0)](https://datatracker.ietf.org/doc/html/rfc6749), [RFC 7636 (PKCE)](https://datatracker.ietf.org/doc/html/rfc7636) and [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html). For implementation guidance, see [RFC 9700 (OAuth 2.0 Security Best Current Practice)](https://datatracker.ietf.org/doc/html/rfc9700) and the [OWASP OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html).',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'llm-basics',
+    category: 'ai',
+    publishedAt: '2026-10-27',
+    updatedAt: '2026-10-27',
+    title: { ja: 'LLM の仕組み', en: 'How LLMs Work' },
+    tagline: {
+      ja: '「次の 1 トークンを当てる」を繰り返すだけで、なぜ文章が書けるのか。',
+      en: 'How repeatedly guessing the next token turns into writing.',
+    },
+    sections: [
+      {
+        id: 'llm-next-token',
+        title: { ja: 'LLM がやっていること', en: 'What an LLM actually does' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'LLM（大規模言語モデル）が1回の計算でやっていることは、驚くほど単純です。**入力された文章の続きとして、次に来る1トークンの確率を出す**。それだけです。',
+              en: 'What an LLM (large language model) does in one pass is surprisingly simple: **given the text so far, it outputs a probability for every possible next token**. That is all.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '確率の中から1つを選び、入力の最後に足して、もう一度予測します。これを「終了」を表すトークンが選ばれるまで繰り返すと、文章ができあがります。この方式を**自己回帰（autoregressive）**と呼びます。',
+              en: 'One token is picked from those probabilities, appended to the input, and the model predicts again. Repeat until a special end token is picked, and you have a full response. This is called **autoregressive** generation.',
+            },
+          },
+          { type: 'diagram', id: 'llm-next-token' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**答えを「知っている」わけではない**: 「日本の首都は」の続きに「東京」の確率が高いのは、学習した大量の文章でそう続くことが多かったから。もっともらしい続きを出す仕組みであって、事実を調べているわけではない',
+                en: '**It does not "know" the answer**: "Tokyo" is likely after "The capital of Japan is" because that is how such text usually continued in training. It produces plausible continuations; it does not look facts up',
+              },
+              {
+                ja: '**毎回、入力全体を見る**: 2つ目のトークンを予測するときは、プロンプトと1つ目のトークンを合わせた全体が入力になる',
+                en: '**Every step sees the whole input**: predicting the second token uses the prompt plus the first token as input',
+              },
+              {
+                ja: '**出力は1トークンずつしか作れない**: チャット画面で文字が少しずつ流れてくる（ストリーミング）のは、この順番のとおりに届けているから',
+                en: '**Output comes one token at a time**: chat UIs stream text gradually because that is the order in which it is produced',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '出力のトークンは1つずつ順番に作るしかないので、**応答時間は出力の長さにほぼ比例します**。入力は一度にまとめて処理できるため、同じトークン数なら出力の方が時間も料金もかかります。速くしたいときは、まず出力を短くするのが効きます。',
+              en: 'Because output tokens can only be made one after another, **response time grows roughly with output length**. Input can be processed in one batch, so token for token, output costs more time and money. To speed things up, shorten the output first.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'llm-tokens',
+        title: { ja: 'トークン', en: 'Tokens' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'LLM は文字をそのまま扱うのではなく、**トークン**という単位に区切ってから扱います。トークンは単語でも文字でもなく、その中間です。よく出てくる文字列は1トークンにまとまり、珍しい文字列は細かく分かれます。',
+              en: 'LLMs do not work on raw characters; they first split text into **tokens**. A token is neither a word nor a character but something in between: common strings become a single token, and rare ones are split into pieces.',
+            },
+          },
+          { type: 'diagram', id: 'llm-tokens' },
+          {
+            type: 'p',
+            text: {
+              ja: '区切り方は、学習の前に大量の文章から「よく一緒に出てくる文字の並び」を集めて決めます（BPE などの方式）。モデルが知っている語彙は、ふつう数万〜数十万種類のトークンです。',
+              en: 'The splits are decided before training by collecting character sequences that often appear together in a large corpus (methods such as BPE). A model\'s vocabulary is usually tens of thousands to a few hundred thousand tokens.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**料金も上限もトークンで数える**: API の料金、コンテキストウィンドウの大きさ、出力の上限は、すべて文字数ではなくトークン数',
+                en: '**Prices and limits are in tokens**: API pricing, context window size and output limits are all counted in tokens, not characters',
+              },
+              {
+                ja: '**言語で効率が違う**: 目安として英語は 1 トークンで 4 文字前後。日本語は 1〜2 文字ほどで 1 トークンになることが多く、同じ内容でもトークン数が多くなりがち',
+                en: '**Languages differ in efficiency**: as a rule of thumb English averages about 4 characters per token, while Japanese often takes 1–2 characters per token, so the same content tends to use more tokens',
+              },
+              {
+                ja: '**文字単位の作業が苦手**: 「この単語に r はいくつあるか」のような質問を間違えやすいのは、モデルからは文字ではなくトークンの塊しか見えていないから',
+                en: '**Character-level tasks are hard**: questions like "how many r\'s are in this word" trip models up because they see token chunks, not letters',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: 'トークナイザはモデルごとに違うので、同じ文章でもモデルを変えるとトークン数が変わります。正確な数は、各社の API が返す使用量か、トークン数を数える API で確かめます。',
+              en: 'Each model has its own tokenizer, so the same text can have a different token count on a different model. For exact numbers, use the usage the API returns or a token-counting endpoint.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'llm-sampling',
+        title: { ja: '確率から選ぶ: temperature と top-p', en: 'Picking from the probabilities: temperature and top-p' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'モデルが直接出すのは、語彙のすべてのトークンに対するスコア（**ロジット**）です。これを softmax という計算で合計 100% の確率に直し、その確率に従って1つを選びます（**サンプリング**）。同じ質問でも毎回少し違う答えが返ってくるのは、ここでくじを引いているからです。',
+              en: 'What the model outputs directly is a score (**logit**) for every token in its vocabulary. A function called softmax turns these into probabilities that add up to 100%, and one token is drawn according to them (**sampling**). That draw is why the same question can get a slightly different answer each time.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'この選び方を調整するのが **temperature** です。ロジットを temperature で割ってから確率に直すので、値によって分布の形が変わります。下の図のスライダーで試してみてください。',
+              en: '**Temperature** tunes that draw. The logits are divided by the temperature before becoming probabilities, so the value reshapes the distribution. Try the slider below.',
+            },
+          },
+          { type: 'diagram', id: 'llm-temperature' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**低い（0〜0.3 くらい）**: 一番確率の高いトークンがほぼ必ず選ばれる。分類、データ抽出、コード生成など、答えを安定させたいとき',
+                en: '**Low (around 0–0.3)**: the most likely token wins almost every time. Use it for classification, extraction or code, where you want stable answers',
+              },
+              {
+                ja: '**1 前後**: モデルが学んだ分布のまま選ぶ。会話や文章作成の既定値として使われることが多い',
+                en: '**Around 1**: sample the distribution as learned. A common default for chat and writing',
+              },
+              {
+                ja: '**高い（1 を超える）**: 分布が平らになり、確率の低い候補も選ばれやすくなる。アイデア出しには向くが、上げすぎると文章が崩れる',
+                en: '**High (above 1)**: the distribution flattens and unlikely tokens get picked more often. Good for brainstorming, but too high and the text falls apart',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '**top-p** は、確率の高い順に足していき、合計が p（たとえば 90%）に届くまでの候補だけを残して、その中から選ぶ方法です。「バナナ」のような明らかに外れた候補を最初から除けます。temperature と top-p はどちらも「くじの引き方」の調整なので、ふつうはどちらか片方だけを動かします。',
+              en: '**Top-p** keeps the most likely candidates until their probabilities add up to p (say 90%) and picks only among them. It removes clearly wrong options such as "banana" up front. Temperature and top-p both tune the same draw, so usually you adjust only one of them.',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'warn',
+            text: {
+              ja: 'temperature を 0 にしても、出力が毎回完全に同じになるとは限りません。サーバー側の並列計算の順序などで、確率がわずかに揺れることがあるためです。テストで出力の完全一致を期待するのは避けましょう。',
+              en: 'Even at temperature 0, output is not guaranteed to be identical every time; things like the order of parallel computation on the server can nudge the probabilities slightly. Avoid tests that expect exact output matches.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'llm-context',
+        title: { ja: 'コンテキストウィンドウ', en: 'The context window' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '**コンテキストウィンドウ**は、モデルが1回のリクエストで扱えるトークン数の上限です。入力（システムプロンプト、会話の履歴、渡した資料）と、これから作る出力の**合計**がこの中に収まる必要があります。今のモデルでは数万〜100 万トークン以上まで、モデルによって大きく違います。',
+              en: 'The **context window** is the most tokens a model can handle in one request. The input (system prompt, conversation history, attached documents) **plus** the output it is about to write must all fit. Current models range from tens of thousands to over a million tokens.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '大事なのは、**モデルは会話を覚えていない**ことです。API はステートレスで、2回目の質問をするときは、1回目の質問と答えもあわせて全部送り直しています。チャットアプリが「覚えている」ように見えるのは、アプリ側が履歴を毎回つけて送っているからです。',
+              en: 'The key point: **the model remembers nothing**. The API is stateless; to ask a second question, you send the first question and its answer again along with it. A chat app only seems to remember because the app attaches the history to every request.',
+            },
+          },
+          { type: 'diagram', id: 'llm-context-window' },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**会話が長いほど高く、遅くなる**: 毎回すべての履歴を送るので、ターンが進むほど1回あたりの入力トークンが増える',
+                en: '**Longer conversations cost more and run slower**: the full history goes out every time, so input tokens per request grow with each turn',
+              },
+              {
+                ja: '**溢れたら何かを捨てる**: 古いやり取りから削る、古い部分を要約して短くする、必要な資料だけを検索して入れる（RAG）などで収める',
+                en: '**When it overflows, something must go**: drop the oldest turns, summarize them, or retrieve only the documents you need (RAG)',
+              },
+              {
+                ja: '**入れれば読むとは限らない**: ウィンドウに収まっていても、長い入力の真ん中にある情報は見落とされやすいという報告がある（[Lost in the Middle](https://arxiv.org/abs/2307.03172)）。大事な指示は最初か最後に置く',
+                en: '**Fitting is not the same as reading**: research reports that information in the middle of a long input is easier to miss ([Lost in the Middle](https://arxiv.org/abs/2307.03172)). Put key instructions at the start or the end',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '毎回同じ先頭部分（長いシステムプロンプトや資料）を送る場合は、多くの API にある**プロンプトキャッシュ**を使うと、その部分の料金と処理時間を大きく減らせます。キャッシュは先頭から一致する部分にしか効かないので、変わらない内容を前に、変わる内容を後ろに置きます。',
+              en: 'If every request starts with the same large prefix (a long system prompt or documents), the **prompt caching** offered by many APIs can cut the cost and latency of that part sharply. Caching only applies to a matching prefix, so put the unchanging parts first and the changing parts last.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'llm-inside',
+        title: { ja: '中で何が起きているか', en: 'What happens inside' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '今の LLM のほとんどは **Transformer** という構造でできています。数式を使わずにざっくり言うと、次の順に処理しています。',
+              en: 'Nearly all current LLMs are built on the **Transformer** architecture. Without the math, it works in this order.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**ベクトルに変える**: 各トークンを、意味を表す数千次元の数値の並び（ベクトル）に変える。似た意味のトークンは近いベクトルになる',
+                en: '**Turn tokens into vectors**: each token becomes a list of thousands of numbers (a vector) that represents its meaning. Similar tokens get nearby vectors',
+              },
+              {
+                ja: '**Attention で文脈を混ぜる**: 各トークンが、前にあるトークンのうち「どれが自分に関係あるか」を見て、その情報を取り込む',
+                en: '**Mix in context with attention**: each token looks at the earlier tokens, decides which ones matter to it, and pulls in their information',
+              },
+              {
+                ja: '**何十層も重ねる**: Attention と計算の層を何十回も繰り返すうちに、文法、意味、話の流れといった情報が積み上がる',
+                en: '**Stack dozens of layers**: repeating attention and processing layers dozens of times builds up grammar, meaning and the flow of the text',
+              },
+              {
+                ja: '**次のトークンの確率を出す**: 最後のトークンのベクトルから、語彙すべてのロジットを計算する',
+                en: '**Output next-token probabilities**: compute logits for the whole vocabulary from the last token\'s vector',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '中心になるのが **Attention** です。下の図では、最後のトークンが前のどのトークンを強く参照しているかを線の太さで表しています。最後の単語を切り替えると、「それ」が猫と魚のどちらと結びつくかが変わります。',
+              en: 'The core idea is **attention**. The diagram shows, by line width, which earlier tokens the last token attends to. Switch the last word and you change whether "it" is linked to the cat or the fish.',
+            },
+          },
+          { type: 'diagram', id: 'llm-attention' },
+          {
+            type: 'p',
+            text: {
+              ja: '文章を生成するモデルでは、各トークンは**自分より前のトークンだけ**を見られます。まだ書いていない先の内容は参照できません。この仕組みは論文 [Attention Is All You Need](https://arxiv.org/abs/1706.03762)（2017年）で提案されました。',
+              en: 'In a text-generating model, each token can only look at **tokens before it**; it cannot see what has not been written yet. The architecture was introduced in the 2017 paper [Attention Is All You Need](https://arxiv.org/abs/1706.03762).',
+            },
+          },
+          {
+            type: 'note',
+            tone: 'info',
+            text: {
+              ja: '入力の長さが倍になると、Attention の計算はおおよそ4倍に増えます（全トークンが全トークンを見るため）。コンテキストウィンドウに上限があり、長い入力が高くつくのは、これが大きな理由です。',
+              en: 'Doubling the input length roughly quadruples the attention work, since every token looks at every other. That is a big reason context windows have limits and long inputs are expensive.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'llm-training',
+        title: { ja: 'どうやって学習するか', en: 'How it is trained' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: '「次のトークンを当てる」能力は、大きく3つの段階で身につけます。',
+              en: 'The ability to predict the next token is built in roughly three stages.',
+            },
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**事前学習**: Web やコード、書籍などの膨大な文章で、ひたすら次のトークンを当てる練習をする。予測が外れるたびに少しずつ数値（パラメータ）を直す。言葉の使い方や世界の知識は、ここで身につく',
+                en: '**Pre-training**: practice predicting the next token over a huge corpus of web pages, code and books, nudging the numbers (parameters) a little after every miss. Language and world knowledge come from this stage',
+              },
+              {
+                ja: '**指示チューニング**: 「質問と良い答え」の例で追加学習し、文章の続きを書くモデルから、指示に従って答えるアシスタントに変える',
+                en: '**Instruction tuning**: further training on examples of questions and good answers turns a text-continuer into an assistant that follows instructions',
+              },
+              {
+                ja: '**フィードバックによる調整**: 複数の答えのどれが良いかという人やルールの評価をもとに、より役に立ち、安全な答えを出すように調整する（RLHF など）',
+                en: '**Tuning from feedback**: use ratings from people or rules about which answers are better to make responses more helpful and safer (RLHF and similar)',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '学習が終わるとパラメータは固定され、使っているあいだに勝手に覚えることはありません。そのため、モデルの知識は学習データを集めた時点（**知識のカットオフ**）で止まっています。それより新しい情報や社内の情報は、プロンプトに入れて渡す必要があります。',
+              en: 'Once training ends the parameters are frozen; the model does not learn while you use it. Its knowledge stops when the training data was collected (the **knowledge cutoff**). Anything newer, or private to your company, must be passed in the prompt.',
+            },
+          },
+          {
+            type: 'p',
+            text: {
+              ja: '指示チューニングとフィードバックによる調整の流れは、[InstructGPT の論文](https://arxiv.org/abs/2203.02155) が代表的です。',
+              en: 'The [InstructGPT paper](https://arxiv.org/abs/2203.02155) is the classic description of instruction tuning plus feedback.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'llm-example',
+        title: { ja: '実装イメージ', en: 'What it looks like' },
+        blocks: [
+          {
+            type: 'p',
+            text: {
+              ja: 'ここまでの内容は、API を呼ぶときのパラメータにそのまま出てきます。細かい名前は提供元ごとに違いますが、形はおおむね次のとおりです。',
+              en: 'Everything so far shows up directly in the parameters of an API call. Names vary by provider, but the shape is roughly this.',
+            },
+          },
+          {
+            type: 'code',
+            label: { ja: 'リクエストの例', en: 'Example request' },
+            code: `POST /v1/messages
+{
+  "model": "<model-name>",
+  "max_tokens": 300,          // cap on output tokens
+  "temperature": 0.2,         // low: stable answers
+  "system": "You are a support assistant for a feed app.",
+  "messages": [               // the whole history, every time
+    { "role": "user",      "content": "How do I mute a user?" },
+    { "role": "assistant", "content": "Open their profile and tap Mute." },
+    { "role": "user",      "content": "Will they know?" }
+  ]
+}`,
+          },
+          {
+            type: 'code',
+            label: { ja: 'レスポンスの例', en: 'Example response' },
+            code: `{
+  "content": [{ "type": "text", "text": "No. Muting is private..." }],
+  "stop_reason": "end_turn",  // the end token was picked
+  "usage": {
+    "input_tokens": 58,       // system + all 3 messages
+    "output_tokens": 41
+  }
+}`,
+          },
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**`messages`**: 3回目の質問でも、1回目からの履歴を全部送っている（ステートレス）',
+                en: '**`messages`**: even on the third question, the whole history from the first one is sent (stateless)',
+              },
+              {
+                ja: '**`max_tokens`**: 出力の上限。入力とあわせてコンテキストウィンドウに収まる必要がある',
+                en: '**`max_tokens`**: the output cap. Together with the input it must fit in the context window',
+              },
+              {
+                ja: '**`stop_reason`**: 終了トークンで止まったのか、`max_tokens` に達して途中で切れたのかがわかる。切れていたら、答えが不完全なまま返っている',
+                en: '**`stop_reason`**: tells you whether it stopped at the end token or was cut off at `max_tokens`. If cut off, the answer is incomplete',
+              },
+              {
+                ja: '**`usage`**: 料金の計算に使うトークン数。会話が進むと `input_tokens` が増えていくのが確かめられる',
+                en: '**`usage`**: the token counts you are billed for. Watch `input_tokens` grow as the conversation goes on',
+              },
+            ],
+          },
+          {
+            type: 'note',
+            tone: 'tip',
+            text: {
+              ja: '本番で LLM を使うときは、`usage` と `stop_reason` をログやメトリクスに残しておきましょう。料金の急増や、出力が上限で切れている問題に早く気づけます。',
+              en: 'When running LLMs in production, record `usage` and `stop_reason` in your logs or metrics. You will notice cost spikes and truncated outputs much sooner.',
+            },
+          },
+        ],
+      },
+      {
+        id: 'llm-summary',
+        title: { ja: 'まとめ', en: 'Summary' },
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              {
+                ja: '**LLM は次の 1 トークンの確率を出す**。選んで足して、を繰り返して文章になる',
+                en: '**An LLM outputs next-token probabilities.** Pick, append, repeat, and you get text',
+              },
+              {
+                ja: '**数えるのはトークン**。料金、上限、速度はすべてトークン数で決まり、出力は入力より高くて遅い',
+                en: '**Everything is counted in tokens.** Price, limits and speed depend on token counts, and output is slower and pricier than input',
+              },
+              {
+                ja: '**temperature と top-p は「くじの引き方」**。安定させたいなら低く、多様にしたいなら高く',
+                en: '**Temperature and top-p shape the draw.** Lower for stability, higher for variety',
+              },
+              {
+                ja: '**モデルは何も覚えていない**。毎回、コンテキストウィンドウに入る分の履歴と資料を送り直す',
+                en: '**The model remembers nothing.** Each request resends whatever history and documents fit in the context window',
+              },
+              {
+                ja: '**知識は学習時点で止まる**。新しい情報や社内の情報は、プロンプトで渡す',
+                en: '**Knowledge stops at training time.** Pass anything new or private in the prompt',
+              },
+            ],
+          },
+          {
+            type: 'p',
+            text: {
+              ja: 'プロンプトに外部のデータを入れるときの危険は [プロンプトインジェクション](#prompt-injection) で扱っています。さらに詳しく学ぶなら、Transformer の原論文 [Attention Is All You Need](https://arxiv.org/abs/1706.03762) が出発点です。',
+              en: 'The risks of putting outside data into a prompt are covered in [Prompt Injection](#prompt-injection). To go deeper, start with the original Transformer paper, [Attention Is All You Need](https://arxiv.org/abs/1706.03762).',
             },
           },
         ],
